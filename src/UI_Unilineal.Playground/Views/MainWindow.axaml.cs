@@ -503,96 +503,13 @@ public sealed partial class MainWindow : Window
     {
         DetailPanel.Children.Clear();
 
-        var header = new Border
-        {
-            Padding = new Thickness(12),
-            BorderThickness = new Thickness(1),
-            BorderBrush = Brushes.DimGray,
-            CornerRadius = new CornerRadius(5)
-        };
-
-        var headerStack = new StackPanel
-        {
-            Spacing = 4
-        };
-
-        headerStack.Children.Add(
-            new TextBlock
-            {
-                Text = block.Code,
-                FontSize = 20,
-                FontWeight = FontWeight.SemiBold
-            });
-
-        headerStack.Children.Add(
-            new TextBlock
-            {
-                Text = block.Title,
-                FontSize = 13,
-                Opacity = 0.72
-            });
-
-        headerStack.Children.Add(
-            new TextBlock
-            {
-                Text = $"UID: {block.Uid}",
-                FontSize = 11,
-                Opacity = 0.58
-            });
-
-        headerStack.Children.Add(
-            new TextBlock
-            {
-                Text = $"Alimentado desde: {GetParentLabel(block)}",
-                FontSize = 12
-            });
-
-        header.Child = headerStack;
-
-        DetailPanel.Children.Add(header);
-
-        if (block.Kind == PrototypeBlockKind.ServiceEntrance)
-        {
-            DetailPanel.Children.Add(
-                CreateInfoBlock(
-                    "EMPALME / FUENTE",
-                    "Representación preliminar del origen del proyecto."));
-
-            DetailPanel.Children.Add(
-                CreateBusBlock("SALIDA A TABLERO GENERAL"));
-
-            return;
-        }
-
-        DetailPanel.Children.Add(
-            CreateInfoBlock(
-                "PROTECCIÓN GENERAL",
-                block.Kind == PrototypeBlockKind.MainBoard
-                    ? "TM 4P 100 A · C · Icu POR DEFINIR"
-                    : "TM 4P 40 A · C · Icu POR DEFINIR"));
-
-        DetailPanel.Children.Add(
-            CreateBusBlock("BARRA PRINCIPAL"));
-
         var circuits = _state.GetCircuits(block.Uid);
 
-        if (circuits.Count == 0)
-        {
-            DetailPanel.Children.Add(
-                new TextBlock
-                {
-                    Text = "Sin circuitos ficticios definidos para este tablero.",
-                    Opacity = 0.65
-                });
-
-            return;
-        }
-
-        foreach (var circuit in circuits)
-        {
-            DetailPanel.Children.Add(
-                CreateCircuitBlock(circuit));
-        }
+        DetailPanel.Children.Add(
+            new RicBoardDetailPrototypeControl(
+                block,
+                circuits,
+                GetParentLabel(block)));
     }
 
     private static Border CreateInfoBlock(
