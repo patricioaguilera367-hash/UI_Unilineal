@@ -33,6 +33,9 @@ public sealed partial class MainWindow : Window
     private double _dragBlockStartY;
     private bool _dragMoved;
 
+    private RicBoardDetailPrototypeControl? _dedicatedDetailControl;
+    private double _detailZoom = 1.0;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -44,6 +47,21 @@ public sealed partial class MainWindow : Window
 
         ElectricalModeButton.Click += (_, _) =>
             SetMode(PrototypeInteractionMode.Electrical);
+
+        OpenDetailButton.Click += (_, _) =>
+            OpenDedicatedDetail();
+
+        BackToSummaryButton.Click += (_, _) =>
+            CloseDedicatedDetail();
+
+        ZoomInButton.Click += (_, _) =>
+            SetDetailZoom(_detailZoom + 0.10);
+
+        ZoomOutButton.Click += (_, _) =>
+            SetDetailZoom(_detailZoom - 0.10);
+
+        FitButton.Click += (_, _) =>
+            FitDedicatedDetail();
 
         BuildSummaryBlocks();
         DrawConnections();
@@ -503,13 +521,95 @@ public sealed partial class MainWindow : Window
     {
         DetailPanel.Children.Clear();
 
+        var header = new Border
+        {
+            Padding = new Thickness(12),
+            BorderThickness = new Thickness(1),
+            BorderBrush = Brushes.DimGray,
+            CornerRadius = new CornerRadius(5)
+        };
+
+        var headerStack = new StackPanel
+        {
+            Spacing = 4
+        };
+
+        headerStack.Children.Add(
+            new TextBlock
+            {
+                Text = block.Code,
+                FontSize = 20,
+                FontWeight = FontWeight.SemiBold
+            });
+
+        headerStack.Children.Add(
+            new TextBlock
+            {
+                Text = block.Title,
+                FontSize = 13,
+                Opacity = 0.72
+            });
+
+        headerStack.Children.Add(
+            new TextBlock
+            {
+                Text = $"UID: {block.Uid}",
+                FontSize = 11,
+                Opacity = 0.58
+            });
+
+        headerStack.Children.Add(
+            new TextBlock
+            {
+                Text = $"Alimentado desde: {GetParentLabel(block)}",
+                FontSize = 12
+            });
+
+        header.Child = headerStack;
+        DetailPanel.Children.Add(header);
+
         var circuits = _state.GetCircuits(block.Uid);
 
         DetailPanel.Children.Add(
-            new RicBoardDetailPrototypeControl(
-                block,
-                circuits,
-                GetParentLabel(block)));
+            CreateInfoBlock(
+                "RESUMEN",
+                block.Kind == PrototypeBlockKind.ServiceEntrance
+                    ? "Origen del proyecto."
+                    : $"{circuits.Count} circuitos ficticios definidos."));
+
+        if (block.Kind != PrototypeBlockKind.ServiceEntrance)
+        {
+            DetailPanel.Children.Add(
+                CreateInfoBlock(
+                    "PROTECCIÓN GENERAL",
+                    block.Kind == PrototypeBlockKind.MainBoard
+                        ? "TM 4P 100 A · C · Icu POR DEFINIR"
+                        : "TM 4P 40 A · C · Icu POR DEFINIR"));
+        }
+
+        foreach (var circuit in circuits.Take(4))
+        {
+            DetailPanel.Children.Add(
+                new TextBlock
+                {
+                    Text = $"{circuit.Code} · {circuit.Name}",
+                    FontSize = 12,
+                    TextWrapping = TextWrapping.Wrap
+                });
+        }
+
+        if (circuits.Count > 4)
+        {
+            DetailPanel.Children.Add(
+                new TextBlock
+                {
+                    Text = $"+ {circuits.Count - 4} circuitos más",
+                    FontSize = 11,
+                    Opacity = 0.65
+                });
+        }
+
+        OpenDetailButton.IsEnabled = true;
     }
 
     private static Border CreateInfoBlock(
@@ -645,6 +745,122 @@ public sealed partial class MainWindow : Window
         {
             _events.RemoveAt(_events.Count - 1);
         }
+    }
+
+    private void OpenDedicatedDetail()
+    {
+        if (_selectedUid is null)
+        {
+            AddLog("No hay entidad seleccionada para abrir.");
+            return;
+        }
+
+        var block = _state.GetBlock(_selectedUid);
+        var circuits = _state.GetCircuits(block.Uid);
+
+        _dedicatedDetailControl =
+            new RicBoardDetailPrototypeControl(
+                block,
+                circuits,
+                GetParentLabel(block));
+
+        DedicatedDetailHost.Children.Clear();
+        DedicatedDetailHost.Children.Add(_dedicatedDetailControl);
+
+        Canvas.SetLeft(_dedicatedDetailControl, 24);
+        Canvas.SetTop(_dedicatedDetailControl, 24);
+
+        DedicatedDetailTitle.Text =
+            $"{block.Code} — {block.Title}";
+
+        SummaryWorkspace.IsVisible = false;
+        DedicatedDetailWorkspace.IsVisible = true;
+
+        SetDetailZoom(1.0);
+
+        AddLog(
+            $"Abrir unilineal dedicado · {block.Code}");
+    }
+
+    private void CloseDedicatedDetail()
+    {
+        DedicatedDetailWorkspace.IsVisible = false;
+        SummaryWorkspace.IsVisible = true;
+
+        AddLog("Volver al unilineal resumen.");
+    }
+
+    private void SetDetailZoom(double zoom)
+    {
+        if (_dedicatedDetailControl is null)
+        {
+            return;
+        }
+
+        _detailZoom = Math.Clamp(
+            zoom,
+            0.45,
+            1.80);
+
+        _dedicatedDetailControl.RenderTransform =
+            new ScaleTransform(
+                _detailZoom,
+                _detailZoom);
+
+        _dedicatedDetailControl.RenderTransformOrigin =
+            RelativePoint.TopLeft;
+
+        DedicatedDetailHost.Width =
+            (_dedicatedDetailControl.Width * _detailZoom) + 48;
+
+        DedicatedDetailHost.Height =
+            (_dedicatedDetailControl.Height * _detailZoom) + 48;
+
+        ZoomText.Text =
+            $"{Math.Round(_detailZoom * 100):0}%";
+    }
+
+    private void FitDedicatedDetail()
+    {
+        if (_dedicatedDetailControl is null)
+        {
+            return;
+        }
+
+        var viewportWidth =
+            DedicatedDetailScroll.Bounds.Width - 80;
+
+        var viewportHeight =
+            DedicatedDetailScroll.Bounds.Height - 80;
+
+        if (viewportWidth <= 0 ||
+            viewportHeight <= 0)
+        {
+            SetDetailZoom(1.0);
+            return;
+        }
+
+        var horizontal =
+            viewportWidth /
+            _dedicatedDetailControl.Width;
+
+        var vertical =
+            viewportHeight /
+            _dedicatedDetailControl.Height;
+
+        var fit =
+            Math.Min(
+                horizontal,
+                vertical);
+
+        SetDetailZoom(
+            Math.Clamp(
+                fit,
+                0.45,
+                1.40));
+
+        DedicatedDetailScroll.Offset =
+            new Vector(0, 0);
     }
 
     private void ClearDrag()

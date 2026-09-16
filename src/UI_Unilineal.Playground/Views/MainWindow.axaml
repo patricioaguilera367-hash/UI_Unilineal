@@ -6,28 +6,27 @@
     Height="900"
     MinWidth="1100"
     MinHeight="700"
-    Title="UI_Unilineal — Spike preliminar">
+    Title="UI_Unilineal — V0.4">
 
-  <Grid
-      RowDefinitions="Auto,*"
-      ColumnDefinitions="2*,1*">
+  <Grid RowDefinitions="Auto,*">
 
+    <!-- HEADER GLOBAL -->
     <Border
-        Grid.ColumnSpan="2"
         Padding="14"
         BorderThickness="0,0,0,1">
 
       <Grid ColumnDefinitions="*,Auto">
+
         <StackPanel>
           <TextBlock
               FontSize="21"
               FontWeight="SemiBold"
-              Text="UI_Unilineal — Spike preliminar" />
+              Text="UI_Unilineal — V0.4" />
 
           <TextBlock
               Margin="0,3,0,0"
               Opacity="0.7"
-              Text="Resumen jerárquico + detalle de tablero + comandos de presentación / eléctricos" />
+              Text="Resumen jerárquico + detalle dedicado de tablero" />
         </StackPanel>
 
         <StackPanel
@@ -56,97 +55,225 @@
                 Text="Presentación" />
 
           </Border>
+
         </StackPanel>
+
       </Grid>
+
     </Border>
 
-    <Border
+    <!-- ================================================= -->
+    <!-- RESUMEN + INSPECTOR                               -->
+    <!-- ================================================= -->
+
+    <Grid
+        x:Name="SummaryWorkspace"
         Grid.Row="1"
-        Margin="12,12,6,12"
-        BorderThickness="1"
-        CornerRadius="6">
+        ColumnDefinitions="2*,1*">
 
-      <Grid RowDefinitions="Auto,*">
-        <StackPanel
-            Margin="12"
-            Spacing="4">
+      <!-- RESUMEN -->
+      <Border
+          Margin="12,12,6,12"
+          BorderThickness="1"
+          CornerRadius="6">
 
-          <TextBlock
-              FontSize="17"
-              FontWeight="SemiBold"
-              Text="Unilineal resumen" />
-
-          <TextBlock
-              Opacity="0.7"
-              Text="Presentación: arrastra para ordenar. Eléctrico: arrastra un tablero sobre otro para cambiar su alimentación." />
-        </StackPanel>
-
-        <Grid Grid.Row="1">
-          <Canvas
-              x:Name="ConnectionCanvas"
-              Background="#F4F7FA"
-              IsHitTestVisible="False" />
-
-          <Canvas
-              x:Name="DiagramCanvas"
-              Background="Transparent" />
-        </Grid>
-      </Grid>
-    </Border>
-
-    <Border
-        Grid.Row="1"
-        Grid.Column="1"
-        Margin="6,12,12,12"
-        BorderThickness="1"
-        CornerRadius="6">
-
-      <Grid RowDefinitions="Auto,*,Auto,190">
-
-        <StackPanel
-            Margin="12"
-            Spacing="4">
-
-          <TextBlock
-              FontSize="17"
-              FontWeight="SemiBold"
-              Text="Unilineal detallado" />
-
-          <TextBlock
-              Opacity="0.7"
-              Text="Selecciona un bloque del resumen." />
-        </StackPanel>
-
-        <ScrollViewer
-            Grid.Row="1"
-            Margin="12,0,12,12">
+        <Grid RowDefinitions="Auto,*">
 
           <StackPanel
-              x:Name="DetailPanel"
-              Spacing="10" />
+              Margin="12"
+              Spacing="4">
 
-        </ScrollViewer>
+            <TextBlock
+                FontSize="17"
+                FontWeight="SemiBold"
+                Text="Unilineal resumen" />
 
-        <Border
-            Grid.Row="2"
-            Margin="12,0,12,8"
-            Padding="10"
-            BorderThickness="1"
-            CornerRadius="4">
+            <TextBlock
+                Opacity="0.7"
+                Text="Presentación: mueve bloques. Eléctrico: modifica relaciones ficticias." />
 
-          <TextBlock
-              TextWrapping="Wrap"
-              Text="Este spike NO modifica ProyectoElectrico. LayoutCommand cambia sólo posición; ElectricalCommand cambia sólo el estado ficticio del Playground." />
+          </StackPanel>
 
-        </Border>
+          <Grid Grid.Row="1">
 
-        <ListBox
-            x:Name="EventLogList"
-            Grid.Row="3"
-            Margin="12,0,12,12" />
+            <Canvas
+                x:Name="ConnectionCanvas"
+                Background="#F4F7FA"
+                IsHitTestVisible="False" />
 
-      </Grid>
-    </Border>
+            <Canvas
+                x:Name="DiagramCanvas"
+                Background="Transparent" />
+
+          </Grid>
+
+        </Grid>
+
+      </Border>
+
+      <!-- INSPECTOR -->
+      <Border
+          Grid.Column="1"
+          Margin="6,12,12,12"
+          BorderThickness="1"
+          CornerRadius="6">
+
+        <Grid RowDefinitions="Auto,*,Auto,Auto,190">
+
+          <StackPanel
+              Margin="12"
+              Spacing="4">
+
+            <TextBlock
+                FontSize="17"
+                FontWeight="SemiBold"
+                Text="Inspector de tablero" />
+
+            <TextBlock
+                Opacity="0.7"
+                Text="Selecciona un bloque del resumen." />
+
+          </StackPanel>
+
+          <ScrollViewer
+              Grid.Row="1"
+              Margin="12,0,12,12">
+
+            <StackPanel
+                x:Name="DetailPanel"
+                Spacing="10" />
+
+          </ScrollViewer>
+
+          <Button
+              x:Name="OpenDetailButton"
+              Grid.Row="2"
+              Margin="12,0,12,10"
+              Padding="14,10"
+              HorizontalAlignment="Stretch"
+              Content="Abrir unilineal del tablero →" />
+
+          <Border
+              Grid.Row="3"
+              Margin="12,0,12,8"
+              Padding="10"
+              BorderThickness="1"
+              CornerRadius="4">
+
+            <TextBlock
+                TextWrapping="Wrap"
+                Text="SPIKE: ningún cambio se persiste en ProyectoElectrico. El detalle completo se abre en un canvas dedicado." />
+
+          </Border>
+
+          <ListBox
+              x:Name="EventLogList"
+              Grid.Row="4"
+              Margin="12,0,12,12" />
+
+        </Grid>
+
+      </Border>
+
+    </Grid>
+
+    <!-- ================================================= -->
+    <!-- DETALLE DEDICADO                                 -->
+    <!-- ================================================= -->
+
+    <Grid
+        x:Name="DedicatedDetailWorkspace"
+        Grid.Row="1"
+        RowDefinitions="Auto,*"
+        IsVisible="False">
+
+      <Border
+          Padding="12"
+          BorderThickness="0,0,0,1">
+
+        <Grid ColumnDefinitions="Auto,*,Auto">
+
+          <Button
+              x:Name="BackToSummaryButton"
+              Padding="14,8"
+              Content="← Volver al resumen" />
+
+          <StackPanel
+              Grid.Column="1"
+              Margin="16,0"
+              VerticalAlignment="Center">
+
+            <TextBlock
+                x:Name="DedicatedDetailTitle"
+                FontSize="18"
+                FontWeight="SemiBold"
+                Text="Detalle de tablero" />
+
+            <TextBlock
+                FontSize="11"
+                Opacity="0.65"
+                Text="Canvas dedicado · spike V0.4" />
+
+          </StackPanel>
+
+          <StackPanel
+              Grid.Column="2"
+              Orientation="Horizontal"
+              Spacing="6">
+
+            <Button
+                x:Name="ZoomOutButton"
+                MinWidth="44"
+                Padding="10,8"
+                Content="−" />
+
+            <Border
+                Padding="10,8"
+                BorderThickness="1"
+                CornerRadius="4">
+
+              <TextBlock
+                  x:Name="ZoomText"
+                  MinWidth="52"
+                  TextAlignment="Center"
+                  Text="100%" />
+
+            </Border>
+
+            <Button
+                x:Name="ZoomInButton"
+                MinWidth="44"
+                Padding="10,8"
+                Content="+" />
+
+            <Button
+                x:Name="FitButton"
+                Padding="12,8"
+                Content="Fit" />
+
+          </StackPanel>
+
+        </Grid>
+
+      </Border>
+
+      <ScrollViewer
+          x:Name="DedicatedDetailScroll"
+          Grid.Row="1"
+          Margin="12"
+          HorizontalScrollBarVisibility="Auto"
+          VerticalScrollBarVisibility="Auto">
+
+        <Canvas
+            x:Name="DedicatedDetailHost"
+            Background="#F4F7FA"
+            MinWidth="900"
+            MinHeight="600" />
+
+      </ScrollViewer>
+
+    </Grid>
 
   </Grid>
+
 </Window>
