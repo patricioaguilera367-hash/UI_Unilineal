@@ -2,45 +2,151 @@
     x:Class="UI_Unilineal.Playground.Views.MainWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Width="1280"
-    Height="800"
-    MinWidth="900"
-    MinHeight="600"
-    Title="UI_Unilineal — Playground">
+    Width="1500"
+    Height="900"
+    MinWidth="1100"
+    MinHeight="700"
+    Title="UI_Unilineal — Spike preliminar">
 
-  <Grid RowDefinitions="Auto,*">
+  <Grid
+      RowDefinitions="Auto,*"
+      ColumnDefinitions="2*,1*">
 
-    <Border Padding="16">
-      <StackPanel>
-        <TextBlock
-            FontSize="20"
-            FontWeight="SemiBold"
-            Text="UI_Unilineal" />
+    <Border
+        Grid.ColumnSpan="2"
+        Padding="14"
+        BorderThickness="0,0,0,1">
 
-        <TextBlock
-            Margin="0,4,0,0"
-            Opacity="0.7"
-            Text="Playground desacoplado — Single Line Diagram Engine" />
-      </StackPanel>
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel>
+          <TextBlock
+              FontSize="21"
+              FontWeight="SemiBold"
+              Text="UI_Unilineal — Spike preliminar" />
+
+          <TextBlock
+              Margin="0,3,0,0"
+              Opacity="0.7"
+              Text="Resumen jerárquico + detalle de tablero + comandos de presentación / eléctricos" />
+        </StackPanel>
+
+        <StackPanel
+            Grid.Column="1"
+            Orientation="Horizontal"
+            Spacing="8">
+
+          <Button
+              x:Name="LayoutModeButton"
+              Padding="14,8"
+              Content="Modo presentación" />
+
+          <Button
+              x:Name="ElectricalModeButton"
+              Padding="14,8"
+              Content="Modo eléctrico" />
+
+          <Border
+              Padding="12,8"
+              BorderThickness="1"
+              CornerRadius="4">
+
+            <TextBlock
+                x:Name="ModeText"
+                FontWeight="SemiBold"
+                Text="Presentación" />
+
+          </Border>
+        </StackPanel>
+      </Grid>
     </Border>
 
     <Border
         Grid.Row="1"
-        Margin="16"
+        Margin="12,12,6,12"
         BorderThickness="1"
         CornerRadius="6">
 
-      <Grid>
-        <TextBlock
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            FontSize="16"
-            Opacity="0.6"
-            Text="El canvas del unifilar se implementará aquí." />
-      </Grid>
+      <Grid RowDefinitions="Auto,*">
+        <StackPanel
+            Margin="12"
+            Spacing="4">
 
+          <TextBlock
+              FontSize="17"
+              FontWeight="SemiBold"
+              Text="Unilineal resumen" />
+
+          <TextBlock
+              Opacity="0.7"
+              Text="Presentación: arrastra para ordenar. Eléctrico: arrastra un tablero sobre otro para cambiar su alimentación." />
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+          <Canvas
+              x:Name="ConnectionCanvas"
+              Background="#F4F7FA"
+              IsHitTestVisible="False" />
+
+          <Canvas
+              x:Name="DiagramCanvas"
+              Background="Transparent" />
+        </Grid>
+      </Grid>
+    </Border>
+
+    <Border
+        Grid.Row="1"
+        Grid.Column="1"
+        Margin="6,12,12,12"
+        BorderThickness="1"
+        CornerRadius="6">
+
+      <Grid RowDefinitions="Auto,*,Auto,190">
+
+        <StackPanel
+            Margin="12"
+            Spacing="4">
+
+          <TextBlock
+              FontSize="17"
+              FontWeight="SemiBold"
+              Text="Unilineal detallado" />
+
+          <TextBlock
+              Opacity="0.7"
+              Text="Selecciona un bloque del resumen." />
+        </StackPanel>
+
+        <ScrollViewer
+            Grid.Row="1"
+            Margin="12,0,12,12">
+
+          <StackPanel
+              x:Name="DetailPanel"
+              Spacing="10" />
+
+        </ScrollViewer>
+
+        <Border
+            Grid.Row="2"
+            Margin="12,0,12,8"
+            Padding="10"
+            BorderThickness="1"
+            CornerRadius="4">
+
+          <TextBlock
+              TextWrapping="Wrap"
+              Text="Este spike NO modifica ProyectoElectrico. LayoutCommand cambia sólo posición; ElectricalCommand cambia sólo el estado ficticio del Playground." />
+
+        </Border>
+
+        <ListBox
+            x:Name="EventLogList"
+            Grid.Row="3"
+            Margin="12,0,12,12" />
+
+      </Grid>
     </Border>
 
   </Grid>
-
 </Window>
