@@ -4,7 +4,9 @@ namespace UI_Unilineal.Engine.Layout;
 
 public sealed class DiagramSceneValidator
 {
-    public DiagramSceneValidationResult Validate(DiagramScene scene)
+    public DiagramSceneValidationResult Validate(
+        DiagramScene scene,
+        SceneValidationMode mode = SceneValidationMode.Basic)
     {
         ArgumentNullException.ThrowIfNull(scene);
 
@@ -40,6 +42,11 @@ public sealed class DiagramSceneValidator
         foreach (SceneConnection connection in scene.Connections)
         {
             ValidateConnection(connection, elements, issues);
+        }
+
+        if (mode == SceneValidationMode.Strict)
+        {
+            ValidateStructuralOverlaps(scene, issues);
         }
 
         SceneValidationIssue[] sorted = issues
@@ -189,6 +196,42 @@ public sealed class DiagramSceneValidator
                 field));
         }
     }
+
+    private static void ValidateStructuralOverlaps(
+        DiagramScene scene,
+        ICollection<SceneValidationIssue> issues)
+    {
+        GroupSceneElement[] groups = scene.Elements
+            .OfType<GroupSceneElement>()
+            .Where(group => BoundsAreValid(group.Bounds))
+            .OrderBy(group => group.Id.Value, StringComparer.Ordinal)
+            .ToArray();
+
+        for (int left = 0; left < groups.Length; left++)
+        {
+            for (int right = left + 1; right < groups.Length; right++)
+            {
+                if (!Overlaps(
+                        groups[left].Bounds,
+                        groups[right].Bounds))
+                {
+                    continue;
+                }
+
+                issues.Add(Error(
+                    SceneValidationCodes.StructuralBlockOverlap,
+                    $"Structural blocks '{groups[left].Id}' and '{groups[right].Id}' overlap.",
+                    groups[left].Id.ToString(),
+                    nameof(SceneElement.Bounds)));
+            }
+        }
+    }
+
+    private static bool Overlaps(MmRect first, MmRect second) =>
+        first.X < second.Right &&
+        first.Right > second.X &&
+        first.Y < second.Bottom &&
+        first.Bottom > second.Y;
 
     private static bool BoundsAreValid(MmRect bounds) =>
         double.IsFinite(bounds.X) &&

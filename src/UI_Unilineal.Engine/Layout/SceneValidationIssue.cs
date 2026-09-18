@@ -6,6 +6,12 @@ public enum SceneValidationSeverity
     Warning
 }
 
+public enum SceneValidationMode
+{
+    Basic,
+    Strict
+}
+
 public sealed record SceneValidationIssue(
     string Code,
     SceneValidationSeverity Severity,
@@ -38,4 +44,5 @@ public static class SceneValidationCodes
     public const string DuplicateAnchorId = "DUPLICATE_ANCHOR_ID";
     public const string AnchorOutsideElementBounds = "ANCHOR_OUTSIDE_ELEMENT_BOUNDS";
     public const string OrphanGroupChild = "ORPHAN_GROUP_CHILD";
+    public const string StructuralBlockOverlap = "STRUCTURAL_BLOCK_OVERLAP";
 }
