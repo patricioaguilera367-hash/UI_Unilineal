@@ -4,6 +4,10 @@
     <ProjectReference Include="..\UI_Unilineal.Domain\UI_Unilineal.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="UI_Unilineal.Engine.Tests" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
