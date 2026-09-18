@@ -51,11 +51,13 @@ public sealed class DiagramScene
     public DiagramScene(
         MmRect bounds,
         IEnumerable<SceneElement> elements,
-        DiagramSceneMetadata metadata)
+        DiagramSceneMetadata metadata,
+        IEnumerable<SceneConnection>? connections = null)
     {
         ArgumentNullException.ThrowIfNull(elements);
         Bounds = bounds;
         Elements = Array.AsReadOnly(elements.ToArray());
+        Connections = Array.AsReadOnly((connections ?? []).ToArray());
         Metadata = metadata ??
             throw new ArgumentNullException(nameof(metadata));
     }
@@ -63,6 +65,8 @@ public sealed class DiagramScene
     public MmRect Bounds { get; }
 
     public IReadOnlyList<SceneElement> Elements { get; }
+
+    public IReadOnlyList<SceneConnection> Connections { get; }
 
     public DiagramSceneMetadata Metadata { get; }
 }

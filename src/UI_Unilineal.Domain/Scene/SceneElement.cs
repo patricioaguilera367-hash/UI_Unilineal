@@ -12,7 +12,8 @@ public abstract class SceneElement
         int zIndex,
         SceneVisibility visibility,
         EntityReference? semanticReference,
-        IReadOnlyDictionary<string, string>? metadata)
+        IReadOnlyDictionary<string, string>? metadata,
+        IEnumerable<SceneAnchor>? anchors = null)
     {
         Id = id;
         Bounds = bounds;
@@ -24,6 +25,7 @@ public abstract class SceneElement
             new Dictionary<string, string>(
                 metadata ?? new Dictionary<string, string>(),
                 StringComparer.Ordinal));
+        Anchors = Array.AsReadOnly((anchors ?? []).ToArray());
     }
 
     public SceneId Id { get; }
@@ -39,6 +41,8 @@ public abstract class SceneElement
     public EntityReference? SemanticReference { get; }
 
     public IReadOnlyDictionary<string, string> Metadata { get; }
+
+    public IReadOnlyList<SceneAnchor> Anchors { get; }
 }
 
 public sealed class LineSceneElement : SceneElement
@@ -282,8 +286,17 @@ public sealed class GroupSceneElement : SceneElement
         SceneVisibility visibility,
         EntityReference? semanticReference,
         IReadOnlyDictionary<string, string>? metadata,
-        IEnumerable<SceneId> childIds)
-        : base(id, bounds, layer, zIndex, visibility, semanticReference, metadata)
+        IEnumerable<SceneId> childIds,
+        IEnumerable<SceneAnchor>? anchors = null)
+        : base(
+            id,
+            bounds,
+            layer,
+            zIndex,
+            visibility,
+            semanticReference,
+            metadata,
+            anchors)
     {
         ArgumentNullException.ThrowIfNull(childIds);
         ChildIds = Array.AsReadOnly(childIds.ToArray());
