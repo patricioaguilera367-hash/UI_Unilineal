@@ -43,6 +43,51 @@ public sealed class SingleLineInputFingerprintTests
             SingleLineInputFingerprint.Compute(changed));
     }
 
+    [Fact]
+    public void Compute_IsStableWhenSameEntityHasMultipleResultExecutions()
+    {
+        SingleLineInput source = CreateFixture();
+        ElectricalResultInput original = source.Results[0];
+        ElectricalResultInput firstExecution = original with
+        {
+            InstalledPowerW = 900m,
+            ExecutionReference = "EXEC-A"
+        };
+        ElectricalResultInput secondExecution = original with
+        {
+            InstalledPowerW = 1100m,
+            ExecutionReference = "EXEC-B"
+        };
+        ElectricalResultInput unrelated = source.Results[1];
+
+        var first = new SingleLineInput(
+            source.Project,
+            source.Sources,
+            source.Boards,
+            source.Buses,
+            source.Circuits,
+            source.SupplyConnections,
+            source.Protections,
+            source.Grounding,
+            [firstExecution, secondExecution, unrelated],
+            source.Metadata);
+        var reversed = new SingleLineInput(
+            source.Project,
+            source.Sources,
+            source.Boards,
+            source.Buses,
+            source.Circuits,
+            source.SupplyConnections,
+            source.Protections,
+            source.Grounding,
+            [unrelated, secondExecution, firstExecution],
+            source.Metadata);
+
+        Assert.Equal(
+            SingleLineInputFingerprint.Compute(first),
+            SingleLineInputFingerprint.Compute(reversed));
+    }
+
     private static SingleLineInput ReverseCollections(SingleLineInput input) =>
         new(
             input.Project,
