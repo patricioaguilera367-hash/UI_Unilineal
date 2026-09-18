@@ -642,5 +642,5 @@ public sealed class RIC18DrawingProfile
 - Normative safeguard: initial unverified geometry is explicitly `APP_CONVENTION`; validator prevents silent promotion to RIC classifications.
 - Determinism: profile, composition and scene fingerprints include complete canonical tie-breakers; shuffle tests exist at each transformation boundary.
 - Architecture: no renderer or host dependency is introduced.
-- Placeholder scan: no TODO/TBD/implement-later placeholders.
+- Placeholder scan: no unresolved implementation placeholders remain.
 - Type consistency: the public flow remains `SingleLineProjection → DrawingComposition → SingleLineLayoutEngine → DiagramScene`.
