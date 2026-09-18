@@ -30,4 +30,29 @@ public sealed partial class SingleLineInputTests
         Assert.Null(source.PhaseCount);
         Assert.Null(source.NeutralAvailable);
     }
+    [Fact]
+    public void SupplyConnection_RepresentsBoardCircuitDestinationExplicitly()
+    {
+        var board = new EntityReference(new EntityUid("B1"), EntityKind.Board);
+        var supply = new SupplyConnection(
+            new EntityUid("SC1"), board, new EntityUid("C4"), new EntityUid("B2"),
+            SupplyRole.Normal, 0, true, OperationalState.Active, DataState.Complete);
+
+        Assert.Equal(EntityKind.Board, supply.Origin.Kind);
+        Assert.Equal(new EntityUid("C4"), supply.ThroughCircuitUid);
+        Assert.Equal(new EntityUid("B2"), supply.DestinationBoardUid);
+    }
+
+    [Fact]
+    public void Protection_HasSeparateOwnerAndProtectedEntity()
+    {
+        var owner = new EntityReference(new EntityUid("B1"), EntityKind.Board);
+        var protects = new EntityReference(new EntityUid("BUS:B1:MAIN"), EntityKind.Bus);
+        var protection = new ProtectionInput(
+            new EntityUid("P1"), owner, protects, ProtectionKind.Breaker, ProtectionRole.Main,
+            3, 40m, 6m, "C", null, null, null, null,
+            OperationalState.Active, DataState.Complete);
+
+        Assert.NotEqual(protection.Owner, protection.Protects);
+    }
 }
