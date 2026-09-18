@@ -38,6 +38,7 @@ public static class SingleLineInputFingerprint
             Results = input.Results
                 .OrderBy(x => x.Entity.Kind)
                 .ThenBy(x => x.Entity.Uid.Value, StringComparer.Ordinal)
+                .ThenBy(CanonicalResultSortKey, StringComparer.Ordinal)
                 .ToArray(),
             input.Metadata
         };
@@ -48,4 +49,8 @@ public static class SingleLineInputFingerprint
 
         return Convert.ToHexString(hash);
     }
+
+    private static string CanonicalResultSortKey(ElectricalResultInput result) =>
+        JsonSerializer.Serialize(result);
 }
+
