@@ -82,7 +82,15 @@ ProyectoElectrico main.
 
 ## Estado
 
-Scaffold arquitectónico inicial.
+V1 G0–G2 implementado:
 
-Aún no contiene implementación del modelo semántico, layout ni
-simbología RIC18.
+- baseline CI en Windows/Linux;
+- `SingleLineInput` semántico e inmutable;
+- topología explícita mediante `SupplyConnection`;
+- validación referencial, de ciclos y de datos incompletos;
+- `SingleLineProjection` resumen/detalle determinista;
+- pruebas generativas y goldens estructurales.
+
+Aún no forman parte de este checkpoint: perfil gráfico RIC18,
+`DiagramScene`, layout, renderer Avalonia V1, interacción productiva,
+SVG/PDF e integración con `ProyectoElectrico`.
