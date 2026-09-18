@@ -3,6 +3,7 @@ using UI_Unilineal.Domain.Scene;
 using UI_Unilineal.Domain.Semantics;
 using UI_Unilineal.Engine.Composition;
 using UI_Unilineal.Engine.Projection;
+using UI_Unilineal.Engine.Validation;
 
 namespace UI_Unilineal.Engine.Layout;
 
@@ -91,6 +92,14 @@ public sealed class SingleLineLayoutEngine
 {
     public const string LayoutEngineVersion = "G5-1";
 
+    private readonly ITextMetrics _textMetrics;
+
+    public SingleLineLayoutEngine(ITextMetrics textMetrics)
+    {
+        _textMetrics = textMetrics ??
+            throw new ArgumentNullException(nameof(textMetrics));
+    }
+
     public SingleLineLayoutResult LayoutSummary(
         SingleLineProjection projection,
         RIC18DrawingProfile profile,
@@ -136,7 +145,7 @@ public sealed class SingleLineLayoutEngine
             strategy: new BoardDetailLayoutStrategy());
     }
 
-    private static SingleLineLayoutResult Layout(
+    private SingleLineLayoutResult Layout(
         SingleLineProjection projection,
         RIC18DrawingProfile profile,
         DiagramLayoutState? layoutState,
@@ -193,7 +202,7 @@ public sealed class SingleLineLayoutEngine
         try
         {
             measurement = new CompositionMeasurer(
-                new DeterministicTextMetrics())
+                _textMetrics)
                 .Measure(composition, profile);
         }
         catch (Exception exception) when (IsExpectedPipelineException(exception))
@@ -242,6 +251,17 @@ public sealed class SingleLineLayoutEngine
 
         string projectionFingerprint =
             SingleLineProjectionFingerprint.Compute(projection);
+        SceneId sceneId = CreateSceneId(
+            expectedSceneKind,
+            scopeUid);
+        SceneIssue[] sceneIssues = projection.Issues
+            .OrderBy(issue => issue.Code, StringComparer.Ordinal)
+            .ThenBy(
+                issue => issue.Entity?.Uid.Value,
+                StringComparer.Ordinal)
+            .ThenBy(issue => issue.Field, StringComparer.Ordinal)
+            .Select(ToSceneIssue)
+            .ToArray();
 
         DiagramScene assembled;
 
@@ -253,7 +273,10 @@ public sealed class SingleLineLayoutEngine
                     positioned.Blocks,
                     positioned.Bounds,
                     projectionFingerprint,
-                    LayoutEngineVersion),
+                    LayoutEngineVersion,
+                    sceneId,
+                    expectedSceneKind,
+                    sceneIssues),
                 profile);
         }
         catch (Exception exception) when (IsExpectedPipelineException(exception))
@@ -360,10 +383,13 @@ public sealed class SingleLineLayoutEngine
             routeElements.Select(element => element.Bounds));
 
         return new DiagramScene(
+            scene.Id,
+            scene.Kind,
             finalBounds,
             elements,
             scene.Metadata,
-            scene.Connections);
+            scene.Connections,
+            scene.Issues);
     }
 
     private static MmRect BoundsFor(
@@ -413,6 +439,30 @@ public sealed class SingleLineLayoutEngine
             maxRight - minX,
             maxBottom - minY);
     }
+
+    private static SceneId CreateSceneId(
+        DiagramSceneKind kind,
+        EntityUid scopeUid) =>
+        kind switch
+        {
+            DiagramSceneKind.ProjectSummary =>
+                new SceneId($"summary/project/{scopeUid.Value}"),
+            DiagramSceneKind.BoardDetail =>
+                new SceneId($"detail/board/{scopeUid.Value}"),
+            _ => throw new InvalidOperationException(
+                $"Unsupported scene kind '{kind}'.")
+        };
+
+    private static SceneIssue ToSceneIssue(
+        ProjectionIssue issue) =>
+        new(
+            issue.Code,
+            issue.Severity == ValidationSeverity.Error
+                ? SceneIssueSeverity.Error
+                : SceneIssueSeverity.Warning,
+            issue.Message,
+            issue.Entity,
+            issue.Field);
 
     private static bool IsExpectedPipelineException(
         Exception exception) =>

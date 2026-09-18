@@ -14,6 +14,8 @@ internal static class SceneGoldenFormatter
         Append(
             builder,
             "SCENE",
+            scene.Id.Value,
+            scene.Kind,
             Rect(scene.Bounds),
             scene.Metadata.DrawingProfileId,
             scene.Metadata.DrawingProfileVersion,
@@ -32,7 +34,30 @@ internal static class SceneGoldenFormatter
             scene.Elements
                 .OfType<PolylineSceneElement>()
                 .Count(element =>
-                    element.Metadata.ContainsKey("connectionId")));
+                    element.Metadata.ContainsKey("connectionId")),
+            scene.Issues.Count);
+
+        foreach (SceneIssue issue in scene.Issues
+                     .OrderBy(
+                         issue => issue.Code,
+                         StringComparer.Ordinal)
+                     .ThenBy(
+                         issue => issue.Entity?.Uid.Value,
+                         StringComparer.Ordinal)
+                     .ThenBy(
+                         issue => issue.Field,
+                         StringComparer.Ordinal))
+        {
+            Append(
+                builder,
+                "ISSUE",
+                issue.Code,
+                issue.Severity,
+                issue.Entity?.Kind.ToString() ?? "-",
+                issue.Entity?.Uid.ToString() ?? "-",
+                issue.Field ?? "-",
+                issue.Message);
+        }
 
         foreach (GroupSceneElement group in scene.Elements
                      .OfType<GroupSceneElement>()

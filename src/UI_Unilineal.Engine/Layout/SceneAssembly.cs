@@ -33,10 +33,32 @@ public sealed class SceneAssemblyInput
         MmRect sceneBounds,
         string projectionFingerprint,
         string layoutEngineVersion)
+        : this(
+            composition,
+            blocks,
+            sceneBounds,
+            projectionFingerprint,
+            layoutEngineVersion,
+            new SceneId("scene/assembled"),
+            DiagramSceneKind.Unknown,
+            [])
+    {
+    }
+
+    public SceneAssemblyInput(
+        DrawingComposition composition,
+        IEnumerable<PositionedCompositionBlock> blocks,
+        MmRect sceneBounds,
+        string projectionFingerprint,
+        string layoutEngineVersion,
+        SceneId sceneId,
+        DiagramSceneKind sceneKind,
+        IEnumerable<SceneIssue> issues)
     {
         Composition = composition ??
             throw new ArgumentNullException(nameof(composition));
         ArgumentNullException.ThrowIfNull(blocks);
+        ArgumentNullException.ThrowIfNull(issues);
 
         if (string.IsNullOrWhiteSpace(projectionFingerprint))
         {
@@ -56,6 +78,9 @@ public sealed class SceneAssemblyInput
         SceneBounds = sceneBounds;
         ProjectionFingerprint = projectionFingerprint;
         LayoutEngineVersion = layoutEngineVersion;
+        SceneId = sceneId;
+        SceneKind = sceneKind;
+        Issues = Array.AsReadOnly(issues.ToArray());
     }
 
     public DrawingComposition Composition { get; }
@@ -67,6 +92,12 @@ public sealed class SceneAssemblyInput
     public string ProjectionFingerprint { get; }
 
     public string LayoutEngineVersion { get; }
+
+    public SceneId SceneId { get; }
+
+    public DiagramSceneKind SceneKind { get; }
+
+    public IReadOnlyList<SceneIssue> Issues { get; }
 }
 
 public sealed class SceneAssembly
@@ -156,10 +187,13 @@ public sealed class SceneAssembly
             input.ProjectionFingerprint);
 
         return new DiagramScene(
+            input.SceneId,
+            input.SceneKind,
             input.SceneBounds,
             elements,
             metadata,
-            connections);
+            connections,
+            input.Issues);
     }
 
     private static Dictionary<string, PositionedCompositionBlock> IndexPositions(

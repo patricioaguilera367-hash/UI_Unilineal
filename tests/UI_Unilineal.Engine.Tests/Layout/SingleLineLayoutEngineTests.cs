@@ -18,7 +18,7 @@ public sealed class SingleLineLayoutEngineTests
         RIC18DrawingProfile profile = Profile();
 
         SingleLineLayoutResult result =
-            new SingleLineLayoutEngine().LayoutSummary(
+            Engine().LayoutSummary(
                 projection,
                 profile);
 
@@ -60,7 +60,7 @@ public sealed class SingleLineLayoutEngineTests
         RIC18DrawingProfile profile = Profile();
 
         SingleLineLayoutResult result =
-            new SingleLineLayoutEngine().LayoutBoardDetail(
+            Engine().LayoutBoardDetail(
                 projection,
                 new EntityUid("B1"),
                 profile);
@@ -115,7 +115,7 @@ public sealed class SingleLineLayoutEngineTests
             source.Layout);
 
         SingleLineLayoutResult result =
-            new SingleLineLayoutEngine().LayoutSummary(
+            Engine().LayoutSummary(
                 projection,
                 invalid);
 
@@ -143,7 +143,7 @@ public sealed class SingleLineLayoutEngineTests
             "1",
             [],
             null);
-        var engine = new SingleLineLayoutEngine();
+        var engine = Engine();
 
         SingleLineLayoutResult first =
             engine.LayoutSummary(
@@ -225,6 +225,9 @@ public sealed class SingleLineLayoutEngineTests
         return Assert.IsType<SingleLineProjection>(
             result.Projection);
     }
+
+    private static SingleLineLayoutEngine Engine() =>
+        new(new DeterministicTextMetrics());
 
     private sealed class CountingTextMetrics : ITextMetrics
     {

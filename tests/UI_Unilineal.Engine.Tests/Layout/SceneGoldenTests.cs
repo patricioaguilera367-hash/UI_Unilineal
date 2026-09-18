@@ -33,7 +33,7 @@ public sealed class SceneGoldenTests
                 Path.Combine(
                     AppContext.BaseDirectory,
                     "ProfileData"));
-        var engine = new SingleLineLayoutEngine();
+        var engine = new SingleLineLayoutEngine(new DeterministicTextMetrics());
 
         SingleLineLayoutResult result = view == "summary"
             ? engine.LayoutSummary(projection, profile)

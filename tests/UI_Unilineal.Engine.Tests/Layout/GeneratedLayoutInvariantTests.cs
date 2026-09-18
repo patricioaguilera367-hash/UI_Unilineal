@@ -26,7 +26,7 @@ public sealed class GeneratedLayoutInvariantTests
 
         var stopwatch = Stopwatch.StartNew();
         SingleLineLayoutResult result =
-            new SingleLineLayoutEngine().LayoutBoardDetail(
+            new SingleLineLayoutEngine(new DeterministicTextMetrics()).LayoutBoardDetail(
                 projection,
                 new EntityUid("B1"),
                 profile);
@@ -93,7 +93,7 @@ public sealed class GeneratedLayoutInvariantTests
             Project(GeneratedInput(circuitCount, reverse: false));
         SingleLineProjection reversed =
             Project(GeneratedInput(circuitCount, reverse: true));
-        var engine = new SingleLineLayoutEngine();
+        var engine = new SingleLineLayoutEngine(new DeterministicTextMetrics());
 
         SingleLineLayoutResult first =
             engine.LayoutBoardDetail(
