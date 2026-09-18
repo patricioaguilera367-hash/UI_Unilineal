@@ -68,10 +68,16 @@ public sealed class DrawingProfileFingerprintTests
     public void Compute_ChangingLayoutValue_ChangesFingerprint()
     {
         RIC18DrawingProfile source = Load();
-        LayoutProfile layout = source.Layout with
-        {
-            HorizontalGapMm = source.Layout.HorizontalGapMm + 1
-        };
+        LayoutProfile layout = new(
+            source.Layout.GridMm,
+            source.Layout.HorizontalGapMm + 1,
+            source.Layout.VerticalGapMm,
+            source.Layout.BranchGapMm,
+            source.Layout.RouteClearanceMm,
+            source.Layout.TextPaddingMm,
+            source.Layout.MaxBoardDetailWidthMm,
+            source.Layout.ContinuationRowGapMm,
+            source.Layout.ProvenanceId);
         var changed = new RIC18DrawingProfile(
             source.ProfileId,
             source.Version,
