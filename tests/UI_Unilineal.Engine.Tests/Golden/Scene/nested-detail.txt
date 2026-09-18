@@ -1,0 +1,15 @@
+SCENE|0,0,53,159|RIC18-V1|1.0.0|D2CB681FF466C78F20E6132D0A9AA8487DB75F043377CBC8B8E8A8864A87BFAA|G5-1|8D9EB263CE8F63B7B11404887827544F6E5E48CB8EC2D3F175432BDAFE606882|7D59C62031A8100EEF0CEBCC162B68008061C95E9359DDF4F8302A955D008A25|018AEB75186D3458C40893BCAC5238724389CEFA56507933DB004ADE2C6CD685
+COUNTS|26|5|4|4
+GROUP|detail/B1/branch/C4|2.5,65,20,20|Circuit|C4|IN:PowerIn@9.5,75,OUT:PowerOut@15.5,75
+GROUP|detail/B1/branch/C4/destination|2.5,132.5,30,24|Board|B2|IN:PowerIn@17.5,136.5,OUT:PowerOut@17.5,152.5
+GROUP|detail/B1/branch/C4/protection/PR4|2.5,97.5,20,24|Protection|PR4|IN:PowerIn@12.5,101.5,OUT:PowerOut@12.5,117.5
+GROUP|detail/B1/bus/BUS:B1:MAIN|2.5,37.5,48,14|Bus|BUS:B1:MAIN|GROUND:Ground@26.5,48.5,IN:PowerIn@6.5,44.5,OUT:PowerOut@46.5,44.5,TAP:BusTap@26.5,44.5
+GROUP|detail/B1/incoming/SC1|2.5,2.5,25.240000000000002,24|SupplyConnection|SC1|IN:PowerIn@12.5,5.5,OUT:PowerOut@12.5,23.5
+ROUTE|detail/B1/connection/branch/C4|POWER|26.5,44.5>26.5,75>9.5,75
+ROUTE|detail/B1/connection/destination/C4|POWER|12.5,117.5>12.5,136.5>17.5,136.5
+ROUTE|detail/B1/connection/incoming/detail/B1/incoming/SC1|POWER|12.5,23.5>12.5,44.5>6.5,44.5
+ROUTE|detail/B1/connection/protection/detail/B1/branch/C4/protection/PR4|POWER|15.5,75>12.5,75>12.5,101.5
+CONNECTION|detail/B1/connection/branch/C4|detail/B1/bus/BUS:B1:MAIN@TAP|detail/B1/branch/C4@IN|POWER
+CONNECTION|detail/B1/connection/destination/C4|detail/B1/branch/C4/protection/PR4@OUT|detail/B1/branch/C4/destination@IN|POWER
+CONNECTION|detail/B1/connection/incoming/detail/B1/incoming/SC1|detail/B1/incoming/SC1@OUT|detail/B1/bus/BUS:B1:MAIN@IN|POWER
+CONNECTION|detail/B1/connection/protection/detail/B1/branch/C4/protection/PR4|detail/B1/branch/C4@OUT|detail/B1/branch/C4/protection/PR4@IN|POWER
