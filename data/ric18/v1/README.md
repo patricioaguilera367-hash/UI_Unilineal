@@ -1,21 +1,22 @@
-﻿# RIC18 Drawing Profile
+# RIC18 Drawing Profile v1
 
-Esta carpeta contendrá el perfil gráfico versionado utilizado por
+This directory contains the renderer-neutral drawing profile consumed by
 UI_Unilineal.
 
-## Principio
+## Provenance rule
 
-El proyecto distinguirá explícitamente entre:
+Every graphic rule declares one classification:
 
 - `RIC18_EXPLICIT`
 - `RIC18_CATALOG`
 - `RIC18_REFERENCE`
 - `APP_CONVENTION`
 
-Una convención gráfica propia de UI_Unilineal nunca deberá presentarse
-como una obligación normativa del RIC.
+The current v1 seed geometry, styles, blocks and layout values are all
+`APP_CONVENTION`. They are application drawing conventions and make no
+claim that their exact geometry, dimensions or spacing are mandated by
+RIC N°18.
 
-## Estado
-
-El catálogo definitivo de símbolos, bloques, líneas, anclajes y
-procedencia normativa se incorporará en las siguientes etapas de diseño.
+A rule may only be promoted to a RIC classification after an authoritative
+source document and exact locator have been recorded and accepted by
+`DrawingProfileValidator`.

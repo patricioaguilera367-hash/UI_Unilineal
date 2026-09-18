@@ -1,0 +1,186 @@
+[
+  {
+    "id": "SOURCE_UTILITY",
+    "semanticRole": "SourceUtility",
+    "nominalBounds": { "x": 0, "y": 0, "width": 16, "height": 16 },
+    "anchors": [
+      { "id": "OUT", "role": "PowerOut", "point": { "x": 16, "y": 8 }, "direction": "Right" }
+    ],
+    "primitives": [
+      { "kind": "circle", "styleId": "POWER", "center": { "x": 8, "y": 8 }, "radius": 6 },
+      { "kind": "line", "styleId": "POWER", "start": { "x": 8, "y": 2 }, "end": { "x": 8, "y": 14 } }
+    ],
+    "labelSlots": [
+      { "id": "NAME", "bounds": { "x": 1, "y": 6, "width": 14, "height": 4 }, "priority": 0, "required": false, "textStyleId": "TECH" }
+    ],
+    "provenanceIds": ["APP:SYMBOLS"]
+  },
+  {
+    "id": "SERVICE_ENTRANCE",
+    "semanticRole": "ServiceEntrance",
+    "nominalBounds": { "x": 0, "y": 0, "width": 12, "height": 18 },
+    "anchors": [
+      { "id": "IN", "role": "PowerIn", "point": { "x": 6, "y": 0 }, "direction": "Up" },
+      { "id": "OUT", "role": "PowerOut", "point": { "x": 6, "y": 18 }, "direction": "Down" }
+    ],
+    "primitives": [
+      { "kind": "line", "styleId": "POWER", "start": { "x": 6, "y": 0 }, "end": { "x": 6, "y": 18 } },
+      { "kind": "rectangle", "styleId": "POWER", "rectangle": { "x": 3, "y": 5, "width": 6, "height": 8 } }
+    ],
+    "labelSlots": [
+      { "id": "CODE", "bounds": { "x": 1, "y": 1, "width": 10, "height": 3 }, "priority": 0, "required": false, "textStyleId": "LABEL_SMALL" }
+    ],
+    "provenanceIds": ["APP:SYMBOLS"]
+  },
+  {
+    "id": "BREAKER",
+    "semanticRole": "Breaker",
+    "nominalBounds": { "x": 0, "y": 0, "width": 12, "height": 16 },
+    "anchors": [
+      { "id": "IN", "role": "PowerIn", "point": { "x": 6, "y": 0 }, "direction": "Up" },
+      { "id": "OUT", "role": "PowerOut", "point": { "x": 6, "y": 16 }, "direction": "Down" }
+    ],
+    "primitives": [
+      { "kind": "line", "styleId": "POWER", "start": { "x": 6, "y": 0 }, "end": { "x": 6, "y": 5 } },
+      { "kind": "line", "styleId": "POWER", "start": { "x": 4, "y": 11 }, "end": { "x": 8, "y": 5 } },
+      { "kind": "line", "styleId": "POWER", "start": { "x": 6, "y": 11 }, "end": { "x": 6, "y": 16 } }
+    ],
+    "labelSlots": [
+      { "id": "RATING", "bounds": { "x": 0, "y": 6, "width": 12, "height": 4 }, "priority": 0, "required": false, "textStyleId": "LABEL_SMALL" }
+    ],
+    "provenanceIds": ["APP:SYMBOLS"]
+  },
+  {
+    "id": "RCD",
+    "semanticRole": "ResidualCurrentDevice",
+    "nominalBounds": { "x": 0, "y": 0, "width": 12, "height": 16 },
+    "anchors": [
+      { "id": "IN", "role": "PowerIn", "point": { "x": 6, "y": 0 }, "direction": "Up" },
+      { "id": "OUT", "role": "PowerOut", "point": { "x": 6, "y": 16 }, "direction": "Down" }
+    ],
+    "primitives": [
+      { "kind": "line", "styleId": "POWER", "start": { "x": 6, "y": 0 }, "end": { "x": 6, "y": 16 } },
+      { "kind": "circle", "styleId": "POWER", "center": { "x": 6, "y": 8 }, "radius": 4 }
+    ],
+    "labelSlots": [
+      { "id": "RATING", "bounds": { "x": 0, "y": 6, "width": 12, "height": 4 }, "priority": 0, "required": false, "textStyleId": "LABEL_SMALL" }
+    ],
+    "provenanceIds": ["APP:SYMBOLS"]
+  },
+  {
+    "id": "FUSE",
+    "semanticRole": "Fuse",
+    "nominalBounds": { "x": 0, "y": 0, "width": 12, "height": 16 },
+    "anchors": [
+      { "id": "IN", "role": "PowerIn", "point": { "x": 6, "y": 0 }, "direction": "Up" },
+      { "id": "OUT", "role": "PowerOut", "point": { "x": 6, "y": 16 }, "direction": "Down" }
+    ],
+    "primitives": [
+      { "kind": "line", "styleId": "POWER", "start": { "x": 6, "y": 0 }, "end": { "x": 6, "y": 5 } },
+      { "kind": "rectangle", "styleId": "POWER", "rectangle": { "x": 3, "y": 5, "width": 6, "height": 6 } },
+      { "kind": "line", "styleId": "POWER", "start": { "x": 6, "y": 11 }, "end": { "x": 6, "y": 16 } }
+    ],
+    "labelSlots": [
+      { "id": "RATING", "bounds": { "x": 0, "y": 6, "width": 12, "height": 4 }, "priority": 0, "required": false, "textStyleId": "LABEL_SMALL" }
+    ],
+    "provenanceIds": ["APP:SYMBOLS"]
+  },
+  {
+    "id": "BUS",
+    "semanticRole": "Bus",
+    "nominalBounds": { "x": 0, "y": 0, "width": 40, "height": 8 },
+    "anchors": [
+      { "id": "IN", "role": "PowerIn", "point": { "x": 0, "y": 4 }, "direction": "Left" },
+      { "id": "OUT", "role": "PowerOut", "point": { "x": 40, "y": 4 }, "direction": "Right" },
+      { "id": "TAP", "role": "BusTap", "point": { "x": 20, "y": 4 }, "direction": "Down" }
+    ],
+    "primitives": [
+      { "kind": "line", "styleId": "BUS", "start": { "x": 0, "y": 4 }, "end": { "x": 40, "y": 4 } }
+    ],
+    "labelSlots": [
+      { "id": "CODE", "bounds": { "x": 1, "y": 0.5, "width": 12, "height": 3 }, "priority": 0, "required": false, "textStyleId": "LABEL_SMALL" }
+    ],
+    "provenanceIds": ["APP:SYMBOLS"]
+  },
+  {
+    "id": "GROUND",
+    "semanticRole": "Ground",
+    "nominalBounds": { "x": 0, "y": 0, "width": 14, "height": 14 },
+    "anchors": [
+      { "id": "GROUND", "role": "Ground", "point": { "x": 7, "y": 0 }, "direction": "Up" }
+    ],
+    "primitives": [
+      { "kind": "line", "styleId": "GROUND", "start": { "x": 7, "y": 0 }, "end": { "x": 7, "y": 6 } },
+      { "kind": "line", "styleId": "GROUND", "start": { "x": 2, "y": 6 }, "end": { "x": 12, "y": 6 } },
+      { "kind": "line", "styleId": "GROUND", "start": { "x": 4, "y": 9 }, "end": { "x": 10, "y": 9 } },
+      { "kind": "line", "styleId": "GROUND", "start": { "x": 6, "y": 12 }, "end": { "x": 8, "y": 12 } }
+    ],
+    "labelSlots": [],
+    "provenanceIds": ["APP:SYMBOLS"]
+  },
+  {
+    "id": "CONNECTION_NODE",
+    "semanticRole": "ConnectionNode",
+    "nominalBounds": { "x": 0, "y": 0, "width": 6, "height": 6 },
+    "anchors": [
+      { "id": "IN", "role": "PowerIn", "point": { "x": 0, "y": 3 }, "direction": "Left" },
+      { "id": "OUT", "role": "PowerOut", "point": { "x": 6, "y": 3 }, "direction": "Right" }
+    ],
+    "primitives": [
+      { "kind": "circle", "styleId": "POWER", "center": { "x": 3, "y": 3 }, "radius": 1.2 }
+    ],
+    "labelSlots": [],
+    "provenanceIds": ["APP:SYMBOLS"]
+  },
+  {
+    "id": "DOWNSTREAM_BOARD",
+    "semanticRole": "DownstreamBoard",
+    "nominalBounds": { "x": 0, "y": 0, "width": 22, "height": 16 },
+    "anchors": [
+      { "id": "IN", "role": "PowerIn", "point": { "x": 11, "y": 0 }, "direction": "Up" },
+      { "id": "OUT", "role": "PowerOut", "point": { "x": 11, "y": 16 }, "direction": "Down" }
+    ],
+    "primitives": [
+      { "kind": "rectangle", "styleId": "POWER", "rectangle": { "x": 1, "y": 3, "width": 20, "height": 12 } }
+    ],
+    "labelSlots": [
+      { "id": "NAME", "bounds": { "x": 2, "y": 6, "width": 18, "height": 5 }, "priority": 0, "required": false, "textStyleId": "TECH" }
+    ],
+    "provenanceIds": ["APP:SYMBOLS"]
+  },
+  {
+    "id": "FINAL_LOAD",
+    "semanticRole": "FinalLoad",
+    "nominalBounds": { "x": 0, "y": 0, "width": 16, "height": 16 },
+    "anchors": [
+      { "id": "IN", "role": "PowerIn", "point": { "x": 8, "y": 0 }, "direction": "Up" }
+    ],
+    "primitives": [
+      { "kind": "line", "styleId": "POWER", "start": { "x": 8, "y": 0 }, "end": { "x": 8, "y": 4 } },
+      { "kind": "circle", "styleId": "POWER", "center": { "x": 8, "y": 9 }, "radius": 5 },
+      { "kind": "line", "styleId": "POWER", "start": { "x": 5, "y": 6 }, "end": { "x": 11, "y": 12 } },
+      { "kind": "line", "styleId": "POWER", "start": { "x": 11, "y": 6 }, "end": { "x": 5, "y": 12 } }
+    ],
+    "labelSlots": [
+      { "id": "NAME", "bounds": { "x": 1, "y": 12.5, "width": 14, "height": 3 }, "priority": 0, "required": false, "textStyleId": "LABEL_SMALL" }
+    ],
+    "provenanceIds": ["APP:SYMBOLS"]
+  },
+  {
+    "id": "UNKNOWN_ENDPOINT",
+    "semanticRole": "UnknownEndpoint",
+    "nominalBounds": { "x": 0, "y": 0, "width": 18, "height": 16 },
+    "anchors": [
+      { "id": "IN", "role": "PowerIn", "point": { "x": 9, "y": 0 }, "direction": "Up" }
+    ],
+    "primitives": [
+      { "kind": "rectangle", "styleId": "REFERENCE", "rectangle": { "x": 2, "y": 3, "width": 14, "height": 11 } },
+      { "kind": "line", "styleId": "REFERENCE", "start": { "x": 4, "y": 5 }, "end": { "x": 14, "y": 12 } },
+      { "kind": "line", "styleId": "REFERENCE", "start": { "x": 14, "y": 5 }, "end": { "x": 4, "y": 12 } }
+    ],
+    "labelSlots": [
+      { "id": "NAME", "bounds": { "x": 3, "y": 7, "width": 12, "height": 4 }, "priority": 0, "required": false, "textStyleId": "LABEL_SMALL" }
+    ],
+    "provenanceIds": ["APP:SYMBOLS"]
+  }
+]

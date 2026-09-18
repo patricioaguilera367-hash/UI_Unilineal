@@ -1,0 +1,11 @@
+{
+  "gridMm": 2.5,
+  "horizontalGapMm": 12.0,
+  "verticalGapMm": 12.0,
+  "branchGapMm": 8.0,
+  "routeClearanceMm": 3.0,
+  "textPaddingMm": 1.0,
+  "maxBoardDetailWidthMm": 260.0,
+  "continuationRowGapMm": 20.0,
+  "provenanceId": "APP:LAYOUT"
+}

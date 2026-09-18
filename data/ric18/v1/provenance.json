@@ -1,0 +1,38 @@
+[
+  {
+    "id": "APP:SYMBOLS",
+    "classification": "APP_CONVENTION",
+    "document": null,
+    "section": null,
+    "annex": null,
+    "figure": null,
+    "description": "Initial application symbol geometry; no regulatory geometry claim."
+  },
+  {
+    "id": "APP:STYLES",
+    "classification": "APP_CONVENTION",
+    "document": null,
+    "section": null,
+    "annex": null,
+    "figure": null,
+    "description": "Initial application line and text styles; no regulatory geometry claim."
+  },
+  {
+    "id": "APP:BLOCKS",
+    "classification": "APP_CONVENTION",
+    "document": null,
+    "section": null,
+    "annex": null,
+    "figure": null,
+    "description": "Initial application block composition; no regulatory geometry claim."
+  },
+  {
+    "id": "APP:LAYOUT",
+    "classification": "APP_CONVENTION",
+    "document": null,
+    "section": null,
+    "annex": null,
+    "figure": null,
+    "description": "Initial application layout constants; no regulatory geometry claim."
+  }
+]

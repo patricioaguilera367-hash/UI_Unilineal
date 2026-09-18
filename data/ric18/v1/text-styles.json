@@ -1,0 +1,5 @@
+[
+  { "id": "TECH", "fontFamily": "Arial", "heightMm": 2.5, "bold": false, "provenanceId": "APP:STYLES" },
+  { "id": "LABEL_SMALL", "fontFamily": "Arial", "heightMm": 2.0, "bold": false, "provenanceId": "APP:STYLES" },
+  { "id": "TITLE", "fontFamily": "Arial", "heightMm": 3.5, "bold": true, "provenanceId": "APP:STYLES" }
+]

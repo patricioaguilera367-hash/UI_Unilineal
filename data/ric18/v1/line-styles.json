@@ -1,0 +1,8 @@
+[
+  { "id": "POWER", "role": "Power", "widthMm": 0.35, "pattern": "Solid", "provenanceId": "APP:STYLES" },
+  { "id": "BUS", "role": "Bus", "widthMm": 0.70, "pattern": "Solid", "provenanceId": "APP:STYLES" },
+  { "id": "GROUND", "role": "Ground", "widthMm": 0.35, "pattern": "Solid", "provenanceId": "APP:STYLES" },
+  { "id": "REFERENCE", "role": "Reference", "widthMm": 0.25, "pattern": "Dashed", "provenanceId": "APP:STYLES" },
+  { "id": "ANNOTATION", "role": "Annotation", "widthMm": 0.20, "pattern": "Solid", "provenanceId": "APP:STYLES" },
+  { "id": "ALTERNATE_SUPPLY", "role": "AlternateSupply", "widthMm": 0.35, "pattern": "Dashed", "provenanceId": "APP:STYLES" }
+]
