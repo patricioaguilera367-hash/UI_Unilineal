@@ -55,4 +55,22 @@ public sealed partial class SingleLineInputTests
 
         Assert.NotEqual(protection.Owner, protection.Protects);
     }
+    [Fact]
+    public void Aggregate_DefensivelyCopiesCallerCollections()
+    {
+        var boards = new List<BoardInput>
+        {
+            new(new EntityUid("B1"), 1, "TGBT", "TGBT", BoardRole.Main,
+                null, 400m, 3, OperationalState.Active, DataState.Complete)
+        };
+
+        var input = new SingleLineInput(
+            new ProjectInput(new EntityUid("P1"), "P1", "Project", OperationalState.Active),
+            [], boards, [], [], [], [], [], [],
+            new SingleLineInputMetadata("1", null, null));
+
+        boards.Clear();
+
+        Assert.Single(input.Boards);
+    }
 }
