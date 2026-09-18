@@ -1,4 +1,4 @@
-namespace UI_Unilineal.Engine.Tests.Architecture;
+﻿namespace UI_Unilineal.Engine.Tests.Architecture;
 
 public sealed class DependencyBoundaryTests
 {
