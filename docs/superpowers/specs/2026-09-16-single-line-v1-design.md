@@ -1,7 +1,7 @@
 # UI_Unilineal V1 — Architecture Design
 
 Date: 2026-09-16
-Status: Approved design, implementation not started
+Status: Approved design; G0–G5 implemented and verified as of 2026-09-18
 Branch: `feature/v1-single-line-engine`
 Baseline: `main` at `16f84591a5283bb2c314749b81f29040e8174f7f`
 Evidence branch: `spike/v0.4-dedicated-detail` is reference material only and is not a production base.
@@ -312,10 +312,17 @@ Board-detail layout uses a technical template: incoming supply, main protection,
 The layout pipeline is:
 
 ```text
-Measure → Place → Route → Resolve collisions → Validate → Scene
+Measure → Place → Resolve collisions → Assemble → Route → Validate → Scene
 ```
 
-Text measurement is abstracted through `ITextMetrics`; deterministic test metrics are available so geometry tests do not depend on operating-system font rendering.
+Text measurement is abstracted through an explicitly injected `ITextMetrics`;
+deterministic test metrics are available so geometry tests do not depend on
+operating-system font rendering. The production engine does not hard-code the
+test metrics implementation.
+
+Collision resolution precedes assembly/routing. This ordering is intentional:
+routing consumes final block geometry and obstacle bounds; moving blocks after
+routing would invalidate already-calculated routes.
 
 `LayoutProfile` owns spacing/padding/grid values. No renderer or window code hard-codes technical coordinates. Values without explicit normative authority remain `APP_CONVENTION`.
 

@@ -38,3 +38,9 @@ jobs:
 
       - name: Test Release
         run: dotnet test UI_Unilineal.sln -c Release --no-build --logger "console;verbosity=normal"
+
+      - name: Repository cleanliness
+        shell: bash
+        run: |
+          git diff --check
+          test -z "$(git status --porcelain)"

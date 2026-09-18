@@ -156,9 +156,9 @@ children de grupo huérfanos y elementos fuera del bounds global. Las
 coordenadas no finitas ya son rechazadas por los value objects geométricos
 de Domain antes de construir una escena.
 
-`DiagramSceneFingerprint` calcula un SHA-256 canónico sobre metadata,
-geometría, anchors, elementos y conexiones. El fingerprint es independiente
-del orden de las colecciones de elementos/conexiones.
+``DiagramSceneFingerprint` calcula un SHA-256 canónico sobre identidad/kind,
+issues, metadata, geometría, anchors, elementos y conexiones. El fingerprint
+es independiente del orden de las colecciones de elementos/conexiones.
 
 `SceneAssembly` recibe una `DrawingComposition` y una posición explícita
 para cada bloque. Expande las definiciones del perfil a símbolos, primitivas,
@@ -174,11 +174,74 @@ La frontera renderer-neutral está protegida automáticamente en dos niveles:
   se escanean en CI para impedir que esas dependencias entren de forma
   accidental.
 
-G5 podrá construir sobre esta frontera mediante el pipeline:
-
-```text
-Measure -> Place -> Route -> Resolve -> Validate -> Scene
-```
-
 La existencia de `DiagramScene` en G4 no implica que el layout automático
 esté implementado; esa responsabilidad comienza en G5.
+
+## Checkpoint implementado: V1 G5
+
+G5 implementa el layout automático determinista sin mover decisiones
+eléctricas hacia la capa gráfica:
+
+```text
+SingleLineProjection
+      |
+      v
+DrawingComposition
+      |
+      v
+Measure
+      |
+      v
+Place
+      |
+      v
+Resolve structural collisions
+      |
+      v
+SceneAssembly
+      |
+      v
+Orthogonal routing
+      |
+      v
+Strict validation
+      |
+      v
+DiagramScene
+```
+
+La resolución geométrica se ejecuta antes del routing. La formulación previa
+`Route -> Resolve` fue corregida durante self-review porque desplazar un
+bloque después de rutear volvería obsoleta la ruta ya calculada.
+
+`ITextMetrics` es una dependencia explícita del motor. Esto permite que
+producción entregue métricas apropiadas a su backend, mientras las pruebas
+usan `DeterministicTextMetrics` para obtener geometría reproducible.
+
+Summary y board-detail tienen estrategias independientes. Summary utiliza
+profundidad de topología primaria; supplies suplementarios no destruyen el
+árbol base. Board-detail dispone incoming/main protection/bus/branches y
+realiza wrapping por ancho configurado.
+
+`OrthogonalConnectionRouter` produce segmentos horizontales/verticales y
+evita bounds estructurales con clearance. El validator estricto vuelve a
+comprobar de forma independiente que las rutas materializadas no atraviesen
+bloques ajenos, de modo que un defecto del router no quede validado por
+confianza circular.
+
+`DiagramLayoutState` contiene sólo metadata de presentación. `Locked`
+no se mueve; `Pinned` conserva preferencia salvo conflicto prioritario;
+`Auto` queda disponible para reorganización. El estabilizador incremental
+prioriza posiciones existentes y desplaza elementos nuevos antes que
+perturbar geometría estable.
+
+La escena final incorpora `SceneId` de scope, `DiagramSceneKind`,
+`SceneIssue[]`, fingerprints de input/proyección/perfil y fingerprint
+completo de escena. Los goldens de escena fijan estos contratos.
+
+El gate de G5 incluye stress end-to-end de 1, 4, 12, 24, 48 y 100 circuitos,
+reordenamiento equivalente de colecciones, strict validation, routing
+ortogonal, architecture guards y CI Windows/Linux.
+
+G6 comienza en el renderer Avalonia; Domain/Engine continúan sin referencias
+a Avalonia ni al host.

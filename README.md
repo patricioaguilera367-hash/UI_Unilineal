@@ -82,36 +82,46 @@ ProyectoElectrico main.
 
 ## Estado
 
-V1 G0–G4 implementado:
+V1 G0–G5 implementado y cubierto por CI Windows/Linux:
 
-- baseline CI en Windows/Linux;
-- `SingleLineInput` semántico e inmutable;
-- topología explícita mediante `SupplyConnection`;
-- validación referencial, de ciclos y de datos incompletos;
-- `SingleLineProjection` resumen/detalle determinista;
-- `RIC18DrawingProfile` versionado, inmutable y validado;
-- catálogo vectorial de símbolos/bloques con procedencia explícita;
-- fingerprint SHA-256 determinista del perfil;
-- `DrawingComposition` sin geometría para resumen y detalle;
-- cadenas de protección variables, destinos navegables y grounding semántico;
-- `DiagramScene` vectorial neutral en milímetros;
-- `SceneId` jerárquicos y deterministas;
-- anchors y conexiones de escena mediante `SceneId + AnchorId`;
-- validación estructural y fingerprint SHA-256 determinista de escena;
-- `SceneAssembly` para expandir composición ya posicionada a primitivas
-  renderer-neutral;
-- guardas de arquitectura a nivel assembly y fuente contra dependencias de
-  Avalonia y `ProyectoElectrico`;
-- goldens estructurales de proyección y composición.
+- `SingleLineInput` semántico e inmutable y topología explícita mediante
+  `SupplyConnection`;
+- validación referencial/topológica y `SingleLineProjection` determinista;
+- `RIC18DrawingProfile` versionado, validado y con procedencia explícita;
+- `DrawingComposition` renderer-neutral y sin coordenadas;
+- `DiagramScene` vectorial en milímetros con identidad, kind, issues,
+  metadata y fingerprint SHA-256;
+- anchors/connections por `SceneId + AnchorId`;
+- medición mediante `ITextMetrics` inyectable; los tests usan métricas
+  deterministas sin imponerlas al runtime;
+- layout resumen por profundidad eléctrica y detalle por ramas con wrapping;
+- routing ortogonal con clearance y validación estricta independiente de
+  rutas que atraviesan bloques estructurales;
+- resolución determinista de colisiones estructurales;
+- `DiagramLayoutState` presentation-only con `Auto / Pinned / Locked`;
+- estabilización incremental que preserva posiciones existentes siempre que
+  las invariantes lo permitan;
+- `SingleLineLayoutEngine` orquesta el pipeline completo y devuelve
+  failures tipados;
+- goldens revisados de summary/detail mínimo y nested;
+- stress end-to-end de 1/4/12/24/48/100 circuitos y equivalencia ante
+  reordenamiento de colecciones;
+- guardas de arquitectura de assembly + source contra Avalonia y
+  `ProyectoElectrico`.
+
+El pipeline productivo de G5 es:
+
+```text
+Measure -> Place -> Resolve -> Assemble -> Route -> Validate -> Scene
+```
+
+`Resolve` ocurre antes de `Route` deliberadamente: mover bloques después de
+calcular una ruta invalidaría sus endpoints/obstáculos. Esta corrección quedó
+incorporada a la especificación durante la self-review de G5.
 
 Toda geometría inicial no sustentada por una cita normativa exacta permanece
 clasificada como `APP_CONVENTION`.
 
-G4 no implementa layout automático. `SceneAssembly` exige posiciones
-explícitas y falla si falta alguna; por diseño no decide coordenadas.
-
-El siguiente checkpoint es G5: medición determinista, estrategias de
-posición, wrapping, routing ortogonal, resolución de colisiones, overrides
-de layout y orquestación `Measure → Place → Route → Resolve → Validate → Scene`.
-Renderer Avalonia V1, interacción productiva, SVG/PDF e integración con
-`ProyectoElectrico` permanecen fuera de G4.
+El siguiente checkpoint es **G6: renderer Avalonia + viewport + hit-testing +
+navegación visual**. Interacción eléctrica productiva, SVG/PDF e integración
+con `ProyectoElectrico` siguen fuera de G5.

@@ -606,7 +606,7 @@ public sealed class RIC18DrawingProfile
 
 **Interfaces:**
 - Public API: `LayoutSummary(projection, profile, layoutState?)`; `LayoutBoardDetail(projection, boardUid, profile, layoutState?)`.
-- Pipeline: Measure → Place → Route → Resolve → Validate → Scene.
+- Pipeline: Measure → Place → Resolve → Assemble → Route → Validate → Scene.
 
 - [ ] **Step 1: RED — valid projection/profile produces valid finite scene with profile/input/scene metadata fingerprints.**
 - [ ] **Step 2: RED — invalid profile returns typed failure before layout.**
@@ -644,3 +644,27 @@ public sealed class RIC18DrawingProfile
 - Architecture: no renderer or host dependency is introduced.
 - Placeholder scan: no unresolved implementation placeholders remain.
 - Type consistency: the public flow remains `SingleLineProjection → DrawingComposition → SingleLineLayoutEngine → DiagramScene`.
+
+
+## Execution record — G3–G5 closure
+
+Implementation self-review corrected one sequencing ambiguity in the approved
+text: collision resolution must precede routing because routing depends on
+final block positions. The implemented and verified sequence is:
+
+```text
+Measure -> Place -> Resolve -> Assemble -> Route -> Validate -> Scene
+```
+
+Important findings found before checkpoint and fixed with regression coverage:
+
+- `ITextMetrics` is explicitly injected; production is not forced to use the
+  deterministic test implementation.
+- `DiagramScene` now carries deterministic identity, kind and projection
+  issues; these participate in the scene fingerprint and structural goldens.
+- strict validation independently rejects routed polylines that cross
+  unrelated structural groups.
+
+The generated-layout gate exercises 1/4/12/24/48/100 circuits plus reordered
+equivalent input. Scene goldens were reviewed after the contract correction
+rather than updated blindly.
