@@ -121,3 +121,64 @@ boards navegables, cargas finales y grounding.
 Los goldens estructurales de composición fijan los contratos de detalle
 mínimo y tablero derivado. El siguiente checkpoint G4 introduce por
 primera vez geometría de escena en milímetros mediante `DiagramScene`.
+
+## Checkpoint implementado: V1 G4
+
+G4 introduce la escena gráfica neutral y mantiene separada la decisión de
+layout:
+
+```text
+DrawingComposition
+      |
+      | posiciones ya calculadas
+      v
+SceneAssembly
+      |
+      v
+DiagramScene
+```
+
+`DiagramScene` es renderer-neutral y expresa toda su geometría en
+milímetros. Sus elementos usan `SceneId` jerárquicos y deterministas,
+layers explícitos, z-order, visibility, bounds y referencias semánticas
+opcionales. La escena admite line, polyline, rectangle, circle, path, text,
+symbol y group sin tipos Avalonia.
+
+Los anchors físicos pertenecen a los elementos de escena. Una
+`SceneConnection` no duplica coordenadas de extremos: guarda únicamente
+`SceneId + AnchorId` para source y target. De esta forma, routing y
+rendering podrán operar sobre la misma topología gráfica sin crear una
+segunda fuente de verdad.
+
+`DiagramSceneValidator` verifica IDs duplicados, bounds inválidos,
+anchors inexistentes, conexiones huérfanas, anchors fuera de sus elementos,
+children de grupo huérfanos y elementos fuera del bounds global. Las
+coordenadas no finitas ya son rechazadas por los value objects geométricos
+de Domain antes de construir una escena.
+
+`DiagramSceneFingerprint` calcula un SHA-256 canónico sobre metadata,
+geometría, anchors, elementos y conexiones. El fingerprint es independiente
+del orden de las colecciones de elementos/conexiones.
+
+`SceneAssembly` recibe una `DrawingComposition` y una posición explícita
+para cada bloque. Expande las definiciones del perfil a símbolos, primitivas,
+labels, anchors y conexiones neutralizadas. No mide, no posiciona, no enruta
+y no reorganiza. Si una posición falta o el perfil no coincide con el
+fingerprint de la composición, falla en lugar de inventar geometría.
+
+La frontera renderer-neutral está protegida automáticamente en dos niveles:
+
+- referencias de assembly: Domain/Engine no pueden depender de Avalonia ni
+  de `ProyectoElectrico`;
+- referencias de fuente: los archivos `.cs`/`.csproj` de Domain/Engine
+  se escanean en CI para impedir que esas dependencias entren de forma
+  accidental.
+
+G5 podrá construir sobre esta frontera mediante el pipeline:
+
+```text
+Measure -> Place -> Route -> Resolve -> Validate -> Scene
+```
+
+La existencia de `DiagramScene` en G4 no implica que el layout automático
+esté implementado; esa responsabilidad comienza en G5.

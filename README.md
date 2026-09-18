@@ -82,7 +82,7 @@ ProyectoElectrico main.
 
 ## Estado
 
-V1 G0–G3 implementado:
+V1 G0–G4 implementado:
 
 - baseline CI en Windows/Linux;
 - `SingleLineInput` semántico e inmutable;
@@ -94,13 +94,24 @@ V1 G0–G3 implementado:
 - fingerprint SHA-256 determinista del perfil;
 - `DrawingComposition` sin geometría para resumen y detalle;
 - cadenas de protección variables, destinos navegables y grounding semántico;
+- `DiagramScene` vectorial neutral en milímetros;
+- `SceneId` jerárquicos y deterministas;
+- anchors y conexiones de escena mediante `SceneId + AnchorId`;
+- validación estructural y fingerprint SHA-256 determinista de escena;
+- `SceneAssembly` para expandir composición ya posicionada a primitivas
+  renderer-neutral;
+- guardas de arquitectura a nivel assembly y fuente contra dependencias de
+  Avalonia y `ProyectoElectrico`;
 - goldens estructurales de proyección y composición.
 
 Toda geometría inicial no sustentada por una cita normativa exacta permanece
 clasificada como `APP_CONVENTION`.
 
-El siguiente checkpoint es G4: `DiagramScene` vectorial neutral,
-anchors/connections de escena, validación/fingerprint y assembly desde
-composición ya posicionada. Layout automático, renderer Avalonia,
-interacción, SVG/PDF e integración con `ProyectoElectrico` permanecen
-fuera de G3.
+G4 no implementa layout automático. `SceneAssembly` exige posiciones
+explícitas y falla si falta alguna; por diseño no decide coordenadas.
+
+El siguiente checkpoint es G5: medición determinista, estrategias de
+posición, wrapping, routing ortogonal, resolución de colisiones, overrides
+de layout y orquestación `Measure → Place → Route → Resolve → Validate → Scene`.
+Renderer Avalonia V1, interacción productiva, SVG/PDF e integración con
+`ProyectoElectrico` permanecen fuera de G4.
