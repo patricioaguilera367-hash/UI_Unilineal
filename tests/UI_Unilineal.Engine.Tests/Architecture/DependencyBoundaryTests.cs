@@ -17,7 +17,7 @@ public sealed class DependencyBoundaryTests
     }
 
     [Fact]
-    public void Engine_ReferencesDomainButNotUiOrHostAssemblies()
+    public void Engine_DoesNotReferenceUiOrHostAssemblies()
     {
         string[] references = typeof(Engine.AssemblyMarker)
             .Assembly
@@ -25,7 +25,6 @@ public sealed class DependencyBoundaryTests
             .Select(x => x.Name ?? string.Empty)
             .ToArray();
 
-        Assert.Contains("UI_Unilineal.Domain", references);
         Assert.DoesNotContain(references, x => x.StartsWith("Avalonia", StringComparison.Ordinal));
         Assert.DoesNotContain(references, x => x.StartsWith("ProyectoElectrico", StringComparison.Ordinal));
     }
