@@ -15,8 +15,8 @@ public readonly record struct SceneId
         }
 
         if (!value.Contains('/', StringComparison.Ordinal) ||
-            value.StartsWith('/', StringComparison.Ordinal) ||
-            value.EndsWith('/', StringComparison.Ordinal) ||
+            value.StartsWith("/", StringComparison.Ordinal) ||
+            value.EndsWith("/", StringComparison.Ordinal) ||
             value.Contains("//", StringComparison.Ordinal))
         {
             throw new ArgumentException(
