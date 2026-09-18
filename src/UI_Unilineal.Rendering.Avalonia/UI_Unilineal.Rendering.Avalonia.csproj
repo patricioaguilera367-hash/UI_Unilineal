@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UI_Unilineal.Domain\UI_Unilineal.Domain.csproj" />
+    <ProjectReference Include="..\UI_Unilineal.Engine\UI_Unilineal.Engine.csproj" />
   </ItemGroup>
 
 </Project>
