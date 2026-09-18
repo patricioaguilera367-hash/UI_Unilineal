@@ -25,6 +25,9 @@
 
   <ItemGroup>
     <None Update="Golden\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\data\ric18\v1\**\*"
+          Link="ProfileData\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
