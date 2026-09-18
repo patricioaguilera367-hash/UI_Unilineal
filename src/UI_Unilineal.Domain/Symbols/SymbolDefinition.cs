@@ -35,7 +35,7 @@ public sealed record PathSymbolPrimitive(
     string StyleId)
     : SymbolPrimitive(StyleId);
 
-public sealed class PolylineSymbolPrimitive : SymbolPrimitive
+public sealed record PolylineSymbolPrimitive : SymbolPrimitive
 {
     public PolylineSymbolPrimitive(
         IEnumerable<MmPoint> points,
