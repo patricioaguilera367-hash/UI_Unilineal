@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using UI_Unilineal.Domain.Connections;
 using UI_Unilineal.Domain.Scene;
 using UI_Unilineal.Domain.Semantics;
 using UI_Unilineal.Rendering.Avalonia.HitTesting;
