@@ -45,4 +45,5 @@ public static class SceneValidationCodes
     public const string AnchorOutsideElementBounds = "ANCHOR_OUTSIDE_ELEMENT_BOUNDS";
     public const string OrphanGroupChild = "ORPHAN_GROUP_CHILD";
     public const string StructuralBlockOverlap = "STRUCTURAL_BLOCK_OVERLAP";
+    public const string RouteIntersectsStructuralBlock = "ROUTE_INTERSECTS_STRUCTURAL_BLOCK";
 }

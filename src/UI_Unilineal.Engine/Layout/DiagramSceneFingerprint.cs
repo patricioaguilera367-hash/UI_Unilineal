@@ -14,8 +14,25 @@ public static class DiagramSceneFingerprint
         var builder = new StringBuilder();
 
         Value(builder, "SCENE");
+        Value(builder, scene.Id.Value);
+        Value(builder, scene.Kind.ToString());
         Rect(builder, scene.Bounds);
         AppendMetadata(builder, scene.Metadata);
+
+        foreach (SceneIssue issue in scene.Issues
+                     .OrderBy(item => item.Code, StringComparer.Ordinal)
+                     .ThenBy(item => item.Entity?.Uid.Value, StringComparer.Ordinal)
+                     .ThenBy(item => item.Field, StringComparer.Ordinal)
+                     .ThenBy(item => item.Message, StringComparer.Ordinal))
+        {
+            Value(builder, "ISSUE");
+            Value(builder, issue.Code);
+            Value(builder, issue.Severity.ToString());
+            Value(builder, issue.Message);
+            Value(builder, issue.Entity?.Kind.ToString());
+            Value(builder, issue.Entity?.Uid.ToString());
+            Value(builder, issue.Field);
+        }
 
         foreach (SceneElement element in scene.Elements
                      .OrderBy(item => item.Id.Value, StringComparer.Ordinal))

@@ -47,6 +47,7 @@ public sealed class DiagramSceneValidator
         if (mode == SceneValidationMode.Strict)
         {
             ValidateStructuralOverlaps(scene, issues);
+            ValidateRoutedConnections(scene, issues);
         }
 
         SceneValidationIssue[] sorted = issues
@@ -225,6 +226,120 @@ public sealed class DiagramSceneValidator
                     nameof(SceneElement.Bounds)));
             }
         }
+    }
+
+    private static void ValidateRoutedConnections(
+        DiagramScene scene,
+        ICollection<SceneValidationIssue> issues)
+    {
+        IReadOnlyDictionary<string, SceneConnection> connections =
+            scene.Connections
+                .GroupBy(
+                    connection => connection.Id.Value,
+                    StringComparer.Ordinal)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.First(),
+                    StringComparer.Ordinal);
+
+        GroupSceneElement[] groups = scene.Elements
+            .OfType<GroupSceneElement>()
+            .OrderBy(
+                group => group.Id.Value,
+                StringComparer.Ordinal)
+            .ToArray();
+
+        foreach (PolylineSceneElement route in scene.Elements
+                     .OfType<PolylineSceneElement>()
+                     .Where(element =>
+                         element.Metadata.TryGetValue(
+                             "connectionId",
+                             out string? value) &&
+                         !string.IsNullOrWhiteSpace(value))
+                     .OrderBy(
+                         element => element.Id.Value,
+                         StringComparer.Ordinal))
+        {
+            string connectionId =
+                route.Metadata["connectionId"];
+
+            if (!connections.TryGetValue(
+                    connectionId,
+                    out SceneConnection? connection))
+            {
+                continue;
+            }
+
+            foreach (GroupSceneElement group in groups)
+            {
+                if (group.Id == connection.Source.ElementId ||
+                    group.Id == connection.Target.ElementId)
+                {
+                    continue;
+                }
+
+                if (!RouteCrossesInterior(
+                        route.Points,
+                        group.Bounds))
+                {
+                    continue;
+                }
+
+                issues.Add(Error(
+                    SceneValidationCodes.RouteIntersectsStructuralBlock,
+                    $"Route '{route.Id}' intersects structural block '{group.Id}'.",
+                    route.Id.ToString(),
+                    nameof(PolylineSceneElement.Points)));
+            }
+        }
+    }
+
+    private static bool RouteCrossesInterior(
+        IReadOnlyList<MmPoint> points,
+        MmRect obstacle)
+    {
+        for (int index = 0; index < points.Count - 1; index++)
+        {
+            if (SegmentCrossesInterior(
+                    points[index],
+                    points[index + 1],
+                    obstacle))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool SegmentCrossesInterior(
+        MmPoint first,
+        MmPoint second,
+        MmRect obstacle)
+    {
+        if (first.Y == second.Y)
+        {
+            double min = Math.Min(first.X, second.X);
+            double max = Math.Max(first.X, second.X);
+
+            return first.Y > obstacle.Y &&
+                   first.Y < obstacle.Bottom &&
+                   Math.Max(min, obstacle.X) <
+                   Math.Min(max, obstacle.Right);
+        }
+
+        if (first.X == second.X)
+        {
+            double min = Math.Min(first.Y, second.Y);
+            double max = Math.Max(first.Y, second.Y);
+
+            return first.X > obstacle.X &&
+                   first.X < obstacle.Right &&
+                   Math.Max(min, obstacle.Y) <
+                   Math.Min(max, obstacle.Bottom);
+        }
+
+        return true;
     }
 
     private static bool Overlaps(MmRect first, MmRect second) =>

@@ -5,7 +5,8 @@ namespace UI_Unilineal.Domain.Scene;
 public enum DiagramSceneKind
 {
     ProjectSummary,
-    BoardDetail
+    BoardDetail,
+    Unknown
 }
 
 public enum LayoutLockMode
