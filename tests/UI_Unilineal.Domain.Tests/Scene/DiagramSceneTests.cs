@@ -75,6 +75,37 @@ public sealed class DiagramSceneTests
     }
 
     [Fact]
+    public void DiagramScene_CarriesIdentityKindAndIssues()
+    {
+        var issue = new SceneIssue(
+            "MISSING_GROUNDING",
+            SceneIssueSeverity.Warning,
+            "Grounding data is missing.",
+            new EntityReference(new EntityUid("B1"), EntityKind.Board),
+            "Grounding");
+        var scene = new DiagramScene(
+            new SceneId("summary/project/P1"),
+            DiagramSceneKind.ProjectSummary,
+            new MmRect(0, 0, 100, 100),
+            [],
+            new DiagramSceneMetadata(
+                "RIC18-V1",
+                "1.0.0",
+                "PROFILE-FP",
+                "G5",
+                "INPUT-FP",
+                "PROJECTION-FP"),
+            [],
+            [issue]);
+
+        Assert.Equal(new SceneId("summary/project/P1"), scene.Id);
+        Assert.Equal(DiagramSceneKind.ProjectSummary, scene.Kind);
+        Assert.Single(scene.Issues);
+        Assert.Equal("MISSING_GROUNDING", scene.Issues[0].Code);
+        Assert.Equal(SceneIssueSeverity.Warning, scene.Issues[0].Severity);
+    }
+
+    [Fact]
     public void NeutralScene_ExposesAllRequiredPrimitiveElementTypes()
     {
         Type[] required =

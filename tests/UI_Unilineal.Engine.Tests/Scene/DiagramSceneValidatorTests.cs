@@ -113,6 +113,67 @@ public sealed class DiagramSceneValidatorTests
     }
 
     [Fact]
+    public void StrictValidation_RoutedPolylineCrossingUnrelatedGroup_ReturnsError()
+    {
+        GroupSceneElement source = Group(
+            "scene/source/group",
+            new MmRect(0, 0, 20, 20),
+            new SceneAnchor(
+                "OUT",
+                AnchorRole.PowerOut,
+                new MmPoint(20, 10),
+                AnchorDirection.Right));
+        GroupSceneElement obstacle = Group(
+            "scene/obstacle/group",
+            new MmRect(30, 0, 20, 20));
+        GroupSceneElement target = Group(
+            "scene/target/group",
+            new MmRect(60, 0, 20, 20),
+            new SceneAnchor(
+                "IN",
+                AnchorRole.PowerIn,
+                new MmPoint(60, 10),
+                AnchorDirection.Left));
+        var connection = new SceneConnection(
+            new SceneId("scene/connection/source-target"),
+            new SceneAnchorRef(source.Id, "OUT"),
+            new SceneAnchorRef(target.Id, "IN"),
+            "POWER",
+            SceneLayer.Power,
+            10,
+            SceneVisibility.Both,
+            null);
+        var route = new PolylineSceneElement(
+            new SceneId("scene/connection/source-target/route"),
+            new MmRect(20, 9.9995, 40, 0.001),
+            SceneLayer.Power,
+            10,
+            SceneVisibility.Both,
+            null,
+            new Dictionary<string, string>
+            {
+                ["connectionId"] = connection.Id.Value
+            },
+            [new MmPoint(20, 10), new MmPoint(60, 10)],
+            "POWER");
+        var scene = new DiagramScene(
+            new MmRect(0, 0, 100, 100),
+            [source, obstacle, target, route],
+            Metadata(),
+            [connection]);
+
+        DiagramSceneValidationResult result =
+            new DiagramSceneValidator().Validate(
+                scene,
+                SceneValidationMode.Strict);
+
+        Assert.Contains(
+            result.Issues,
+            issue => issue.Code ==
+                SceneValidationCodes.RouteIntersectsStructuralBlock);
+    }
+
+    [Fact]
     public void GeometryContracts_RejectNonFinitePointsBeforeSceneValidation()
     {
         Assert.Throws<ArgumentOutOfRangeException>(
@@ -157,6 +218,21 @@ public sealed class DiagramSceneValidatorTests
 
         Assert.Contains(result.Issues, x => x.Code == code);
     }
+
+    private static GroupSceneElement Group(
+        string id,
+        MmRect bounds,
+        params SceneAnchor[] anchors) =>
+        new(
+            new SceneId(id),
+            bounds,
+            SceneLayer.Symbol,
+            20,
+            SceneVisibility.Both,
+            null,
+            null,
+            [],
+            anchors);
 
     internal static DiagramScene ValidScene()
     {

@@ -171,6 +171,35 @@ public sealed class SingleLineLayoutEngineTests
     }
 
     [Fact]
+    public void Layout_UsesInjectedTextMetricsAndCarriesSceneContract()
+    {
+        SingleLineProjection projection =
+            Project(SemanticFixtureFactory.Minimal());
+        RIC18DrawingProfile profile = Profile();
+        var metrics = new CountingTextMetrics();
+
+        SingleLineLayoutResult result =
+            new SingleLineLayoutEngine(metrics).LayoutSummary(
+                projection,
+                profile);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(metrics.CallCount > 0);
+
+        DiagramScene scene =
+            Assert.IsType<DiagramScene>(result.Scene);
+        Assert.Equal(
+            new SceneId("summary/project/P1"),
+            scene.Id);
+        Assert.Equal(
+            DiagramSceneKind.ProjectSummary,
+            scene.Kind);
+        Assert.Equal(
+            projection.Issues.Count,
+            scene.Issues.Count);
+    }
+
+    [Fact]
     public void ProjectionFingerprint_RepeatedProjection_IsStable()
     {
         SingleLineProjection projection =
@@ -195,6 +224,21 @@ public sealed class SingleLineLayoutEngineTests
             string.Join(Environment.NewLine, result.Validation.Issues));
         return Assert.IsType<SingleLineProjection>(
             result.Projection);
+    }
+
+    private sealed class CountingTextMetrics : ITextMetrics
+    {
+        public int CallCount { get; private set; }
+
+        public TextMeasurement Measure(
+            string text,
+            TextStyleDefinition style)
+        {
+            CallCount++;
+            return new TextMeasurement(
+                Math.Max(style.HeightMm, text.Length * style.HeightMm),
+                style.HeightMm);
+        }
     }
 
     private static RIC18DrawingProfile Profile() =>
