@@ -31,9 +31,9 @@ public sealed record SceneConnection
 
     public SceneId Id { get; }
 
-    public SceneAnchorRef Source { get; }
+    public SceneAnchorRef Source { get; init; }
 
-    public SceneAnchorRef Target { get; }
+    public SceneAnchorRef Target { get; init; }
 
     public string LineStyleId { get; }
 
