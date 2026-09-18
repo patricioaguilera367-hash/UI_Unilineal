@@ -310,6 +310,102 @@ public sealed class SingleLineInputValidatorTests
         AssertError(result, ValidationCodes.MissingReference);
     }
 
+    [Fact]
+    public void Validate_BoardWithoutIncomingSupply_ReturnsWarningOnly()
+    {
+        SingleLineInput source = SemanticFixtureFactory.Minimal();
+
+        InputValidationResult result = Validate(Rebuild(source, supplies: []));
+
+        AssertWarningOnly(result, ValidationCodes.BoardWithoutSupply);
+    }
+
+    [Fact]
+    public void Validate_ActiveCircuitWithoutConductor_ReturnsWarningOnly()
+    {
+        SingleLineInput source = SemanticFixtureFactory.Minimal();
+        CircuitInput circuit = source.Circuits[0] with { Conductor = null };
+
+        InputValidationResult result = Validate(Rebuild(source, circuits: [circuit]));
+
+        AssertWarningOnly(result, ValidationCodes.CircuitMissingConductor);
+    }
+
+    [Fact]
+    public void Validate_ActiveCircuitWithoutOvercurrentProtection_ReturnsWarningOnly()
+    {
+        SingleLineInput source = SemanticFixtureFactory.Minimal();
+
+        InputValidationResult result = Validate(Rebuild(source, protections: []));
+
+        AssertWarningOnly(result, ValidationCodes.CircuitMissingProtection);
+    }
+
+    [Fact]
+    public void Validate_BoardWithoutNominalVoltage_ReturnsWarningOnly()
+    {
+        SingleLineInput source = SemanticFixtureFactory.Minimal();
+        BoardInput board = source.Boards[0] with { NominalVoltageV = null };
+
+        InputValidationResult result = Validate(Rebuild(source, boards: [board]));
+
+        AssertWarningOnly(result, ValidationCodes.BoardMissingVoltage);
+    }
+
+    [Fact]
+    public void Validate_IncompleteSource_ReturnsWarningOnly()
+    {
+        SingleLineInput source = SemanticFixtureFactory.Minimal();
+        SourceInput supplySource = source.Sources[0] with { PhaseCount = null };
+
+        InputValidationResult result = Validate(Rebuild(source, sources: [supplySource]));
+
+        AssertWarningOnly(result, ValidationCodes.SourceIncomplete);
+    }
+
+    [Fact]
+    public void Validate_GroundingWithoutSectionOrResistance_ReturnsWarningOnly()
+    {
+        SingleLineInput source = SemanticFixtureFactory.Minimal();
+        var grounding = new GroundingInput(
+            new EntityUid("G1"),
+            new EntityReference(source.Boards[0].Uid, EntityKind.Board),
+            GroundingKind.Protection,
+            "CU",
+            null,
+            null,
+            "METHOD",
+            "INSTRUMENT",
+            OperationalState.Active,
+            DataState.Incomplete);
+
+        InputValidationResult result = Validate(Rebuild(source, grounding: [grounding]));
+
+        AssertWarningOnly(result, ValidationCodes.GroundingIncomplete);
+    }
+
+    [Fact]
+    public void Validate_Issues_AreDeterministicallySorted()
+    {
+        SingleLineInput source = SemanticFixtureFactory.Minimal();
+        BoardInput board = source.Boards[0] with { NominalVoltageV = null };
+        CircuitInput circuit = source.Circuits[0] with { Conductor = null };
+
+        InputValidationResult result = Validate(Rebuild(
+            source,
+            boards: [board],
+            circuits: [circuit],
+            protections: [],
+            supplies: []));
+
+        string[] actual = result.Issues.Select(x => x.Code).ToArray();
+        string[] expected = actual
+            .OrderBy(code => code, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(expected, actual);
+    }
+
     private static InputValidationResult Validate(SingleLineInput input) =>
         new SingleLineInputValidator().Validate(input);
 
@@ -317,6 +413,14 @@ public sealed class SingleLineInputValidatorTests
         Assert.Contains(
             result.Issues,
             issue => issue.Code == code && issue.Severity == ValidationSeverity.Error);
+
+    private static void AssertWarningOnly(InputValidationResult result, string code)
+    {
+        Assert.False(result.HasErrors);
+        Assert.Contains(
+            result.Issues,
+            issue => issue.Code == code && issue.Severity == ValidationSeverity.Warning);
+    }
 
     private static BoardInput SecondBoard() =>
         new(
