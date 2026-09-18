@@ -23,4 +23,8 @@
     <ProjectReference Include="..\..\src\UI_Unilineal.Engine\UI_Unilineal.Engine.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Golden\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
