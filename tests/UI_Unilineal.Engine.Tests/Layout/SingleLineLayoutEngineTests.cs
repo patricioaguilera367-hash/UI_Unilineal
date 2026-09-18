@@ -5,6 +5,7 @@ using UI_Unilineal.Engine.Composition;
 using UI_Unilineal.Engine.Layout;
 using UI_Unilineal.Engine.Projection;
 using UI_Unilineal.Engine.Tests.Fixtures;
+using UI_Unilineal.Engine.Validation;
 
 namespace UI_Unilineal.Engine.Tests.Layout;
 
@@ -197,6 +198,67 @@ public sealed class SingleLineLayoutEngineTests
         Assert.Equal(
             projection.Issues.Count,
             scene.Issues.Count);
+    }
+
+    [Fact]
+    public void Engine_RequiresExplicitTextMetricsDependency()
+    {
+        var constructors =
+            typeof(SingleLineLayoutEngine).GetConstructors();
+
+        Assert.Single(constructors);
+        Assert.Equal(
+            [typeof(ITextMetrics)],
+            constructors[0]
+                .GetParameters()
+                .Select(parameter => parameter.ParameterType)
+                .ToArray());
+    }
+
+    [Fact]
+    public void Layout_ProjectionWarningSurvivesIntoSceneIssues()
+    {
+        SingleLineInput source =
+            SemanticFixtureFactory.Minimal();
+        CircuitInput incomplete =
+            source.Circuits[0] with
+            {
+                Conductor = null,
+                DataState = DataState.Incomplete
+            };
+        var input = new SingleLineInput(
+            source.Project,
+            source.Sources,
+            source.Boards,
+            source.Buses,
+            [incomplete],
+            source.SupplyConnections,
+            source.Protections,
+            source.Grounding,
+            source.Results,
+            source.Metadata);
+        SingleLineProjection projection =
+            Project(input);
+
+        SingleLineLayoutResult result =
+            Engine().LayoutSummary(
+                projection,
+                Profile());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        DiagramScene scene =
+            Assert.IsType<DiagramScene>(result.Scene);
+        SceneIssue issue = Assert.Single(
+            scene.Issues,
+            value => value.Code ==
+                ValidationCodes.CircuitMissingConductor);
+
+        Assert.Equal(SceneIssueSeverity.Warning, issue.Severity);
+        Assert.Equal(
+            new EntityReference(
+                incomplete.Uid,
+                EntityKind.Circuit),
+            issue.Entity);
     }
 
     [Fact]
