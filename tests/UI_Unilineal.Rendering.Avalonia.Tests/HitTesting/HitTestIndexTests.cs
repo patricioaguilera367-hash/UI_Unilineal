@@ -42,23 +42,23 @@ public sealed class HitTestIndexTests
             default,
             new Size(1000, 600));
 
-        Point threeMillimetresBelowAtLowZoom =
+        Point oneMillimetreBelowAtLowZoom =
             ViewportTransform.SceneMmToDip(
-                new MmPoint(50, 13),
+                new MmPoint(50, 11),
                 lowZoom);
-        Point threeMillimetresBelowAtHighZoom =
+        Point oneMillimetreBelowAtHighZoom =
             ViewportTransform.SceneMmToDip(
-                new MmPoint(50, 13),
+                new MmPoint(50, 11),
                 highZoom);
 
         Assert.Single(
             hitIndex.HitTest(
-                threeMillimetresBelowAtLowZoom,
+                oneMillimetreBelowAtLowZoom,
                 lowZoom,
                 policy));
         Assert.Empty(
             hitIndex.HitTest(
-                threeMillimetresBelowAtHighZoom,
+                oneMillimetreBelowAtHighZoom,
                 highZoom,
                 policy));
     }
