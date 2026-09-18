@@ -64,7 +64,12 @@ public sealed class SceneGoldenTests
         string expected = Normalize(
             File.ReadAllText(path));
 
-        Assert.Equal(expected, actual);
+        if (!string.Equals(expected, actual, StringComparison.Ordinal))
+        {
+            Assert.Fail(
+                $"Scene golden mismatch: {fileName}{Environment.NewLine}" +
+                $"ACTUAL:{Environment.NewLine}{actual}");
+        }
     }
 
     private static string Normalize(string value) =>
