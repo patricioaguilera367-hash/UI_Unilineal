@@ -20,7 +20,8 @@ public sealed class CompositionBlock
         EntityReference? entity,
         IReadOnlyDictionary<string, string> labels,
         ProjectionStatus status,
-        string? parentId)
+        string? parentId,
+        IReadOnlyDictionary<string, string>? symbolOverrides = null)
     {
         if (string.IsNullOrWhiteSpace(id))
         {
@@ -47,6 +48,10 @@ public sealed class CompositionBlock
             new Dictionary<string, string>(labels, StringComparer.Ordinal));
         Status = status;
         ParentId = parentId;
+        SymbolOverrides = new ReadOnlyDictionary<string, string>(
+            new Dictionary<string, string>(
+                symbolOverrides ?? new Dictionary<string, string>(),
+                StringComparer.Ordinal));
     }
 
     public string Id { get; }
@@ -62,6 +67,8 @@ public sealed class CompositionBlock
     public ProjectionStatus Status { get; }
 
     public string? ParentId { get; }
+
+    public IReadOnlyDictionary<string, string> SymbolOverrides { get; }
 }
 
 public sealed record CompositionAnchorRef

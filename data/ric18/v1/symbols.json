@@ -92,7 +92,8 @@
     "anchors": [
       { "id": "IN", "role": "PowerIn", "point": { "x": 0, "y": 4 }, "direction": "Left" },
       { "id": "OUT", "role": "PowerOut", "point": { "x": 40, "y": 4 }, "direction": "Right" },
-      { "id": "TAP", "role": "BusTap", "point": { "x": 20, "y": 4 }, "direction": "Down" }
+      { "id": "TAP", "role": "BusTap", "point": { "x": 20, "y": 4 }, "direction": "Down" },
+      { "id": "GROUND", "role": "Ground", "point": { "x": 20, "y": 8 }, "direction": "Down" }
     ],
     "primitives": [
       { "kind": "line", "styleId": "BUS", "start": { "x": 0, "y": 4 }, "end": { "x": 40, "y": 4 } }

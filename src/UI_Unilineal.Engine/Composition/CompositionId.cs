@@ -23,6 +23,11 @@ public static class CompositionIdFactory
         EntityUid busUid) =>
         $"detail/{boardUid}/bus/{busUid}";
 
+    public static string DetailMainProtection(
+        EntityUid boardUid,
+        EntityUid protectionUid) =>
+        $"detail/{boardUid}/main-protection/{protectionUid}";
+
     public static string DetailBranch(
         EntityUid boardUid,
         EntityUid circuitUid) =>
