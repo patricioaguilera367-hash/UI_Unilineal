@@ -14,8 +14,18 @@ public sealed class SingleLineInputValidator
         AddDuplicateIssues(index, issues);
         AddReferenceIssues(input, index, issues);
         issues.AddRange(new SupplyTopologyValidator().Validate(input, index));
+        issues.AddRange(new CompletenessValidator().Validate(input));
 
-        return new InputValidationResult(issues);
+        ValidationIssue[] sorted = issues
+            .OrderBy(issue => issue.Severity)
+            .ThenBy(issue => issue.Code, StringComparer.Ordinal)
+            .ThenBy(
+                issue => issue.Entity is null ? int.MaxValue : (int)issue.Entity.Kind)
+            .ThenBy(issue => issue.Entity?.Uid.Value, StringComparer.Ordinal)
+            .ThenBy(issue => issue.Field, StringComparer.Ordinal)
+            .ToArray();
+
+        return new InputValidationResult(sorted);
     }
 
     private static void AddDuplicateIssues(
