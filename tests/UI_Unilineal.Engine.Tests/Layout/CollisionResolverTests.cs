@@ -1,5 +1,6 @@
 ﻿using UI_Unilineal.Domain.Profiles;
 using UI_Unilineal.Domain.Scene;
+using UI_Unilineal.Engine.Composition;
 using UI_Unilineal.Engine.Layout;
 
 namespace UI_Unilineal.Engine.Tests.Layout;
@@ -184,6 +185,6 @@ public sealed class CollisionResolverTests
         a.Bottom > b.Y;
 
     private static RIC18DrawingProfile Profile() =>
-        new Composition.Ric18DrawingProfileLoader().LoadDirectory(
+        new Ric18DrawingProfileLoader().LoadDirectory(
             Path.Combine(AppContext.BaseDirectory, "ProfileData"));
 }
