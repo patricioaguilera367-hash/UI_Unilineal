@@ -1,5 +1,6 @@
 ﻿using UI_Unilineal.Domain.Semantics;
 using UI_Unilineal.Engine.Projection;
+using UI_Unilineal.Engine.Tests.Fixtures;
 using UI_Unilineal.Engine.Validation;
 
 namespace UI_Unilineal.Engine.Tests.Projection;
@@ -87,4 +88,135 @@ public sealed class SingleLineProjectionBuilderTests
         Assert.Equal(BranchKind.FinalCircuit, branch.Kind);
         Assert.Equal(DestinationKind.Load, destination.Kind);
     }
+
+    [Fact]
+    public void Build_ValidInput_ReturnsSummaryAndEveryBoardDetail()
+    {
+        SingleLineInput input = SemanticFixtureFactory.NestedBoards();
+
+        ProjectionBuildResult result = new SingleLineProjectionBuilder().Build(input);
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.Projection);
+        Assert.Equal(2, result.Projection!.BoardDetails.Count);
+        Assert.Equal(input.Project.Uid, result.Projection.ProjectUid);
+    }
+
+    [Fact]
+    public void Build_StructuralCycle_BlocksProjection()
+    {
+        SingleLineInput source = SemanticFixtureFactory.BoardChain(2);
+        BoardInput first = source.Boards[0];
+        BoardInput last = source.Boards[^1];
+        CircuitInput lastCircuit = source.Circuits.Single(x => x.BoardUid == last.Uid);
+        var cycle = new SupplyConnection(
+            new EntityUid("SC-CYCLE"),
+            new EntityReference(last.Uid, EntityKind.Board),
+            lastCircuit.Uid,
+            first.Uid,
+            SupplyRole.Normal,
+            0,
+            true,
+            OperationalState.Active,
+            DataState.Complete);
+        var invalid = new SingleLineInput(
+            source.Project,
+            source.Sources,
+            source.Boards,
+            source.Buses,
+            source.Circuits,
+            [.. source.SupplyConnections, cycle],
+            source.Protections,
+            source.Grounding,
+            source.Results,
+            source.Metadata);
+
+        ProjectionBuildResult result = new SingleLineProjectionBuilder().Build(invalid);
+
+        Assert.False(result.Success);
+        Assert.Null(result.Projection);
+        Assert.Contains(result.Validation.Issues, x => x.Code == ValidationCodes.SupplyCycle);
+    }
+
+    [Fact]
+    public void Build_IncompleteButStructurallyValidInput_ProducesWarningProjection()
+    {
+        SingleLineInput source = SemanticFixtureFactory.Minimal();
+        CircuitInput circuit = source.Circuits[0] with { Conductor = null };
+        var incomplete = new SingleLineInput(
+            source.Project,
+            source.Sources,
+            source.Boards,
+            source.Buses,
+            [circuit],
+            source.SupplyConnections,
+            source.Protections,
+            source.Grounding,
+            source.Results,
+            source.Metadata);
+
+        ProjectionBuildResult result = new SingleLineProjectionBuilder().Build(incomplete);
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.Projection);
+        Assert.Contains(
+            result.Validation.Issues,
+            x => x.Code == ValidationCodes.CircuitMissingConductor);
+        BranchProjection branch = Assert.Single(result.Projection!.BoardDetails[0].Branches);
+        Assert.Equal(ProjectionStatus.Warning, branch.Status);
+    }
+
+    [Fact]
+    public void Build_PermutedInput_PreservesDeterministicProjectionOrder()
+    {
+        SingleLineInput source = SemanticFixtureFactory.NestedBoards();
+        SingleLineInput reversed = ReverseCollections(source);
+
+        ProjectionBuildResult first = new SingleLineProjectionBuilder().Build(source);
+        ProjectionBuildResult second = new SingleLineProjectionBuilder().Build(reversed);
+
+        Assert.True(first.Success);
+        Assert.True(second.Success);
+        Assert.NotNull(first.Projection);
+        Assert.NotNull(second.Projection);
+
+        Assert.Equal(first.Projection!.InputFingerprint, second.Projection!.InputFingerprint);
+        Assert.Equal(first.Projection.Summary.Nodes, second.Projection.Summary.Nodes);
+        Assert.Equal(first.Projection.Summary.Connections, second.Projection.Summary.Connections);
+        Assert.Equal(
+            first.Projection.BoardDetails.Select(x => x.Board.Uid),
+            second.Projection.BoardDetails.Select(x => x.Board.Uid));
+
+        for (int index = 0; index < first.Projection.BoardDetails.Count; index++)
+        {
+            BoardDetailProjection firstDetail = first.Projection.BoardDetails[index];
+            BoardDetailProjection secondDetail = second.Projection.BoardDetails[index];
+
+            Assert.Equal(
+                firstDetail.Branches.Select(BranchSignature),
+                secondDetail.Branches.Select(BranchSignature));
+        }
+    }
+
+    private static SingleLineInput ReverseCollections(SingleLineInput input) =>
+        new(
+            input.Project,
+            input.Sources.Reverse(),
+            input.Boards.Reverse(),
+            input.Buses.Reverse(),
+            input.Circuits.Reverse(),
+            input.SupplyConnections.Reverse(),
+            input.Protections.Reverse(),
+            input.Grounding.Reverse(),
+            input.Results.Reverse(),
+            input.Metadata);
+
+    private static string BranchSignature(BranchProjection branch) =>
+        string.Join(
+            "|",
+            branch.Circuit.Uid,
+            branch.Kind,
+            branch.Destination.Entity?.Uid.ToString() ?? "-",
+            branch.Status,
+            string.Join(",", branch.ProtectionChain.Select(x => x.Uid.ToString())));
 }
