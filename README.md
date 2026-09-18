@@ -82,15 +82,25 @@ ProyectoElectrico main.
 
 ## Estado
 
-V1 G0–G2 implementado:
+V1 G0–G3 implementado:
 
 - baseline CI en Windows/Linux;
 - `SingleLineInput` semántico e inmutable;
 - topología explícita mediante `SupplyConnection`;
 - validación referencial, de ciclos y de datos incompletos;
 - `SingleLineProjection` resumen/detalle determinista;
-- pruebas generativas y goldens estructurales.
+- `RIC18DrawingProfile` versionado, inmutable y validado;
+- catálogo vectorial de símbolos/bloques con procedencia explícita;
+- fingerprint SHA-256 determinista del perfil;
+- `DrawingComposition` sin geometría para resumen y detalle;
+- cadenas de protección variables, destinos navegables y grounding semántico;
+- goldens estructurales de proyección y composición.
 
-Aún no forman parte de este checkpoint: perfil gráfico RIC18,
-`DiagramScene`, layout, renderer Avalonia V1, interacción productiva,
-SVG/PDF e integración con `ProyectoElectrico`.
+Toda geometría inicial no sustentada por una cita normativa exacta permanece
+clasificada como `APP_CONVENTION`.
+
+El siguiente checkpoint es G4: `DiagramScene` vectorial neutral,
+anchors/connections de escena, validación/fingerprint y assembly desde
+composición ya posicionada. Layout automático, renderer Avalonia,
+interacción, SVG/PDF e integración con `ProyectoElectrico` permanecen
+fuera de G3.
