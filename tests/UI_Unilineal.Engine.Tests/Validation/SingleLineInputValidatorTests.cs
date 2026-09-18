@@ -321,6 +321,21 @@ public sealed class SingleLineInputValidatorTests
     }
 
     [Fact]
+    public void Validate_BoardWithOnlyInactiveSupply_ReturnsWarningOnly()
+    {
+        SingleLineInput source = SemanticFixtureFactory.Minimal();
+        SupplyConnection inactiveSupply = source.SupplyConnections[0] with
+        {
+            IsNormallyActive = false,
+            State = OperationalState.Inactive
+        };
+
+        InputValidationResult result = Validate(Rebuild(source, supplies: [inactiveSupply]));
+
+        AssertWarningOnly(result, ValidationCodes.BoardWithoutSupply);
+    }
+
+    [Fact]
     public void Validate_ActiveCircuitWithoutConductor_ReturnsWarningOnly()
     {
         SingleLineInput source = SemanticFixtureFactory.Minimal();

@@ -25,6 +25,7 @@ public sealed class DependencyBoundaryTests
             .Select(x => x.Name ?? string.Empty)
             .ToArray();
 
+        Assert.Contains("UI_Unilineal.Domain", references);
         Assert.DoesNotContain(references, x => x.StartsWith("Avalonia", StringComparison.Ordinal));
         Assert.DoesNotContain(references, x => x.StartsWith("ProyectoElectrico", StringComparison.Ordinal));
     }

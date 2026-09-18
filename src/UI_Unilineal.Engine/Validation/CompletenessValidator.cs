@@ -23,6 +23,7 @@ internal sealed class CompletenessValidator
         ICollection<ValidationIssue> issues)
     {
         HashSet<EntityUid> suppliedBoards = input.SupplyConnections
+            .Where(supply => supply.State == OperationalState.Active)
             .Select(supply => supply.DestinationBoardUid)
             .ToHashSet();
 
