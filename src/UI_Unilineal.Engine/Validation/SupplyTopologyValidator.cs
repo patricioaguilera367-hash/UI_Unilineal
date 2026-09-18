@@ -180,7 +180,7 @@ internal sealed class SupplyTopologyValidator
     }
 
     private static VisitState GetState(
-        IReadOnlyDictionary<EntityUid, VisitState> states,
+        IDictionary<EntityUid, VisitState> states,
         EntityUid uid) =>
         states.TryGetValue(uid, out VisitState state)
             ? state
