@@ -1,0 +1,10 @@
+COMPOSITION|BoardDetail|Board|B1|8D9EB263CE8F63B7B11404887827544F6E5E48CB8EC2D3F175432BDAFE606882|D2CB681FF466C78F20E6132D0A9AA8487DB75F043377CBC8B8E8A8864A87BFAA
+BLOCK|detail/B1/incoming/SC1|INCOMING_SUPPLY_BLOCK|IncomingSupply|SupplyConnection|SC1|Ok|detail/B1|CODE=EMPALME — Empalme|-
+BLOCK|detail/B1/bus/BUS:B1:MAIN|MAIN_BUS_BLOCK|MainBus|Bus|BUS:B1:MAIN|Ok|detail/B1|CODE=MAIN|-
+BLOCK|detail/B1/branch/C4|CIRCUIT_BRANCH_BLOCK|CircuitBranch|Circuit|C4|Ok|detail/B1/bus/BUS:B1:MAIN|NAME=C04 — Alimentador TDA|-
+BLOCK|detail/B1/branch/C4/protection/PR4|PROTECTION_CHAIN_BLOCK|Protection|Protection|PR4|Ok|detail/B1/branch/C4|RATING=32 A|PROTECTION=BREAKER
+BLOCK|detail/B1/branch/C4/destination|DOWNSTREAM_BOARD_BLOCK|DownstreamBoard|Board|B2|Ok|detail/B1/branch/C4|NAME=Tablero derivado|-
+CONNECTION|detail/B1/connection/incoming/detail/B1/incoming/SC1|detail/B1/incoming/SC1@PowerOut:OUT|detail/B1/bus/BUS:B1:MAIN@PowerIn:IN|POWER|SupplyConnection|SC1
+CONNECTION|detail/B1/connection/branch/C4|detail/B1/bus/BUS:B1:MAIN@BusTap:TAP|detail/B1/branch/C4@PowerIn:IN|POWER|Circuit|C4
+CONNECTION|detail/B1/connection/protection/detail/B1/branch/C4/protection/PR4|detail/B1/branch/C4@PowerOut:OUT|detail/B1/branch/C4/protection/PR4@PowerIn:IN|POWER|Protection|PR4
+CONNECTION|detail/B1/connection/destination/C4|detail/B1/branch/C4/protection/PR4@PowerOut:OUT|detail/B1/branch/C4/destination@PowerIn:IN|POWER|Protection|PR4
