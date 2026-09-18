@@ -1,30 +1,49 @@
 ﻿namespace UI_Unilineal.Domain.Scene;
 
-public sealed record DiagramSceneMetadata(
-    string DrawingProfileId,
-    string DrawingProfileVersion,
-    string DrawingProfileFingerprint,
-    string LayoutEngineVersion,
-    string InputFingerprint,
-    string ProjectionFingerprint)
+public sealed class DiagramSceneMetadata
 {
-    public DiagramSceneMetadata
+    public DiagramSceneMetadata(
+        string drawingProfileId,
+        string drawingProfileVersion,
+        string drawingProfileFingerprint,
+        string layoutEngineVersion,
+        string inputFingerprint,
+        string projectionFingerprint)
     {
-        Require(DrawingProfileId, nameof(DrawingProfileId));
-        Require(DrawingProfileVersion, nameof(DrawingProfileVersion));
-        Require(DrawingProfileFingerprint, nameof(DrawingProfileFingerprint));
-        Require(LayoutEngineVersion, nameof(LayoutEngineVersion));
-        Require(InputFingerprint, nameof(InputFingerprint));
-        Require(ProjectionFingerprint, nameof(ProjectionFingerprint));
+        DrawingProfileId = Require(drawingProfileId, nameof(drawingProfileId));
+        DrawingProfileVersion = Require(
+            drawingProfileVersion,
+            nameof(drawingProfileVersion));
+        DrawingProfileFingerprint = Require(
+            drawingProfileFingerprint,
+            nameof(drawingProfileFingerprint));
+        LayoutEngineVersion = Require(
+            layoutEngineVersion,
+            nameof(layoutEngineVersion));
+        InputFingerprint = Require(
+            inputFingerprint,
+            nameof(inputFingerprint));
+        ProjectionFingerprint = Require(
+            projectionFingerprint,
+            nameof(projectionFingerprint));
     }
 
-    private static void Require(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Required.", parameterName);
-        }
-    }
+    public string DrawingProfileId { get; }
+
+    public string DrawingProfileVersion { get; }
+
+    public string DrawingProfileFingerprint { get; }
+
+    public string LayoutEngineVersion { get; }
+
+    public string InputFingerprint { get; }
+
+    public string ProjectionFingerprint { get; }
+
+    private static string Require(string value, string parameterName) =>
+        string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentException("Required.", parameterName)
+            : value;
 }
 
 public sealed class DiagramScene
