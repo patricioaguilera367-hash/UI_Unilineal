@@ -97,7 +97,8 @@ public sealed class SummaryCompositionBuilderTests
             new CompositionBuilder().BuildSummary(projection, Profile());
 
         CompositionBlock unknown = Assert.Single(
-            composition.Blocks.Where(x => x.BlockDefinitionId == "UNKNOWN_BLOCK"));
+            composition.Blocks,
+            x => x.BlockDefinitionId == "UNKNOWN_BLOCK");
         Assert.Equal(
             CompositionIdFactory.SummaryEntity(missing),
             unknown.Id);
