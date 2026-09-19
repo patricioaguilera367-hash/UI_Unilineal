@@ -249,6 +249,486 @@
     ]
   },
   {
+    "id": "BREAKER_1X",
+    "semanticRole": "Breaker",
+    "nominalBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 16
+    },
+    "anchors": [
+      {
+        "id": "IN",
+        "role": "PowerIn",
+        "point": {
+          "x": 6,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "OUT",
+        "role": "PowerOut",
+        "point": {
+          "x": 6,
+          "y": 16
+        },
+        "direction": "Down"
+      }
+    ],
+    "primitives": [
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 0
+        },
+        "end": {
+          "x": 6,
+          "y": 3.2
+        }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 4.4
+        },
+        "radius": 1.2
+      },
+      {
+        "kind": "arc",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 8
+        },
+        "radius": 4,
+        "startDegrees": -65,
+        "sweepDegrees": 130
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 7.8,
+          "y": 8
+        },
+        "end": {
+          "x": 10.8,
+          "y": 8
+        }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 11.6
+        },
+        "radius": 1.2
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 12.8
+        },
+        "end": {
+          "x": 6,
+          "y": 16
+        }
+      }
+    ],
+    "labelSlots": [],
+    "provenanceIds": [
+      "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+      "APP:GRAPHIC_CONVENTIONS"
+    ]
+  },
+  {
+    "id": "BREAKER_2X",
+    "semanticRole": "Breaker",
+    "nominalBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 16
+    },
+    "anchors": [
+      {
+        "id": "IN",
+        "role": "PowerIn",
+        "point": {
+          "x": 6,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "OUT",
+        "role": "PowerOut",
+        "point": {
+          "x": 6,
+          "y": 16
+        },
+        "direction": "Down"
+      }
+    ],
+    "primitives": [
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 0
+        },
+        "end": {
+          "x": 6,
+          "y": 3.2
+        }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 4.4
+        },
+        "radius": 1.2
+      },
+      {
+        "kind": "arc",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 8
+        },
+        "radius": 4,
+        "startDegrees": -65,
+        "sweepDegrees": 130
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 7.8,
+          "y": 7.55
+        },
+        "end": {
+          "x": 10.8,
+          "y": 7.55
+        }
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 7.8,
+          "y": 8.45
+        },
+        "end": {
+          "x": 10.8,
+          "y": 8.45
+        }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 11.6
+        },
+        "radius": 1.2
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 12.8
+        },
+        "end": {
+          "x": 6,
+          "y": 16
+        }
+      }
+    ],
+    "labelSlots": [],
+    "provenanceIds": [
+      "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+      "APP:GRAPHIC_CONVENTIONS"
+    ]
+  },
+  {
+    "id": "BREAKER_3X",
+    "semanticRole": "Breaker",
+    "nominalBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 16
+    },
+    "anchors": [
+      {
+        "id": "IN",
+        "role": "PowerIn",
+        "point": {
+          "x": 6,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "OUT",
+        "role": "PowerOut",
+        "point": {
+          "x": 6,
+          "y": 16
+        },
+        "direction": "Down"
+      }
+    ],
+    "primitives": [
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 0
+        },
+        "end": {
+          "x": 6,
+          "y": 3.2
+        }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 4.4
+        },
+        "radius": 1.2
+      },
+      {
+        "kind": "arc",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 8
+        },
+        "radius": 4,
+        "startDegrees": -65,
+        "sweepDegrees": 130
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 7.8,
+          "y": 7.1
+        },
+        "end": {
+          "x": 10.8,
+          "y": 7.1
+        }
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 7.8,
+          "y": 8
+        },
+        "end": {
+          "x": 10.8,
+          "y": 8
+        }
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 7.8,
+          "y": 8.9
+        },
+        "end": {
+          "x": 10.8,
+          "y": 8.9
+        }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 11.6
+        },
+        "radius": 1.2
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 12.8
+        },
+        "end": {
+          "x": 6,
+          "y": 16
+        }
+      }
+    ],
+    "labelSlots": [],
+    "provenanceIds": [
+      "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+      "APP:GRAPHIC_CONVENTIONS"
+    ]
+  },
+  {
+    "id": "BREAKER_4X",
+    "semanticRole": "Breaker",
+    "nominalBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 16
+    },
+    "anchors": [
+      {
+        "id": "IN",
+        "role": "PowerIn",
+        "point": {
+          "x": 6,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "OUT",
+        "role": "PowerOut",
+        "point": {
+          "x": 6,
+          "y": 16
+        },
+        "direction": "Down"
+      }
+    ],
+    "primitives": [
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 0
+        },
+        "end": {
+          "x": 6,
+          "y": 3.2
+        }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 4.4
+        },
+        "radius": 1.2
+      },
+      {
+        "kind": "arc",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 8
+        },
+        "radius": 4,
+        "startDegrees": -65,
+        "sweepDegrees": 130
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 7.8,
+          "y": 6.65
+        },
+        "end": {
+          "x": 10.8,
+          "y": 6.65
+        }
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 7.8,
+          "y": 7.55
+        },
+        "end": {
+          "x": 10.8,
+          "y": 7.55
+        }
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 7.8,
+          "y": 8.45
+        },
+        "end": {
+          "x": 10.8,
+          "y": 8.45
+        }
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 7.8,
+          "y": 9.35
+        },
+        "end": {
+          "x": 10.8,
+          "y": 9.35
+        }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 11.6
+        },
+        "radius": 1.2
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 12.8
+        },
+        "end": {
+          "x": 6,
+          "y": 16
+        }
+      }
+    ],
+    "labelSlots": [],
+    "provenanceIds": [
+      "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+      "APP:GRAPHIC_CONVENTIONS"
+    ]
+  },
+  {
     "id": "RCD",
     "semanticRole": "ResidualCurrentDevice",
     "nominalBounds": {
