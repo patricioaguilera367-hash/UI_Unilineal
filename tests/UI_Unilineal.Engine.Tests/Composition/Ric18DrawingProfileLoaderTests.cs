@@ -78,6 +78,8 @@ public sealed class Ric18DrawingProfileLoaderTests
             "DOWNSTREAM_BOARD_BLOCK",
             "FINAL_LOAD_BLOCK",
             "GROUNDING_BLOCK",
+            "GROUND_TP_BLOCK",
+            "GROUND_TS_BLOCK",
             "UNKNOWN_BLOCK"
         ];
 
