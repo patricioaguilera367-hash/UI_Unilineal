@@ -324,14 +324,51 @@ public sealed class SvgExporter
         TextSceneElement text,
         ResolvedTextStyle style)
     {
+        double x = text.HorizontalAlignment switch
+        {
+            SceneTextHorizontalAlignment.Start => text.Bounds.X,
+            SceneTextHorizontalAlignment.Center =>
+                text.Bounds.X + (text.Bounds.Width / 2.0),
+            SceneTextHorizontalAlignment.End => text.Bounds.Right,
+            _ => throw new InvalidOperationException(
+                $"Unsupported horizontal text alignment '{text.HorizontalAlignment}'.")
+        };
+        double y = text.VerticalAlignment switch
+        {
+            SceneTextVerticalAlignment.Top => text.Bounds.Y,
+            SceneTextVerticalAlignment.Center =>
+                text.Bounds.Y + (text.Bounds.Height / 2.0),
+            SceneTextVerticalAlignment.Bottom => text.Bounds.Bottom,
+            _ => throw new InvalidOperationException(
+                $"Unsupported vertical text alignment '{text.VerticalAlignment}'.")
+        };
+        string anchor = text.HorizontalAlignment switch
+        {
+            SceneTextHorizontalAlignment.Start => "start",
+            SceneTextHorizontalAlignment.Center => "middle",
+            SceneTextHorizontalAlignment.End => "end",
+            _ => "start"
+        };
+        string baseline = text.VerticalAlignment switch
+        {
+            SceneTextVerticalAlignment.Top => "hanging",
+            SceneTextVerticalAlignment.Center => "middle",
+            SceneTextVerticalAlignment.Bottom => "text-after-edge",
+            _ => "hanging"
+        };
+
         output
             .Append("    <text")
             .Append(Id(text))
             .Append(" x=\"")
-            .Append(Number(text.Bounds.X))
+            .Append(Number(x))
             .Append("\" y=\"")
-            .Append(Number(text.Bounds.Y))
-            .Append("\" dominant-baseline=\"hanging\" fill=\"black\" font-family=\"")
+            .Append(Number(y))
+            .Append("\" text-anchor=\"")
+            .Append(anchor)
+            .Append("\" dominant-baseline=\"")
+            .Append(baseline)
+            .Append("\" fill=\"black\" font-family=\"")
             .Append(EscapeAttribute(style.FontFamily))
             .Append("\" font-size=\"")
             .Append(Number(style.HeightMm))
