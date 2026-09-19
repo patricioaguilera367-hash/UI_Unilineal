@@ -73,6 +73,54 @@ public sealed class RenderingDependencyBoundaryTests
                 StringComparison.Ordinal));
     }
 
+
+    [Fact]
+    public void RenderingAvalonia_SourceDoesNotOwnCommandHistoryOrHostExecution()
+    {
+        string repositoryRoot = FindRepositoryRoot();
+        string sourceDirectory =
+            Path.Combine(
+                repositoryRoot,
+                "src",
+                "UI_Unilineal.Rendering.Avalonia");
+
+        string[] forbidden =
+        [
+            "IElectricalCommandHandler",
+            "PlaygroundElectricalCommandHandler",
+            "LayoutCommandHistory",
+            "ProyectoElectrico"
+        ];
+
+        IEnumerable<string> files =
+            Directory
+                .EnumerateFiles(
+                    sourceDirectory,
+                    "*.cs",
+                    SearchOption.AllDirectories)
+                .Where(path =>
+                    !path.Contains(
+                        $"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}",
+                        StringComparison.OrdinalIgnoreCase) &&
+                    !path.Contains(
+                        $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}",
+                        StringComparison.OrdinalIgnoreCase));
+
+        foreach (string file in files)
+        {
+            string content =
+                File.ReadAllText(file);
+
+            foreach (string token in forbidden)
+            {
+                Assert.DoesNotContain(
+                    token,
+                    content,
+                    StringComparison.Ordinal);
+            }
+        }
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? directory =

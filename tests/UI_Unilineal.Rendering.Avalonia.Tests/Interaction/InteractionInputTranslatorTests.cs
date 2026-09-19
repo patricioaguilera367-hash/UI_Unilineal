@@ -2,6 +2,7 @@
 using UI_Unilineal.Domain.Scene;
 using UI_Unilineal.Domain.Semantics;
 using UI_Unilineal.Engine.Interaction;
+using UI_Unilineal.Engine.Interaction.Layout;
 using UI_Unilineal.Engine.Layout;
 using UI_Unilineal.Rendering.Avalonia.HitTesting;
 using UI_Unilineal.Rendering.Avalonia.Interaction;
@@ -244,4 +245,85 @@ public sealed class InteractionInputTranslatorTests
                     ])
             ],
             new MmRect(0, 0, 100, 60));
+    [Fact]
+    public void LayoutExecuteUndoRedoAndCancel_MatchesReferenceModel()
+    {
+        DiagramScene scene = Scene();
+        var translator =
+            new InteractionInputTranslator();
+        translator.SetMode(
+            InteractionMode.Layout);
+
+        var initial =
+            new DiagramLayoutState(
+                DiagramSceneKind.ProjectSummary,
+                new EntityUid("project-1"),
+                "G7-MODEL",
+                [],
+                null);
+        var history =
+            new LayoutCommandHistory(initial);
+
+        InteractionTranslationResult completed =
+            Drag(
+                translator,
+                scene,
+                SourceAnchorHit(),
+                TargetAnchorHit());
+        LayoutMoveIntent intent =
+            Assert.IsType<LayoutMoveIntent>(
+                completed.LayoutMove);
+
+        LayoutCommandResult executed =
+            history.Execute(
+                new MoveEntityCommand(
+                    intent.EntityUid,
+                    intent.Position));
+
+        Assert.True(executed.Changed);
+        string afterExecute =
+            LayoutSignature(
+                history.CurrentState);
+
+        Assert.Equal(
+            LayoutSignature(initial),
+            LayoutSignature(
+                history.Undo()));
+        Assert.Equal(
+            afterExecute,
+            LayoutSignature(
+                history.Redo()));
+
+        translator.PointerPressed(
+            scene,
+            SourceAnchorHit(),
+            new MmPoint(12, 12));
+        translator.PointerMoved(
+            scene,
+            SourceAnchorHit(),
+            new MmPoint(42, 30));
+
+        InteractionTranslationResult cancelled =
+            translator.Cancel();
+
+        Assert.True(cancelled.Cancelled);
+        Assert.Null(cancelled.LayoutMove);
+        Assert.Equal(
+            afterExecute,
+            LayoutSignature(
+                history.CurrentState));
+    }
+
+    private static string LayoutSignature(
+        DiagramLayoutState state) =>
+        string.Join(
+            "|",
+            state.Overrides
+                .OrderBy(
+                    item => item.EntityUid.Value,
+                    StringComparer.Ordinal)
+                .Select(
+                    item =>
+                        $"{item.EntityUid.Value}:{item.Position.X:R},{item.Position.Y:R}:{item.LockMode}"));
+
 }

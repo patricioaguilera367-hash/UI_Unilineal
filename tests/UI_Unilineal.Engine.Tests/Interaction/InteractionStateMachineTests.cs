@@ -171,4 +171,213 @@ public sealed class InteractionStateMachineTests
             string.IsNullOrWhiteSpace(
                 result.RejectionReason));
     }
+    [Fact]
+    public void IdleTransitionMatrix_IsExhaustiveAcrossModesAndEvents()
+    {
+        foreach (InteractionMode mode in
+                 Enum.GetValues<InteractionMode>())
+        {
+            foreach (InteractionEventKind eventKind in
+                     Enum.GetValues<InteractionEventKind>())
+            {
+                var machine =
+                    new InteractionStateMachine(mode);
+
+                InteractionTransitionResult result =
+                    machine.Apply(
+                        EventFor(eventKind));
+                InteractionStateKind? expected =
+                    ExpectedFromIdle(
+                        mode,
+                        eventKind);
+
+                Assert.Equal(
+                    expected is not null,
+                    result.Accepted);
+                Assert.Equal(
+                    expected ??
+                    InteractionStateKind.Idle,
+                    machine.State.Kind);
+                Assert.Equal(
+                    mode,
+                    machine.State.Mode);
+            }
+        }
+    }
+
+    [Fact]
+    public void CancelMatrix_CoversEveryReachableTransientState()
+    {
+        foreach (InteractionMode mode in
+                 Enum.GetValues<InteractionMode>())
+        {
+            foreach (InteractionStateKind kind in
+                     ReachableTransientKinds(mode))
+            {
+                InteractionStateMachine machine =
+                    MachineInState(
+                        mode,
+                        kind);
+
+                InteractionTransitionResult result =
+                    machine.Apply(
+                        new InteractionEvent(
+                            InteractionEventKind.Cancel));
+
+                Assert.True(result.Accepted);
+                Assert.Equal(
+                    new InteractionState(
+                        mode,
+                        InteractionStateKind.Idle),
+                    machine.State);
+            }
+        }
+    }
+
+    private static InteractionEvent EventFor(
+        InteractionEventKind kind) =>
+        kind switch
+        {
+            InteractionEventKind.HoverEntered or
+            InteractionEventKind.BeginSelection or
+            InteractionEventKind.BeginLayoutDrag =>
+                new InteractionEvent(
+                    kind,
+                    ElementId),
+            InteractionEventKind.BeginElectricalConnection or
+            InteractionEventKind.EndElectricalConnection =>
+                new InteractionEvent(
+                    kind,
+                    ElementId,
+                    "anchor"),
+            _ =>
+                new InteractionEvent(kind)
+        };
+
+    private static InteractionStateKind? ExpectedFromIdle(
+        InteractionMode mode,
+        InteractionEventKind kind) =>
+        kind switch
+        {
+            InteractionEventKind.HoverEntered =>
+                InteractionStateKind.Hovering,
+            InteractionEventKind.BeginSelection =>
+                InteractionStateKind.Selecting,
+            InteractionEventKind.BeginPan =>
+                InteractionStateKind.Panning,
+            InteractionEventKind.BeginLayoutDrag
+                when mode == InteractionMode.Layout =>
+                InteractionStateKind.DraggingLayout,
+            InteractionEventKind.BeginElectricalConnection
+                when mode == InteractionMode.Electrical =>
+                InteractionStateKind.ConnectingElectrical,
+            InteractionEventKind.BeginMarquee =>
+                InteractionStateKind.MarqueeSelecting,
+            _ => null
+        };
+
+    private static IReadOnlyList<InteractionStateKind>
+        ReachableTransientKinds(
+            InteractionMode mode)
+    {
+        var kinds =
+            new List<InteractionStateKind>
+            {
+                InteractionStateKind.Hovering,
+                InteractionStateKind.Selecting,
+                InteractionStateKind.Panning,
+                InteractionStateKind.MarqueeSelecting
+            };
+
+        if (mode == InteractionMode.Layout)
+        {
+            kinds.Add(
+                InteractionStateKind.DraggingLayout);
+        }
+
+        if (mode == InteractionMode.Electrical)
+        {
+            kinds.Add(
+                InteractionStateKind.ConnectingElectrical);
+            kinds.Add(
+                InteractionStateKind.CommandPreview);
+        }
+
+        return kinds;
+    }
+
+    private static InteractionStateMachine MachineInState(
+        InteractionMode mode,
+        InteractionStateKind kind)
+    {
+        var machine =
+            new InteractionStateMachine(mode);
+
+        switch (kind)
+        {
+            case InteractionStateKind.Hovering:
+                machine.Apply(
+                    new InteractionEvent(
+                        InteractionEventKind.HoverEntered,
+                        ElementId));
+                break;
+
+            case InteractionStateKind.Selecting:
+                machine.Apply(
+                    new InteractionEvent(
+                        InteractionEventKind.BeginSelection,
+                        ElementId));
+                break;
+
+            case InteractionStateKind.Panning:
+                machine.Apply(
+                    new InteractionEvent(
+                        InteractionEventKind.BeginPan));
+                break;
+
+            case InteractionStateKind.MarqueeSelecting:
+                machine.Apply(
+                    new InteractionEvent(
+                        InteractionEventKind.BeginMarquee));
+                break;
+
+            case InteractionStateKind.DraggingLayout:
+                machine.Apply(
+                    new InteractionEvent(
+                        InteractionEventKind.BeginLayoutDrag,
+                        ElementId));
+                break;
+
+            case InteractionStateKind.ConnectingElectrical:
+                machine.Apply(
+                    new InteractionEvent(
+                        InteractionEventKind.BeginElectricalConnection,
+                        ElementId,
+                        "anchor-out"));
+                break;
+
+            case InteractionStateKind.CommandPreview:
+                machine.Apply(
+                    new InteractionEvent(
+                        InteractionEventKind.BeginElectricalConnection,
+                        ElementId,
+                        "anchor-out"));
+                machine.Apply(
+                    new InteractionEvent(
+                        InteractionEventKind.EndElectricalConnection,
+                        ElementId,
+                        "anchor-in"));
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(kind));
+        }
+
+        Assert.Equal(
+            kind,
+            machine.State.Kind);
+        return machine;
+    }
+
 }

@@ -1,6 +1,7 @@
 ﻿using UI_Unilineal.Domain.Scene;
 using UI_Unilineal.Domain.Semantics;
 using UI_Unilineal.Engine.Interaction;
+using UI_Unilineal.Engine.Interaction.Electrical;
 using UI_Unilineal.Engine.Layout;
 using UI_Unilineal.Playground.Fixtures;
 using UI_Unilineal.Playground.ViewModels;
@@ -207,4 +208,87 @@ public sealed class G7PlaygroundOrchestrationTests
             CanEditProtection: true,
             CanExport: true,
             CanPersistLayout: true);
+    [Theory]
+    [InlineData(CommandResultStatus.Rejected)]
+    [InlineData(CommandResultStatus.Conflict)]
+    public async Task NonAppliedElectricalResult_DoesNotMutateDiagram(
+        CommandResultStatus status)
+    {
+        var viewModel =
+            new SingleLineWorkspaceViewModel(
+                PlaygroundFixtureFactory.Create(),
+                EditableCapabilities(),
+                new NonApplyingHandler(status));
+
+        Assert.True(
+            viewModel.TrySetInteractionMode(
+                InteractionMode.Electrical));
+
+        ElectricalConnectionIntent intent =
+            CompatibleConnectionIntent(
+                viewModel.Scene);
+        string baseline =
+            DiagramSceneFingerprint.Compute(
+                viewModel.Scene);
+
+        Assert.True(
+            viewModel.CreateElectricalProposal(
+                intent));
+        ElectricalCommandProposal proposal =
+            Assert.IsType<ElectricalCommandProposal>(
+                viewModel.PendingElectricalProposal);
+
+        CommandResult result =
+            Assert.IsType<CommandResult>(
+                await viewModel.ExecutePendingElectricalAsync(
+                    confirmationGranted: true));
+
+        Assert.Equal(status, result.Status);
+        Assert.Equal(
+            baseline,
+            DiagramSceneFingerprint.Compute(
+                viewModel.Scene));
+        Assert.Same(
+            proposal,
+            viewModel.PendingElectricalProposal);
+        Assert.Same(
+            result,
+            viewModel.LastElectricalResult);
+    }
+
+    private sealed class NonApplyingHandler :
+        IElectricalCommandHandler
+    {
+        private readonly CommandResultStatus _status;
+
+        public NonApplyingHandler(
+            CommandResultStatus status)
+        {
+            _status = status;
+        }
+
+        public ValueTask<CommandResult> ExecuteAsync(
+            ElectricalCommandRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            CommandResult result =
+                _status switch
+                {
+                    CommandResultStatus.Rejected =>
+                        CommandResult.Rejected(
+                            ["Rejected by G7 hardening fixture."]),
+                    CommandResultStatus.Conflict =>
+                        CommandResult.Conflict(
+                            ["Revision conflict in G7 hardening fixture."]),
+                    _ => throw new InvalidOperationException(
+                        $"Unsupported non-applied status '{_status}'.")
+                };
+
+            return ValueTask.FromResult(result);
+        }
+    }
+
 }
