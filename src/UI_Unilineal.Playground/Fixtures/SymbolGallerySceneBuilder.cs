@@ -196,7 +196,7 @@ public static class SymbolGallerySceneBuilder
         double width,
         double height)
     {
-        const double spacing = 10;
+        const double spacing = 20;
 
         for (double x = 0; x <= width; x += spacing)
         {
@@ -204,7 +204,7 @@ public static class SymbolGallerySceneBuilder
                 $"gallery/grid/v-{x:0}",
                 new MmPoint(x, 0),
                 new MmPoint(x, height),
-                "REFERENCE",
+                "GALLERY_GRID",
                 SceneLayer.Background,
                 -100));
         }
@@ -215,7 +215,7 @@ public static class SymbolGallerySceneBuilder
                 $"gallery/grid/h-{y:0}",
                 new MmPoint(0, y),
                 new MmPoint(width, y),
-                "REFERENCE",
+                "GALLERY_GRID",
                 SceneLayer.Background,
                 -100));
         }
