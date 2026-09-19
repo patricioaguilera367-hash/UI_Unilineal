@@ -33,6 +33,45 @@ public sealed class GroundingSchemeCatalogTests
     }
 
     [Fact]
+    public void DefaultTnSPreview_PlacesTpAndTsSideBySideOnSharedUpstreamBranch()
+    {
+        GroundingSchemeCatalog catalog =
+            LoadCatalog();
+
+        GroundingSchemeDefinition selected =
+            catalog.Schemes.Single(
+                scheme => scheme.Id == catalog.DefaultSchemeId);
+        GroundingPreviewPresetDefinition preset =
+            Assert.Single(
+                catalog.PreviewPresets,
+                candidate => candidate.Id == selected.PreviewPresetId);
+
+        Assert.Equal(
+            "VISUAL_DEFAULT_ONLY_PENDING_TOPOLOGY",
+            preset.Status);
+        Assert.Equal(
+            ["GROUND_TP", "GROUND_TS"],
+            preset.Symbols
+                .Select(symbol => symbol.SymbolId)
+                .ToArray());
+        Assert.Equal(
+            3,
+            preset.Segments.Count);
+
+        GroundingPreviewSymbolPlacement tp =
+            preset.Symbols.Single(
+                symbol => symbol.SymbolId == "GROUND_TP");
+        GroundingPreviewSymbolPlacement ts =
+            preset.Symbols.Single(
+                symbol => symbol.SymbolId == "GROUND_TS");
+
+        Assert.Equal(0, tp.X, 6);
+        Assert.Equal(6, tp.Y, 6);
+        Assert.Equal(18, ts.X, 6);
+        Assert.Equal(6, ts.Y, 6);
+    }
+
+    [Fact]
     public void RepositoryCatalog_PredefinesRequiredSchemeTitlesWithPendingConnections()
     {
         GroundingSchemeCatalog catalog =
