@@ -63,7 +63,9 @@
     {
       "id": "GROUNDING",
       "members": [
-        "GROUND"
+        "GROUND",
+        "GROUND_TP",
+        "GROUND_TS"
       ],
       "nominalCell": {
         "widthMm": 14,
@@ -134,6 +136,7 @@
     "Annex 18.5 may justify a recognizable graphic analogue but not an exact physical size or spacing unless another explicit source does so.",
     "Labels and annotations must not move electrical anchors.",
     "Circuit markers carry the circuit identifier; load/use text is composed separately below or adjacent to the marker.",
-    "RCD variants share one base P/D device geometry; pole count is expressed by the associated Nx rating notation, not by changing the P/D glyph."
+    "RCD variants share one base P/D device geometry; pole count is expressed by the associated Nx rating notation, not by changing the P/D glyph.",
+    "Protective ground (TP) and service ground (TS) are distinct canonical symbols; the legacy GROUND symbol remains compatibility-only until host migration."
   ]
 }
