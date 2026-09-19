@@ -57,6 +57,8 @@ public sealed class Ric18DrawingProfileLoaderTests
             "FUSE",
             "BUS",
             "GROUND",
+            "GROUND_TP",
+            "GROUND_TS",
             "CONNECTION_NODE",
             "DOWNSTREAM_BOARD",
             "CIRCUIT_MARKER",
