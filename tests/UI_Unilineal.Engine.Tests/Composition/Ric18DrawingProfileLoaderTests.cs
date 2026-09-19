@@ -47,6 +47,10 @@ public sealed class Ric18DrawingProfileLoaderTests
             "SOURCE_UTILITY",
             "SERVICE_ENTRANCE",
             "BREAKER",
+            "BREAKER_1X",
+            "BREAKER_2X",
+            "BREAKER_3X",
+            "BREAKER_4X",
             "RCD",
             "FUSE",
             "BUS",
@@ -79,8 +83,15 @@ public sealed class Ric18DrawingProfileLoaderTests
             requiredBlocks,
             id => Assert.Contains(profile.Blocks, block => block.Id == id));
 
-        Assert.All(
+        Assert.Contains(
             profile.Provenance,
+            source =>
+                source.Id == "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL" &&
+                source.Classification == GraphicRuleClassification.RIC18_REFERENCE);
+
+        Assert.All(
+            profile.Provenance.Where(source =>
+                source.Id.StartsWith("APP:", StringComparison.Ordinal)),
             source => Assert.Equal(
                 GraphicRuleClassification.APP_CONVENTION,
                 source.Classification));
