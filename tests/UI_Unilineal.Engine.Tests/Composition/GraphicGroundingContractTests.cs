@@ -159,6 +159,96 @@ public sealed class GraphicGroundingContractTests
     }
 
     [Fact]
+    public void CircuitMarker_IsCenteredAndContainsNoCrossGlyph()
+    {
+        RIC18DrawingProfile profile = LoadProfile();
+        SymbolDefinition symbol = profile.Symbols.Single(
+            candidate => candidate.Id == "CIRCUIT_MARKER");
+
+        Assert.Equal(16, symbol.NominalBounds.Width, 6);
+        Assert.Equal(16, symbol.NominalBounds.Height, 6);
+
+        AnchorDefinition input = Assert.Single(symbol.Anchors);
+        Assert.Equal("IN", input.Id);
+        Assert.Equal(8, input.Point.X, 6);
+        Assert.Equal(0, input.Point.Y, 6);
+
+        CircleSymbolPrimitive circle = Assert.Single(
+            symbol.Primitives.OfType<CircleSymbolPrimitive>());
+        Assert.Equal(8, circle.Center.X, 6);
+        Assert.Equal(8, circle.Center.Y, 6);
+        Assert.Equal(5, circle.Radius, 6);
+
+        LineSymbolPrimitive lead = Assert.Single(
+            symbol.Primitives.OfType<LineSymbolPrimitive>());
+        Assert.Equal(8, lead.Start.X, 6);
+        Assert.Equal(8, lead.End.X, 6);
+
+        LabelSlot number = Assert.Single(symbol.LabelSlots);
+        Assert.Equal("NUMBER", number.Id);
+        Assert.True(number.Required);
+        Assert.Contains(
+            "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+            symbol.ProvenanceIds);
+    }
+
+    [Fact]
+    public void LegacyFinalLoad_NoLongerUsesCrossedLampGlyph()
+    {
+        RIC18DrawingProfile profile = LoadProfile();
+        SymbolDefinition symbol = profile.Symbols.Single(
+            candidate => candidate.Id == "FINAL_LOAD");
+
+        Assert.Single(
+            symbol.Primitives.OfType<CircleSymbolPrimitive>());
+        Assert.Single(
+            symbol.Primitives.OfType<LineSymbolPrimitive>());
+    }
+
+    [Theory]
+    [InlineData("RCD_2X")]
+    [InlineData("RCD_4X")]
+    public void RcdVariants_SharePdGeometryAndElectricalAxis(string symbolId)
+    {
+        RIC18DrawingProfile profile = LoadProfile();
+        SymbolDefinition symbol = profile.Symbols.Single(
+            candidate => candidate.Id == symbolId);
+
+        Assert.Equal(12, symbol.NominalBounds.Width, 6);
+        Assert.Equal(16, symbol.NominalBounds.Height, 6);
+
+        AnchorDefinition input = symbol.Anchors.Single(anchor => anchor.Id == "IN");
+        AnchorDefinition output = symbol.Anchors.Single(anchor => anchor.Id == "OUT");
+
+        Assert.Equal(6, input.Point.X, 6);
+        Assert.Equal(0, input.Point.Y, 6);
+        Assert.Equal(6, output.Point.X, 6);
+        Assert.Equal(16, output.Point.Y, 6);
+
+        Assert.Single(
+            symbol.Primitives.OfType<RectangleSymbolPrimitive>());
+        Assert.Equal(
+            2,
+            symbol.Primitives.OfType<PolylineSymbolPrimitive>().Count());
+
+        LineSymbolPrimitive[] lines =
+            symbol.Primitives.OfType<LineSymbolPrimitive>().ToArray();
+        Assert.Equal(3, lines.Length);
+        Assert.Equal(
+            2,
+            lines.Count(line =>
+                Math.Abs(line.Start.X - line.End.X) < 0.000001 &&
+                Math.Abs(line.Start.X - 6) < 0.000001));
+
+        Assert.Contains(
+            "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+            symbol.ProvenanceIds);
+        Assert.Contains(
+            "APP:GRAPHIC_CONVENTIONS",
+            symbol.ProvenanceIds);
+    }
+
+    [Fact]
     public void Annex18_5Reference_IsRegisteredAsReferenceWithLocator()
     {
         RIC18DrawingProfile profile = LoadProfile();
