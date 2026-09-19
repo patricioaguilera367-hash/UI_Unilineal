@@ -16,7 +16,8 @@ public static class SymbolGallerySceneBuilder
     public static DiagramScene Build(
         RIC18DrawingProfile profile,
         bool showGrid = true,
-        bool showBounds = true)
+        bool showBounds = true,
+        bool showAnchors = false)
     {
         ArgumentNullException.ThrowIfNull(profile);
 
@@ -53,7 +54,8 @@ public static class SymbolGallerySceneBuilder
                     symbol,
                     SceneMarginMm + column * CellWidthMm,
                     SceneMarginMm + (row + familyRow) * CellHeightMm,
-                    showBounds);
+                    showBounds,
+                    showAnchors);
                 nominalBounds.Add(bounds);
                 index++;
             }
@@ -77,8 +79,8 @@ public static class SymbolGallerySceneBuilder
             profile.ProfileId,
             profile.Version,
             "symbol-gallery",
-            "symbol-gallery-v3",
-            $"symbol-gallery:grid={showGrid};bounds={showBounds}",
+            "symbol-gallery-v4",
+            $"symbol-gallery:grid={showGrid};bounds={showBounds};anchors={showAnchors}",
             "symbol-gallery");
 
         return new DiagramScene(
@@ -92,7 +94,8 @@ public static class SymbolGallerySceneBuilder
         SymbolDefinition symbol,
         double x,
         double y,
-        bool showBounds)
+        bool showBounds,
+        bool showAnchors)
     {
         const double previewWidth = 62;
         const double previewHeight = 30;
@@ -167,35 +170,38 @@ public static class SymbolGallerySceneBuilder
             },
             symbol.Id));
 
-        foreach (AnchorDefinition anchor in symbol.Anchors)
+        if (showAnchors)
         {
-            double anchorX =
-                symbolX +
-                (anchor.Point.X - symbol.NominalBounds.X);
-            double anchorY =
-                symbolY +
-                (anchor.Point.Y - symbol.NominalBounds.Y);
-            const double radius = 0.8;
+            foreach (AnchorDefinition anchor in symbol.Anchors)
+            {
+                double anchorX =
+                    symbolX +
+                    (anchor.Point.X - symbol.NominalBounds.X);
+                double anchorY =
+                    symbolY +
+                    (anchor.Point.Y - symbol.NominalBounds.Y);
+                const double radius = 0.8;
 
-            elements.Add(new CircleSceneElement(
-                new SceneId($"gallery/{slug}/anchor-{Slug(anchor.Id)}"),
-                new MmRect(
-                    anchorX - radius,
-                    anchorY - radius,
-                    radius * 2,
-                    radius * 2),
-                SceneLayer.Interaction,
-                20,
-                SceneVisibility.Interactive,
-                null,
-                new Dictionary<string, string>
-                {
-                    ["anchorId"] = anchor.Id,
-                    ["anchorRole"] = anchor.Role.ToString()
-                },
-                new MmPoint(anchorX, anchorY),
-                radius,
-                "ANNOTATION"));
+                elements.Add(new CircleSceneElement(
+                    new SceneId($"gallery/{slug}/anchor-{Slug(anchor.Id)}"),
+                    new MmRect(
+                        anchorX - radius,
+                        anchorY - radius,
+                        radius * 2,
+                        radius * 2),
+                    SceneLayer.Interaction,
+                    20,
+                    SceneVisibility.Interactive,
+                    null,
+                    new Dictionary<string, string>
+                    {
+                        ["anchorId"] = anchor.Id,
+                        ["anchorRole"] = anchor.Role.ToString()
+                    },
+                    new MmPoint(anchorX, anchorY),
+                    radius,
+                    "ANNOTATION"));
+            }
         }
 
         if (breakerMultiplicity is int breakerPoles)
