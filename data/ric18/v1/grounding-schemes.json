@@ -9,7 +9,10 @@
       "sourceSection": "6.4.3",
       "sourceFigure": "Figura 5.1",
       "defaultSelected": true,
-      "symbolIds": ["GROUND_TP", "GROUND_TS"],
+      "symbolIds": [
+        "GROUND_TP",
+        "GROUND_TS"
+      ],
       "previewPresetId": "TP_TS_SIDE_BY_SIDE_SHARED_UPSTREAM_BRANCH",
       "connectionStatus": "PENDING_DEFINITION",
       "connectionPoints": []
@@ -21,7 +24,10 @@
       "sourceSection": "6.4.4",
       "sourceFigure": "Figura 5.2",
       "defaultSelected": false,
-      "symbolIds": ["GROUND_TP", "GROUND_TS"],
+      "symbolIds": [
+        "GROUND_TP",
+        "GROUND_TS"
+      ],
       "previewPresetId": null,
       "connectionStatus": "PENDING_DEFINITION",
       "connectionPoints": []
@@ -33,7 +39,10 @@
       "sourceSection": "6.4.5",
       "sourceFigure": "Figura 5.3",
       "defaultSelected": false,
-      "symbolIds": ["GROUND_TP", "GROUND_TS"],
+      "symbolIds": [
+        "GROUND_TP",
+        "GROUND_TS"
+      ],
       "previewPresetId": null,
       "connectionStatus": "PENDING_DEFINITION",
       "connectionPoints": []
@@ -45,7 +54,10 @@
       "sourceSection": "6.5",
       "sourceFigure": "Figura 5.4",
       "defaultSelected": false,
-      "symbolIds": ["GROUND_TP", "GROUND_TS"],
+      "symbolIds": [
+        "GROUND_TP",
+        "GROUND_TS"
+      ],
       "previewPresetId": null,
       "connectionStatus": "PENDING_DEFINITION",
       "connectionPoints": []
@@ -57,10 +69,51 @@
       "sourceSection": "6.6",
       "sourceFigure": "Figura 5.5",
       "defaultSelected": false,
-      "symbolIds": ["GROUND_TP", "GROUND_TS"],
+      "symbolIds": [
+        "GROUND_TP",
+        "GROUND_TS"
+      ],
       "previewPresetId": null,
       "connectionStatus": "PENDING_DEFINITION",
       "connectionPoints": []
+    }
+  ],
+  "previewPresets": [
+    {
+      "id": "TP_TS_SIDE_BY_SIDE_SHARED_UPSTREAM_BRANCH",
+      "status": "VISUAL_DEFAULT_ONLY_PENDING_TOPOLOGY",
+      "symbols": [
+        {
+          "symbolId": "GROUND_TP",
+          "x": 0,
+          "y": 6
+        },
+        {
+          "symbolId": "GROUND_TS",
+          "x": 18,
+          "y": 6
+        }
+      ],
+      "segments": [
+        {
+          "x1": 7,
+          "y1": 0,
+          "x2": 25,
+          "y2": 0
+        },
+        {
+          "x1": 7,
+          "y1": 0,
+          "x2": 7,
+          "y2": 6
+        },
+        {
+          "x1": 25,
+          "y1": 0,
+          "x2": 25,
+          "y2": 6
+        }
+      ]
     }
   ]
 }
