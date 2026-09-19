@@ -50,14 +50,6 @@ public sealed class SingleLineViewTests
             primary);
 
         view.Scene = sceneB;
-        primary = new SceneId("scene-a/element");
-
-        window.MouseMove(
-            pointA,
-            MouseButton.None,
-            RawInputModifiers.None);
-
-        Assert.Null(primary);
 
         Point pointB = ViewportTransform.SceneMmToDip(
             new MmPoint(66, 16),
@@ -70,6 +62,13 @@ public sealed class SingleLineViewTests
         Assert.Equal(
             new SceneId("scene-b/element"),
             primary);
+
+        window.MouseMove(
+            pointA,
+            MouseButton.None,
+            RawInputModifiers.None);
+
+        Assert.Null(primary);
         Assert.Equal(
             fingerprintA,
             DiagramSceneFingerprint.Compute(sceneA));
@@ -85,6 +84,8 @@ public sealed class SingleLineViewTests
             "zoom/element",
             new MmRect(20, 20, 20, 20),
             new MmRect(0, 0, 120, 80));
+        string fingerprint =
+            DiagramSceneFingerprint.Compute(scene);
         var view = new SingleLineView
         {
             Scene = scene
@@ -111,7 +112,7 @@ public sealed class SingleLineViewTests
         Assert.Equal(before.X, after.X, 9);
         Assert.Equal(before.Y, after.Y, 9);
         Assert.Equal(
-            DiagramSceneFingerprint.Compute(scene),
+            fingerprint,
             DiagramSceneFingerprint.Compute(scene));
     }
 
