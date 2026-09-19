@@ -213,13 +213,36 @@ public sealed class AvaloniaSceneRenderer
             FlowDirection.LeftToRight,
             resources.ResolveTypeface(text.TextStyleId),
             style.HeightMm,
-            brush);
+            brush)
+        {
+            MaxTextWidth = text.Bounds.Width,
+            TextAlignment = text.HorizontalAlignment switch
+            {
+                SceneTextHorizontalAlignment.Start => TextAlignment.Left,
+                SceneTextHorizontalAlignment.Center => TextAlignment.Center,
+                SceneTextHorizontalAlignment.End => TextAlignment.Right,
+                _ => throw new InvalidOperationException(
+                    $"Unsupported horizontal text alignment '{text.HorizontalAlignment}'.")
+            }
+        };
+
+        double y = text.VerticalAlignment switch
+        {
+            SceneTextVerticalAlignment.Top => text.Bounds.Y,
+            SceneTextVerticalAlignment.Center =>
+                text.Bounds.Y +
+                Math.Max(0, (text.Bounds.Height - formatted.Height) / 2.0),
+            SceneTextVerticalAlignment.Bottom =>
+                text.Bounds.Bottom - formatted.Height,
+            _ => throw new InvalidOperationException(
+                $"Unsupported vertical text alignment '{text.VerticalAlignment}'.")
+        };
 
         context.DrawText(
             formatted,
             new Point(
                 text.Bounds.X,
-                text.Bounds.Y));
+                y));
     }
 
     private static void DrawSymbol(
