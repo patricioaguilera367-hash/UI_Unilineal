@@ -18,6 +18,7 @@ public sealed partial class MainWindow : Window
     private bool _showingSymbolGallery;
     private bool _galleryShowGrid = true;
     private bool _galleryShowBounds = true;
+    private bool _galleryShowAnchors;
 
     public MainWindow()
     {
@@ -86,6 +87,20 @@ public sealed partial class MainWindow : Window
         }
 
         _galleryShowBounds = !_galleryShowBounds;
+        RefreshSymbolGallery(
+            fitScene: false);
+    }
+
+    private void OnGalleryAnchorsClicked(
+        object? sender,
+        RoutedEventArgs e)
+    {
+        if (!_showingSymbolGallery)
+        {
+            return;
+        }
+
+        _galleryShowAnchors = !_galleryShowAnchors;
         RefreshSymbolGallery(
             fitScene: false);
     }
@@ -355,7 +370,8 @@ public sealed partial class MainWindow : Window
             SymbolGallerySceneBuilder.Build(
                 _viewModel.Profile,
                 _galleryShowGrid,
-                _galleryShowBounds);
+                _galleryShowBounds,
+                _galleryShowAnchors);
 
         UpdateInteractionShell();
 
@@ -422,6 +438,8 @@ public sealed partial class MainWindow : Window
             _showingSymbolGallery;
         GalleryBoundsButton.IsEnabled =
             _showingSymbolGallery;
+        GalleryAnchorsButton.IsEnabled =
+            _showingSymbolGallery;
         GalleryGridButton.Content =
             _galleryShowGrid
                 ? "Grid: On"
@@ -430,6 +448,10 @@ public sealed partial class MainWindow : Window
             _galleryShowBounds
                 ? "Bounds: On"
                 : "Bounds: Off";
+        GalleryAnchorsButton.Content =
+            _galleryShowAnchors
+                ? "Anchors: On"
+                : "Anchors: Off";
         UndoLayoutButton.IsEnabled =
             !_showingSymbolGallery &&
             _viewModel.CanUndoLayout;
@@ -453,7 +475,7 @@ public sealed partial class MainWindow : Window
 
         CapabilitiesText.Text =
             _showingSymbolGallery
-                ? "Gallery — read-only review. Grid and nominal bounds/guides are optional inspection overlays; anchor circles mark connection points."
+                ? "Gallery — read-only review. Grid, nominal bounds/guides and anchor circles are optional inspection overlays."
                 : $"Host capabilities — Layout: {EnabledText(_viewModel.Capabilities.CanEditLayout)}, " +
                   $"Electrical: {EnabledText(_viewModel.Capabilities.CanEditElectrical)}";
 
