@@ -10,56 +10,107 @@
   "families": [
     {
       "id": "SUPPLY_SOURCE",
-      "members": ["SOURCE_UTILITY"],
-      "nominalCell": { "widthMm": 16, "heightMm": 16 },
+      "members": [
+        "SOURCE_UTILITY"
+      ],
+      "nominalCell": {
+        "widthMm": 16,
+        "heightMm": 16
+      },
       "anchorPolicy": "CenteredFlow"
     },
     {
       "id": "SERVICE_INLINE",
-      "members": ["SERVICE_ENTRANCE"],
-      "nominalCell": { "widthMm": 12, "heightMm": 18 },
+      "members": [
+        "SERVICE_ENTRANCE"
+      ],
+      "nominalCell": {
+        "widthMm": 12,
+        "heightMm": 18
+      },
       "anchorPolicy": "VerticalCenterline"
     },
     {
       "id": "PROTECTION_INLINE",
-      "members": ["BREAKER", "RCD", "FUSE"],
-      "nominalCell": { "widthMm": 12, "heightMm": 16 },
+      "members": [
+        "BREAKER",
+        "BREAKER_1X",
+        "BREAKER_2X",
+        "BREAKER_3X",
+        "BREAKER_4X",
+        "RCD",
+        "FUSE"
+      ],
+      "nominalCell": {
+        "widthMm": 12,
+        "heightMm": 16
+      },
       "anchorPolicy": "VerticalCenterline"
     },
     {
       "id": "DISTRIBUTION_BUS",
-      "members": ["BUS"],
-      "nominalCell": { "widthMm": 40, "heightMm": 8 },
+      "members": [
+        "BUS"
+      ],
+      "nominalCell": {
+        "widthMm": 40,
+        "heightMm": 8
+      },
       "anchorPolicy": "HorizontalBus"
     },
     {
       "id": "GROUNDING",
-      "members": ["GROUND"],
-      "nominalCell": { "widthMm": 14, "heightMm": 14 },
+      "members": [
+        "GROUND"
+      ],
+      "nominalCell": {
+        "widthMm": 14,
+        "heightMm": 14
+      },
       "anchorPolicy": "VerticalCenterline"
     },
     {
       "id": "CONNECTION_NODE",
-      "members": ["CONNECTION_NODE"],
-      "nominalCell": { "widthMm": 6, "heightMm": 6 },
+      "members": [
+        "CONNECTION_NODE"
+      ],
+      "nominalCell": {
+        "widthMm": 6,
+        "heightMm": 6
+      },
       "anchorPolicy": "CenteredNode"
     },
     {
       "id": "DOWNSTREAM_BOARD",
-      "members": ["DOWNSTREAM_BOARD"],
-      "nominalCell": { "widthMm": 22, "heightMm": 16 },
+      "members": [
+        "DOWNSTREAM_BOARD"
+      ],
+      "nominalCell": {
+        "widthMm": 22,
+        "heightMm": 16
+      },
       "anchorPolicy": "VerticalCenterline"
     },
     {
       "id": "FINAL_LOAD",
-      "members": ["FINAL_LOAD"],
-      "nominalCell": { "widthMm": 16, "heightMm": 16 },
+      "members": [
+        "FINAL_LOAD"
+      ],
+      "nominalCell": {
+        "widthMm": 16,
+        "heightMm": 16
+      },
       "anchorPolicy": "VerticalCenterline"
     },
     {
       "id": "FALLBACK",
-      "members": ["UNKNOWN_ENDPOINT"],
-      "nominalCell": { "widthMm": 18, "heightMm": 16 },
+      "members": [
+        "UNKNOWN_ENDPOINT"
+      ],
+      "nominalCell": {
+        "widthMm": 18,
+        "heightMm": 16
+      },
       "anchorPolicy": "VerticalCenterline"
     }
   ],
