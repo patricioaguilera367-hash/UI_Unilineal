@@ -133,7 +133,7 @@ public sealed class SingleLineView : Control
 
     public event EventHandler<HitTestResult?>? PrimaryHitChanged;
 
-    public event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
+    public event EventHandler<InteractionSelectionChangedEventArgs>? SelectionChanged;
 
     public event EventHandler<LayoutMoveRequestedEventArgs>? LayoutMoveRequested;
 
@@ -550,7 +550,7 @@ public sealed class SingleLineView : Control
 
             SelectionChanged?.Invoke(
                 this,
-                new SelectionChangedEventArgs(
+                new InteractionSelectionChangedEventArgs(
                     selection));
         }
 

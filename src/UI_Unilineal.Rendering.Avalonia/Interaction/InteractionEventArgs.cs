@@ -2,9 +2,9 @@
 
 namespace UI_Unilineal.Rendering.Avalonia.Interaction;
 
-public sealed class SelectionChangedEventArgs : EventArgs
+public sealed class InteractionSelectionChangedEventArgs : EventArgs
 {
-    public SelectionChangedEventArgs(
+    public InteractionSelectionChangedEventArgs(
         SelectionIntent intent)
     {
         Intent = intent ??
