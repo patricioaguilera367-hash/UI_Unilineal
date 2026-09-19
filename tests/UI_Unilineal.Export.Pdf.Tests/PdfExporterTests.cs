@@ -53,6 +53,67 @@ public sealed class PdfExporterTests
     }
 
     [Fact]
+    public async Task Pdf_text_escapes_delimiters_controls_and_non_ascii_deterministically()
+    {
+        const string text =
+            "A(\\)\n\r\t\u0001ñ😀";
+        (DrawingDocument document, ResolvedDrawingStyleSet styles) =
+            CreateDocument(
+                text: text);
+
+        byte[] first =
+            await Export(
+                new PdfExporter(),
+                document,
+                styles);
+        byte[] second =
+            await Export(
+                new PdfExporter(),
+                document,
+                styles);
+        string pdf =
+            Encoding.ASCII.GetString(first);
+
+        Assert.Equal(first, second);
+        Assert.Contains(
+            "A\\(\\\\\\)\\n\\r\\t???",
+            pdf,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "\u0001",
+            pdf,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Pre_cancelled_export_does_not_mutate_destination_stream()
+    {
+        (DrawingDocument document, ResolvedDrawingStyleSet styles) =
+            CreateDocument();
+        byte[] original =
+            Encoding.ASCII.GetBytes("ORIGINAL");
+        var destination =
+            new MemoryStream();
+        await destination.WriteAsync(original);
+
+        using var cts =
+            new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            async () =>
+                await new PdfExporter().ExportAsync(
+                    document,
+                    styles,
+                    destination,
+                    cancellationToken: cts.Token));
+
+        Assert.Equal(
+            original,
+            destination.ToArray());
+    }
+
+    [Fact]
     public async Task Preflight_failure_does_not_mutate_destination_stream()
     {
         (DrawingDocument document, ResolvedDrawingStyleSet styles) =
@@ -81,7 +142,8 @@ public sealed class PdfExporterTests
     private static (
         DrawingDocument Document,
         ResolvedDrawingStyleSet Styles) CreateDocument(
-            string lineStyleId = "POWER")
+            string lineStyleId = "POWER",
+            string text = "Demo (PDF) \\ test")
     {
         var styles = new ResolvedDrawingStyleSet(
             "ric18",
@@ -163,7 +225,7 @@ public sealed class PdfExporterTests
                 SceneVisibility.Both,
                 null,
                 null,
-                "Demo (PDF) \\ test",
+                text,
                 "TECH")
         };
 

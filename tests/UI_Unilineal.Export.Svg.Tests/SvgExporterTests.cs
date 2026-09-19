@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Xml.Linq;
 using UI_Unilineal.Domain.Scene;
 using UI_Unilineal.Engine.Composition;
 using UI_Unilineal.Engine.Documents;
@@ -58,6 +59,67 @@ public sealed class SvgExporterTests
         Assert.DoesNotContain("<script>", svg, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("&lt;script&gt;", svg, StringComparison.Ordinal);
         Assert.Contains("&amp;", svg, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Unusual_unicode_and_xml_controls_are_sanitized_without_losing_valid_text()
+    {
+        const string text =
+            "Tablero <TDA> & \"línea\" — ñ 😀\u0001";
+
+        (DrawingDocument document, ResolvedDrawingStyleSet styles) =
+            CreateDocument(text);
+
+        string svg = Encoding.UTF8.GetString(
+            await Export(
+                new SvgExporter(),
+                document,
+                styles));
+
+        XDocument xml =
+            XDocument.Parse(svg);
+        XNamespace ns =
+            "http://www.w3.org/2000/svg";
+        XElement textElement =
+            Assert.Single(
+                xml.Descendants(ns + "text"));
+
+        Assert.Equal(
+            "Tablero <TDA> & \"línea\" — ñ 😀�",
+            textElement.Value);
+        Assert.DoesNotContain(
+            "\u0001",
+            svg,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Pre_cancelled_export_does_not_mutate_destination_stream()
+    {
+        (DrawingDocument document, ResolvedDrawingStyleSet styles) =
+            CreateDocument();
+        byte[] original =
+            Encoding.ASCII.GetBytes("ORIGINAL");
+        var destination =
+            new MemoryStream();
+        await destination.WriteAsync(original);
+
+        using var cts =
+            new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            async () =>
+                await new SvgExporter().ExportSheetAsync(
+                    document,
+                    1,
+                    styles,
+                    destination,
+                    cancellationToken: cts.Token));
+
+        Assert.Equal(
+            original,
+            destination.ToArray());
     }
 
     [Fact]

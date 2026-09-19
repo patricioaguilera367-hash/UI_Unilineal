@@ -51,6 +51,43 @@ public sealed class DocumentContractTests
     }
 
     [Fact]
+    public void Large_custom_paper_remains_exact_and_finite()
+    {
+        PaperSize paper =
+            PaperSize.Custom(
+                5000.125,
+                3000.75,
+                PageOrientation.Landscape);
+
+        Assert.Equal(5000.125, paper.WidthMm);
+        Assert.Equal(3000.75, paper.HeightMm);
+        Assert.True(double.IsFinite(paper.WidthMm));
+        Assert.True(double.IsFinite(paper.HeightMm));
+    }
+
+    [Fact]
+    public void Near_zero_positive_geometry_is_explicitly_valid_but_zero_is_rejected()
+    {
+        var size =
+            new MmSize(
+                0.000001,
+                0.000001);
+        var rect =
+            new MmRect(
+                0,
+                0,
+                0.000001,
+                0.000001);
+
+        Assert.Equal(0.000001, size.Width);
+        Assert.Equal(0.000001, rect.Width);
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new MmSize(0, 1));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new MmRect(0, 0, 1, 0));
+    }
+
+    [Fact]
     public void Drawing_sheet_requires_positive_scale_and_viewports_inside_paper()
     {
         DiagramScene scene = CreateScene();

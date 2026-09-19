@@ -93,29 +93,57 @@ public sealed class ExportParityGoldenTests
             "UI_Unilineal.Export.Pdf"
         })
         {
-            string path = Path.Combine(
-                repositoryRoot,
-                "src",
-                project,
-                $"{project}.csproj");
-            string content = File.ReadAllText(path);
+            string projectDirectory =
+                Path.Combine(
+                    repositoryRoot,
+                    "src",
+                    project);
+            string projectFile =
+                Path.Combine(
+                    projectDirectory,
+                    $"{project}.csproj");
+            string projectContent =
+                File.ReadAllText(projectFile);
 
-            Assert.DoesNotContain(
-                "Avalonia",
-                content,
-                StringComparison.Ordinal);
-            Assert.DoesNotContain(
-                "ProyectoElectrico",
-                content,
-                StringComparison.Ordinal);
             Assert.Contains(
                 "UI_Unilineal.Domain",
-                content,
+                projectContent,
                 StringComparison.Ordinal);
             Assert.Contains(
                 "UI_Unilineal.Engine",
-                content,
+                projectContent,
                 StringComparison.Ordinal);
+
+            foreach (string path in Directory.EnumerateFiles(
+                         projectDirectory,
+                         "*",
+                         SearchOption.AllDirectories)
+                     .Where(path =>
+                         (path.EndsWith(
+                              ".cs",
+                              StringComparison.OrdinalIgnoreCase) ||
+                          path.EndsWith(
+                              ".csproj",
+                              StringComparison.OrdinalIgnoreCase)) &&
+                         !path.Contains(
+                             $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}",
+                             StringComparison.OrdinalIgnoreCase) &&
+                         !path.Contains(
+                             $"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}",
+                             StringComparison.OrdinalIgnoreCase)))
+            {
+                string content =
+                    File.ReadAllText(path);
+
+                Assert.DoesNotContain(
+                    "Avalonia",
+                    content,
+                    StringComparison.Ordinal);
+                Assert.DoesNotContain(
+                    "ProyectoElectrico",
+                    content,
+                    StringComparison.Ordinal);
+            }
         }
     }
 
