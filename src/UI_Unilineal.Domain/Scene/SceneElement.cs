@@ -208,6 +208,20 @@ public sealed class PathSceneElement : SceneElement
     public string LineStyleId { get; }
 }
 
+public enum SceneTextHorizontalAlignment
+{
+    Start,
+    Center,
+    End
+}
+
+public enum SceneTextVerticalAlignment
+{
+    Top,
+    Center,
+    Bottom
+}
+
 public sealed class TextSceneElement : SceneElement
 {
     public TextSceneElement(
@@ -219,7 +233,11 @@ public sealed class TextSceneElement : SceneElement
         EntityReference? semanticReference,
         IReadOnlyDictionary<string, string>? metadata,
         string text,
-        string textStyleId)
+        string textStyleId,
+        SceneTextHorizontalAlignment horizontalAlignment =
+            SceneTextHorizontalAlignment.Start,
+        SceneTextVerticalAlignment verticalAlignment =
+            SceneTextVerticalAlignment.Top)
         : base(id, bounds, layer, zIndex, visibility, semanticReference, metadata)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -234,11 +252,17 @@ public sealed class TextSceneElement : SceneElement
 
         Text = text;
         TextStyleId = textStyleId;
+        HorizontalAlignment = horizontalAlignment;
+        VerticalAlignment = verticalAlignment;
     }
 
     public string Text { get; }
 
     public string TextStyleId { get; }
+
+    public SceneTextHorizontalAlignment HorizontalAlignment { get; }
+
+    public SceneTextVerticalAlignment VerticalAlignment { get; }
 }
 
 public sealed class SymbolSceneElement : SceneElement
