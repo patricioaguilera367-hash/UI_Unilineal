@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using UI_Unilineal.Domain.Scene;
 using UI_Unilineal.Domain.Semantics;
 using UI_Unilineal.Engine.Interaction;
 using UI_Unilineal.Engine.Interaction.Electrical;
