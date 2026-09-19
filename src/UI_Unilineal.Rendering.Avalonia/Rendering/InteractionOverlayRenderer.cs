@@ -9,6 +9,7 @@ public sealed class InteractionOverlayRenderer
 {
     private const double SelectedThicknessDip = 2.0;
     private const double HoverThicknessDip = 1.25;
+    private const double GestureThicknessDip = 1.5;
     private const double SelectedPaddingDip = 3.0;
     private const double HoverPaddingDip = 2.0;
 
@@ -36,6 +37,13 @@ public sealed class InteractionOverlayRenderer
             resources.ResolveStatusBrush("WARNING"),
             HoverThicknessDip,
             new DashStyle([4.0, 2.0], 0),
+            PenLineCap.Square,
+            PenLineJoin.Miter,
+            10);
+        var gesturePen = new Pen(
+            resources.ResolveStatusBrush("PENDING"),
+            GestureThicknessDip,
+            new DashStyle([6.0, 3.0], 0),
             PenLineCap.Square,
             PenLineJoin.Miter,
             10);
@@ -76,6 +84,38 @@ public sealed class InteractionOverlayRenderer
                         viewport),
                     HoverPaddingDip),
                 0);
+        }
+
+        if (overlay.LayoutGhostBounds is MmRect ghost)
+        {
+            context.DrawRectangle(
+                gesturePen,
+                ViewportTransform.SceneRectMmToDip(
+                    ghost,
+                    viewport),
+                0);
+        }
+
+        if (overlay.MarqueeBounds is MmRect marquee)
+        {
+            context.DrawRectangle(
+                gesturePen,
+                ViewportTransform.SceneRectMmToDip(
+                    marquee,
+                    viewport),
+                0);
+        }
+
+        if (overlay.ElectricalPreview is InteractionConnectionPreview preview)
+        {
+            context.DrawLine(
+                gesturePen,
+                ViewportTransform.SceneMmToDip(
+                    preview.Start,
+                    viewport),
+                ViewportTransform.SceneMmToDip(
+                    preview.End,
+                    viewport));
         }
     }
 

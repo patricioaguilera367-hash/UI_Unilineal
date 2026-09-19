@@ -5,7 +5,9 @@ using Avalonia.Media;
 using Avalonia.Styling;
 using UI_Unilineal.Domain.Profiles;
 using UI_Unilineal.Domain.Scene;
+using UI_Unilineal.Engine.Interaction;
 using UI_Unilineal.Rendering.Avalonia.HitTesting;
+using UI_Unilineal.Rendering.Avalonia.Interaction;
 using UI_Unilineal.Rendering.Avalonia.Viewport;
 
 namespace UI_Unilineal.Rendering.Avalonia.Rendering;
@@ -18,6 +20,7 @@ public sealed class SingleLineView : Control
     private readonly AvaloniaSceneRenderer _sceneRenderer = new();
     private readonly InteractionOverlayRenderer _overlayRenderer = new();
     private readonly HitTestPolicy _hitTestPolicy = new();
+    private readonly InteractionInputTranslator _inputTranslator = new();
 
     private DiagramScene? _scene;
     private RIC18DrawingProfile? _drawingProfile;
@@ -57,6 +60,13 @@ public sealed class SingleLineView : Control
                 return;
             }
 
+            InteractionState previous =
+                InteractionState;
+
+            _inputTranslator.Cancel();
+            _panning = false;
+            ReleaseCapturedPointer();
+
             _scene = value;
             _spatialIndex =
                 value is null
@@ -71,6 +81,7 @@ public sealed class SingleLineView : Control
             _overlay =
                 InteractionOverlayState.Empty;
             SetPrimaryHit(null);
+            RaiseInteractionStateChanged(previous);
             InvalidateVisual();
         }
     }
@@ -92,11 +103,45 @@ public sealed class SingleLineView : Control
         }
     }
 
+    public InteractionMode InteractionMode
+    {
+        get => _inputTranslator.State.Mode;
+        set
+        {
+            if (InteractionMode == value)
+            {
+                return;
+            }
+
+            InteractionState previous =
+                InteractionState;
+
+            _inputTranslator.SetMode(value);
+            _panning = false;
+            ReleaseCapturedPointer();
+            ClearTransientOverlay();
+            RaiseInteractionStateChanged(previous);
+        }
+    }
+
+    public InteractionState InteractionState =>
+        _inputTranslator.State;
+
     public ViewportState Viewport => _viewport;
 
     public InteractionOverlayState Overlay => _overlay;
 
     public event EventHandler<HitTestResult?>? PrimaryHitChanged;
+
+    public event EventHandler<SelectionChangedEventArgs>? SelectionChanged;
+
+    public event EventHandler<LayoutMoveRequestedEventArgs>? LayoutMoveRequested;
+
+    public event EventHandler<ElectricalProposalRequestedEventArgs>?
+        ElectricalProposalRequested;
+
+    public event EventHandler<InteractionStateChangedEventArgs>?
+        InteractionStateChanged;
 
     public void FitScene()
     {
@@ -258,18 +303,57 @@ public sealed class SingleLineView : Control
             (_spacePressed &&
              point.Properties.IsLeftButtonPressed);
 
-        if (!startPan)
+        if (startPan)
         {
-            UpdatePrimaryHit(
-                point.Position);
+            InteractionState previous =
+                InteractionState;
+
+            _inputTranslator.BeginPan();
+
+            if (InteractionState.Kind !=
+                InteractionStateKind.Panning)
+            {
+                return;
+            }
+
+            _panning = true;
+            _lastPanDip = point.Position;
+            CapturePointer(e.Pointer);
+            RaiseInteractionStateChanged(previous);
+            e.Handled = true;
             return;
         }
 
-        _panning = true;
-        _lastPanDip = point.Position;
-        _capturedPointer = e.Pointer;
-        e.Pointer.Capture(this);
-        e.Handled = true;
+        UpdatePrimaryHit(
+            point.Position);
+
+        if (_scene is null ||
+            !point.Properties.IsLeftButtonPressed ||
+            !HasUsableViewport())
+        {
+            return;
+        }
+
+        InteractionState beforeGesture =
+            InteractionState;
+
+        _inputTranslator.PointerPressed(
+            _scene,
+            _primaryHit,
+            ViewportTransform.DipToSceneMm(
+                point.Position,
+                _viewport));
+
+        if (IsPointerGestureState(
+                InteractionState.Kind))
+        {
+            CapturePointer(e.Pointer);
+            UpdateGestureOverlay();
+            e.Handled = true;
+        }
+
+        RaiseInteractionStateChanged(
+            beforeGesture);
     }
 
     protected override void OnPointerMoved(
@@ -294,6 +378,30 @@ public sealed class SingleLineView : Control
         }
 
         UpdatePrimaryHit(position);
+
+        if (_scene is null ||
+            !ReferenceEquals(
+                _capturedPointer,
+                e.Pointer) ||
+            !IsPointerGestureState(
+                InteractionState.Kind))
+        {
+            return;
+        }
+
+        InteractionState previous =
+            InteractionState;
+
+        _inputTranslator.PointerMoved(
+            _scene,
+            _primaryHit,
+            ViewportTransform.DipToSceneMm(
+                position,
+                _viewport));
+
+        UpdateGestureOverlay();
+        RaiseInteractionStateChanged(previous);
+        e.Handled = true;
     }
 
     protected override void OnPointerReleased(
@@ -301,24 +409,49 @@ public sealed class SingleLineView : Control
     {
         base.OnPointerReleased(e);
 
-        if (!_panning)
+        Point position =
+            e.GetPosition(this);
+
+        if (_panning)
         {
-            UpdatePrimaryHit(
-                e.GetPosition(this));
+            InteractionState previous =
+                InteractionState;
+
+            _panning = false;
+            _inputTranslator.EndPan();
+            ReleaseCapturedPointer(e.Pointer);
+            RaiseInteractionStateChanged(previous);
+            UpdatePrimaryHit(position);
+            e.Handled = true;
             return;
         }
 
-        _panning = false;
-        if (ReferenceEquals(
+        UpdatePrimaryHit(position);
+
+        if (_scene is null ||
+            !ReferenceEquals(
                 _capturedPointer,
                 e.Pointer))
         {
-            e.Pointer.Capture(null);
+            return;
         }
 
-        _capturedPointer = null;
-        UpdatePrimaryHit(
-            e.GetPosition(this));
+        InteractionState beforeRelease =
+            InteractionState;
+
+        InteractionTranslationResult result =
+            _inputTranslator.PointerReleased(
+                _scene,
+                _primaryHit,
+                ViewportTransform.DipToSceneMm(
+                    position,
+                    _viewport));
+
+        ReleaseCapturedPointer(e.Pointer);
+        ApplyTranslationResult(result);
+        UpdateGestureOverlay();
+        RaiseInteractionStateChanged(
+            beforeRelease);
         e.Handled = true;
     }
 
@@ -326,6 +459,25 @@ public sealed class SingleLineView : Control
         KeyEventArgs e)
     {
         base.OnKeyDown(e);
+
+        if (e.Key == Key.Escape)
+        {
+            InteractionState previous =
+                InteractionState;
+            InteractionTranslationResult cancelled =
+                _inputTranslator.Cancel();
+
+            if (cancelled.Cancelled)
+            {
+                _panning = false;
+                ReleaseCapturedPointer();
+                ClearTransientOverlay();
+                RaiseInteractionStateChanged(previous);
+                e.Handled = true;
+            }
+
+            return;
+        }
 
         if (e.Key == Key.Space)
         {
@@ -381,6 +533,109 @@ public sealed class SingleLineView : Control
 
         _spacePressed = false;
         e.Handled = true;
+    }
+
+    private void ApplyTranslationResult(
+        InteractionTranslationResult result)
+    {
+        if (result.Selection is SelectionIntent selection)
+        {
+            _overlay =
+                new InteractionOverlayState(
+                    _overlay.Hovered,
+                    new HashSet<SceneId>
+                    {
+                        selection.SceneElementId
+                    });
+
+            SelectionChanged?.Invoke(
+                this,
+                new SelectionChangedEventArgs(
+                    selection));
+        }
+
+        if (result.LayoutMove is LayoutMoveIntent move)
+        {
+            LayoutMoveRequested?.Invoke(
+                this,
+                new LayoutMoveRequestedEventArgs(
+                    move));
+        }
+
+        if (result.ElectricalConnection is
+            ElectricalConnectionIntent electrical)
+        {
+            ElectricalProposalRequested?.Invoke(
+                this,
+                new ElectricalProposalRequestedEventArgs(
+                    electrical));
+        }
+    }
+
+    private void UpdateGestureOverlay()
+    {
+        MmRect? layoutGhost = null;
+        MmRect? marquee = null;
+        InteractionConnectionPreview? electrical = null;
+
+        InteractionGestureState gesture =
+            _inputTranslator.Gesture;
+
+        switch (InteractionState.Kind)
+        {
+            case InteractionStateKind.DraggingLayout
+                when gesture.SourceBounds is MmRect sourceBounds:
+            {
+                double dx =
+                    gesture.CurrentScenePoint.X -
+                    gesture.PressScenePoint.X;
+                double dy =
+                    gesture.CurrentScenePoint.Y -
+                    gesture.PressScenePoint.Y;
+
+                layoutGhost =
+                    new MmRect(
+                        sourceBounds.X + dx,
+                        sourceBounds.Y + dy,
+                        sourceBounds.Width,
+                        sourceBounds.Height);
+                break;
+            }
+
+            case InteractionStateKind.MarqueeSelecting:
+                marquee =
+                    RectFromPoints(
+                        gesture.PressScenePoint,
+                        gesture.CurrentScenePoint);
+                break;
+
+            case InteractionStateKind.ConnectingElectrical:
+            case InteractionStateKind.CommandPreview:
+                electrical =
+                    new InteractionConnectionPreview(
+                        gesture.PressScenePoint,
+                        gesture.CurrentScenePoint);
+                break;
+        }
+
+        _overlay =
+            new InteractionOverlayState(
+                _overlay.Hovered,
+                _overlay.Selected,
+                layoutGhost,
+                marquee,
+                electrical);
+
+        InvalidateVisual();
+    }
+
+    private void ClearTransientOverlay()
+    {
+        _overlay =
+            new InteractionOverlayState(
+                _overlay.Hovered,
+                _overlay.Selected);
+        InvalidateVisual();
     }
 
     private void RebuildResources()
@@ -448,10 +703,18 @@ public sealed class SingleLineView : Control
             _overlay =
                 new InteractionOverlayState(
                     hovered,
-                    _overlay.Selected);
+                    _overlay.Selected,
+                    _overlay.LayoutGhostBounds,
+                    _overlay.MarqueeBounds,
+                    _overlay.ElectricalPreview);
             InvalidateVisual();
         }
 
+        InteractionState previous =
+            InteractionState;
+
+        _inputTranslator.UpdateHover(primary);
+        RaiseInteractionStateChanged(previous);
         SetPrimaryHit(primary);
     }
 
@@ -471,9 +734,88 @@ public sealed class SingleLineView : Control
             hit);
     }
 
+    private void CapturePointer(
+        IPointer pointer)
+    {
+        _capturedPointer = pointer;
+        pointer.Capture(this);
+    }
+
+    private void ReleaseCapturedPointer(
+        IPointer? expected = null)
+    {
+        if (_capturedPointer is null ||
+            (expected is not null &&
+             !ReferenceEquals(
+                 _capturedPointer,
+                 expected)))
+        {
+            return;
+        }
+
+        _capturedPointer.Capture(null);
+        _capturedPointer = null;
+    }
+
+    private void RaiseInteractionStateChanged(
+        InteractionState previous)
+    {
+        InteractionState current =
+            InteractionState;
+
+        if (previous == current)
+        {
+            return;
+        }
+
+        InteractionStateChanged?.Invoke(
+            this,
+            new InteractionStateChangedEventArgs(
+                previous,
+                current));
+    }
+
     private bool HasUsableViewport() =>
         _viewport.ViewportDip.Width > 0 &&
         _viewport.ViewportDip.Height > 0;
+
+    private static bool IsPointerGestureState(
+        InteractionStateKind kind) =>
+        kind is
+            InteractionStateKind.Selecting or
+            InteractionStateKind.MarqueeSelecting or
+            InteractionStateKind.DraggingLayout or
+            InteractionStateKind.ConnectingElectrical;
+
+    private static MmRect RectFromPoints(
+        MmPoint first,
+        MmPoint second)
+    {
+        double minX =
+            Math.Min(
+                first.X,
+                second.X);
+        double minY =
+            Math.Min(
+                first.Y,
+                second.Y);
+        double width =
+            Math.Max(
+                Math.Abs(
+                    second.X - first.X),
+                0.001);
+        double height =
+            Math.Max(
+                Math.Abs(
+                    second.Y - first.Y),
+                0.001);
+
+        return new MmRect(
+            minX,
+            minY,
+            width,
+            height);
+    }
 
     private static MmRect BoundsOf(
         IReadOnlyList<SceneElement> elements)

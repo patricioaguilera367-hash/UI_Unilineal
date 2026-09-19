@@ -38,11 +38,72 @@ public sealed class InteractionInputTranslator
     public InteractionState State =>
         _stateMachine.State;
 
+    public InteractionGestureState Gesture =>
+        _gesture;
+
     public void SetMode(
         InteractionMode mode)
     {
         _stateMachine.SetMode(mode);
         _gesture = InteractionGestureState.Empty;
+    }
+
+    public InteractionTranslationResult UpdateHover(
+        HitTestResult? hit)
+    {
+        if (State.Kind is not (
+                InteractionStateKind.Idle or
+                InteractionStateKind.Hovering))
+        {
+            return Current();
+        }
+
+        if (hit is null)
+        {
+            if (State.Kind == InteractionStateKind.Hovering)
+            {
+                _stateMachine.Apply(
+                    new InteractionEvent(
+                        InteractionEventKind.HoverCleared));
+            }
+
+            return Current();
+        }
+
+        if (State.Kind == InteractionStateKind.Hovering &&
+            State.ActiveSceneElementId == hit.SceneElementId)
+        {
+            return Current();
+        }
+
+        _stateMachine.Apply(
+            new InteractionEvent(
+                InteractionEventKind.HoverEntered,
+                hit.SceneElementId));
+
+        return Current();
+    }
+
+    public InteractionTranslationResult BeginPan()
+    {
+        _stateMachine.Apply(
+            new InteractionEvent(
+                InteractionEventKind.BeginPan));
+
+        _gesture = InteractionGestureState.Empty;
+        return Current();
+    }
+
+    public InteractionTranslationResult EndPan()
+    {
+        if (State.Kind == InteractionStateKind.Panning)
+        {
+            _stateMachine.Apply(
+                new InteractionEvent(
+                    InteractionEventKind.EndPan));
+        }
+
+        return Current();
     }
 
     public InteractionTranslationResult PointerPressed(
@@ -100,6 +161,7 @@ public sealed class InteractionInputTranslator
         ArgumentNullException.ThrowIfNull(scene);
 
         if (State.Kind == InteractionStateKind.Idle ||
+            State.Kind == InteractionStateKind.Hovering ||
             State.Kind == InteractionStateKind.CommandPreview)
         {
             return Current();
