@@ -279,7 +279,6 @@ public sealed class SingleLineViewTests
 
         window.MouseMove(
             new Point(390, 280),
-            MouseButton.None,
             RawInputModifiers.None);
 
         Assert.Null(primary);
