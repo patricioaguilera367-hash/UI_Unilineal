@@ -243,5 +243,66 @@ El gate de G5 incluye stress end-to-end de 1, 4, 12, 24, 48 y 100 circuitos,
 reordenamiento equivalente de colecciones, strict validation, routing
 ortogonal, architecture guards y CI Windows/Linux.
 
-G6 comienza en el renderer Avalonia; Domain/Engine continúan sin referencias
-a Avalonia ni al host.
+## Checkpoint implementado: V1 G6
+
+G6 consume la escena neutral sin modificar la frontera Domain/Engine:
+
+```text
+DiagramScene
+      |
+      v
+SceneSpatialIndex
+      |
+      v
+Viewport
+      |
+      v
+AvaloniaSceneRenderer
+      |
+      v
+SingleLineView
+```
+
+`SceneSpatialIndex` indexa y consulta bounds en milímetros. El renderer
+convierte el rectángulo visible desde DIPs a mm antes de consultar el índice,
+de modo que el culling no introduce una segunda geometría ni contamina
+`DiagramScene`.
+
+`ViewportState` contiene únicamente zoom, pan y tamaño visible;
+`ViewportController` implementa zoom bajo cursor, pan, fit, actual size y
+centrado. Estas operaciones son view-only y no mutan escena, layout ni
+semántica.
+
+`HitTestIndex` reutiliza el índice espacial y convierte la tolerancia desde
+DIPs según el zoom actual. La política de hit-test es independiente del
+stroke técnico y resuelve ambigüedades mediante prioridad, distancia e ID
+estable.
+
+`AvaloniaSceneRenderer` es immediate mode. Renderiza únicamente candidatos
+visibles con orden determinista layer/z-index/SceneId y utiliza recursos
+derivados del perfil con caches acotadas. Los overlays de hover/selección se
+dibujan aparte y nunca se persisten dentro de la escena.
+
+`SingleLineView` es un único `Control` que compone viewport, índice,
+hit-test, renderer y overlay pasivo. No crea un control Avalonia por cada
+elemento y no contiene navegación, comandos eléctricos ni algoritmos de
+layout.
+
+La navegación Summary -> BoardDetail -> Back pertenece al shell
+`UI_Unilineal.Playground`. El Playground utiliza una proyección
+determinista y genera las escenas mediante `SingleLineLayoutEngine`; su
+code-behind sólo cablea navegación y controles de viewport.
+
+El gate de G6 incluye guards de dependencias, tests headless del control y
+renderer, estabilidad de orden, inmutabilidad de fingerprint y un smoke
+sobre una escena generada por G5 con 48 circuitos que cubre culling, render
+y hit-testing. CI ejecuta restore, format, build, suite completa,
+`git diff --check` y working-tree cleanliness en Windows y Linux.
+
+La aceptación visual/runtime del Playground se mantiene deliberadamente como
+paso local; los tests headless no la sustituyen.
+
+G7 es dueño de los modos de interacción y comandos. G8 es dueño de
+composición documental/exportación. G6 no contiene máquina de estados
+Navigate/Layout/Electrical, command proposals, ejecución de comandos del
+host, undo/redo, SVG/PDF ni integración con `ProyectoElectrico`.
