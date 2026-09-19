@@ -32,7 +32,7 @@ public sealed class SingleLineViewTests
         {
             Scene = sceneA
         };
-        using Window window = Open(view);
+        Window window = Open(view);
         SceneId? primary = null;
         view.PrimaryHitChanged += (_, hit) =>
             primary = hit?.SceneElementId;
@@ -42,7 +42,6 @@ public sealed class SingleLineViewTests
             view.Viewport);
         window.MouseMove(
             pointA,
-            MouseButton.None,
             RawInputModifiers.None);
 
         Assert.Equal(
@@ -56,7 +55,6 @@ public sealed class SingleLineViewTests
             view.Viewport);
         window.MouseMove(
             pointB,
-            MouseButton.None,
             RawInputModifiers.None);
 
         Assert.Equal(
@@ -65,7 +63,6 @@ public sealed class SingleLineViewTests
 
         window.MouseMove(
             pointA,
-            MouseButton.None,
             RawInputModifiers.None);
 
         Assert.Null(primary);
@@ -90,7 +87,7 @@ public sealed class SingleLineViewTests
         {
             Scene = scene
         };
-        using Window window = Open(view);
+        Window window = Open(view);
         var cursor = new Point(220, 140);
         MmPoint before =
             ViewportTransform.DipToSceneMm(
@@ -129,7 +126,7 @@ public sealed class SingleLineViewTests
         {
             Scene = scene
         };
-        using Window window = Open(view);
+        Window window = Open(view);
         Vector initialPan = view.Viewport.PanDip;
 
         window.MouseDown(
@@ -138,7 +135,6 @@ public sealed class SingleLineViewTests
             RawInputModifiers.None);
         window.MouseMove(
             new Point(135, 115),
-            MouseButton.Middle,
             RawInputModifiers.MiddleMouseButton);
         window.MouseUp(
             new Point(135, 115),
@@ -161,7 +157,6 @@ public sealed class SingleLineViewTests
             RawInputModifiers.None);
         window.MouseMove(
             new Point(180, 150),
-            MouseButton.Left,
             RawInputModifiers.LeftMouseButton);
         window.MouseUp(
             new Point(180, 150),
@@ -194,7 +189,7 @@ public sealed class SingleLineViewTests
         {
             Scene = scene
         };
-        using Window window = Open(view);
+        Window window = Open(view);
         view.Focus();
         double initialZoom = view.Viewport.Zoom;
 
@@ -261,7 +256,7 @@ public sealed class SingleLineViewTests
         {
             Scene = scene
         };
-        using Window window = Open(view);
+        Window window = Open(view);
         HitTestResult? primary = null;
         view.PrimaryHitChanged += (_, hit) =>
             primary = hit;
@@ -271,7 +266,6 @@ public sealed class SingleLineViewTests
             view.Viewport);
         window.MouseMove(
             target,
-            MouseButton.None,
             RawInputModifiers.None);
 
         Assert.NotNull(primary);
