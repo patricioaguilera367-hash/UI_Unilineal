@@ -302,7 +302,72 @@ y hit-testing. CI ejecuta restore, format, build, suite completa,
 La aceptación visual/runtime del Playground se mantiene deliberadamente como
 paso local; los tests headless no la sustituyen.
 
-G7 es dueño de los modos de interacción y comandos. G8 es dueño de
-composición documental/exportación. G6 no contiene máquina de estados
-Navigate/Layout/Electrical, command proposals, ejecución de comandos del
-host, undo/redo, SVG/PDF ni integración con `ProyectoElectrico`.
+## Checkpoint implementado: V1 G7
+
+G7 añade la capa de interacción manteniendo separadas presentación,
+renderer y autoridad eléctrica:
+
+```text
+SingleLineView
+      |
+      | neutral intents
+      v
+Playground shell
+   /          \
+  v            v
+LayoutCommandHistory    ElectricalCommandProposal
+  |                           |
+  v                           v
+DiagramLayoutState      IElectricalCommandHandler
+  |                           |
+  v                     typed CommandResult
+SingleLineLayoutEngine        |
+  |                     Applied only
+  v                           v
+DiagramScene            new SingleLineInput
+                              |
+                              v
+                    projection -> layout -> scene
+```
+
+`InteractionStateMachine` concentra los estados Idle, Hovering, Selecting,
+Panning, DraggingLayout, ConnectingElectrical, MarqueeSelecting y
+CommandPreview. Navigate, Layout y Electrical son modos explícitos; cambiar
+de modo o cancelar una interacción transitoria vuelve a un estado estable de
+forma determinista.
+
+Los overlays de hover, selección, marquee, drag ghost y conexión preview
+siguen fuera de `DiagramScene`. `SingleLineView` traduce input Avalonia a
+intents neutrales y eventos; no posee `LayoutCommandHistory`, no invoca
+`IElectricalCommandHandler` y no contiene navegación ni persistencia.
+
+Los comandos de layout operan sólo sobre `DiagramLayoutState`. Su history
+local permite execute/undo/redo y cada cambio reconstruye una nueva escena
+mediante `SingleLineLayoutEngine`; no modifica topología eléctrica.
+
+La edición eléctrica comienza únicamente desde anchors semánticos en modo
+Electrical. El gesto produce una `ElectricalCommandProposal` inmutable.
+El shell envía un `ElectricalCommandRequest` con `ExpectedRevision` al
+host y recibe `Applied`, `Rejected`, `NeedsConfirmation`, `Conflict` o
+`Failed`. Sólo `Applied` reemplaza el snapshot, vuelve a proyectar y
+reconstruye la escena. Rejected/Conflict conservan el diagrama canónico sin
+parches optimistas.
+
+Layout y electrical undo permanecen separados. El undo eléctrico se
+representa como el comando inverso devuelto por el host y se vuelve a
+ejecutar contra la revisión vigente; un estado stale puede producir
+`Conflict` en lugar de forzar rollback.
+
+`HostCapabilities` controla qué mutaciones están disponibles. El fixture
+read-only prueba que navegación, selección y visualización siguen operativas
+aunque Layout/Electrical estén deshabilitados.
+
+La self-review de G7 contra §§14.4, 15, 16 y 17 confirma que la
+implementación mantiene las responsabilidades allí fijadas. El hardening
+incluye matriz exhaustiva pequeña de modos/eventos, cancelación de todos los
+estados transitorios alcanzables, secuencia model-based de
+execute/undo/redo/cancel, Rejected/Conflict sin mutación optimista y un guard
+de fuente que impide que Rendering posea histories o ejecución de host.
+
+G8 conserva la responsabilidad de `DrawingDocument`, SVG/PDF y composición
+física. La integración real con `ProyectoElectrico` permanece fuera de G7.

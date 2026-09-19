@@ -83,7 +83,7 @@ ProyectoElectrico main.
 
 ## Estado
 
-V1 G0–G6 implementado y cubierto por CI Windows/Linux:
+V1 G0–G7 implementado y cubierto por CI Windows/Linux:
 
 - `SingleLineInput` semántico e inmutable y topología explícita mediante
   `SupplyConnection`;
@@ -153,7 +153,64 @@ El Playground queda disponible para la aceptación visual/runtime local con
 `dotnet run --project src\UI_Unilineal.Playground\UI_Unilineal.Playground.csproj -c Release`.
 La CI headless no sustituye esa inspección manual.
 
-El siguiente checkpoint es **G7: modos de interacción y comandos**. G7 posee
-la máquina de estados y las propuestas/ejecución de comandos; G8 posee
-composición documental y exportación. SVG/PDF, undo/redo eléctrico o de
-layout e integración con `ProyectoElectrico` no forman parte de G6.
+### G7 — interacción y comandos
+
+G7 incorpora interacción explícita sin trasladar autoridad eléctrica al
+renderer:
+
+```text
+SingleLineView gesture
+      |
+      v
+neutral intent
+      |
+      v
+Playground shell
+   /          \
+  v            v
+Layout       ElectricalCommandProposal
+history            |
+  |                v
+  v        IElectricalCommandHandler
+rebuild             |
+scene          Applied only
+                   |
+                   v
+          rebuild input/projection/scene
+```
+
+- Navigate / Layout / Electrical son modos explícitos y mutuamente
+  excluyentes, gobernados por una única máquina de estados determinista;
+- hover, selección, marquee, drag ghosts y previews siguen siendo overlays y
+  no se almacenan en `DiagramScene`;
+- los cambios de layout son presentation-only, se ejecutan mediante
+  `LayoutCommandHistory` local reversible y reconstruyen una escena
+  inmutable con `SingleLineLayoutEngine`;
+- los gestos eléctricos sólo nacen desde anchors semánticos en modo
+  Electrical y producen una `ElectricalCommandProposal` inmutable;
+- el host se representa mediante `IElectricalCommandHandler`, requests con
+  `ExpectedRevision` y resultados tipados
+  `Applied / Rejected / NeedsConfirmation / Conflict / Failed`;
+- no existe mutación eléctrica optimista: sólo `Applied` reemplaza el
+  snapshot, reproyecta y reconstruye la escena;
+- el undo eléctrico queda representado como un comando inverso enviado al
+  host contra la revisión vigente; no fuerza rollback stale;
+- `HostCapabilities` permite degradar a read-only sin perder navegación,
+  selección ni visualización;
+- el Playground posee la orquestación, histories y demo host; Rendering
+  traduce input y dibuja overlays, pero no ejecuta histories ni comandos del
+  host.
+
+El hardening de G7 cubre matrices exhaustivas pequeñas de transición/cancel,
+secuencias model-based de layout execute/undo/redo/cancel, resultados
+Rejected/Conflict sin mutación de escena y guards explícitos de dependencia.
+La self-review contra la especificación §§14.4, 15, 16 y 17 mantiene las
+fronteras previstas: overlays fuera de la escena, comandos eléctricos fuera
+del renderer, navegación en el shell y capacidades explícitas.
+
+El Playground queda disponible para aceptación visual/runtime local con
+`dotnet run --project src\\UI_Unilineal.Playground\\UI_Unilineal.Playground.csproj -c Release`.
+La CI headless no sustituye esa inspección manual.
+
+El siguiente checkpoint es **G8: composición documental y exportación**.
+SVG/PDF y la integración real con `ProyectoElectrico` siguen fuera de G7.
