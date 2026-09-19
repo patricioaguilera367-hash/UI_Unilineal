@@ -585,22 +585,22 @@ public sealed class SingleLineView : Control
         {
             case InteractionStateKind.DraggingLayout
                 when gesture.SourceBounds is MmRect sourceBounds:
-            {
-                double dx =
-                    gesture.CurrentScenePoint.X -
-                    gesture.PressScenePoint.X;
-                double dy =
-                    gesture.CurrentScenePoint.Y -
-                    gesture.PressScenePoint.Y;
+                {
+                    double dx =
+                        gesture.CurrentScenePoint.X -
+                        gesture.PressScenePoint.X;
+                    double dy =
+                        gesture.CurrentScenePoint.Y -
+                        gesture.PressScenePoint.Y;
 
-                layoutGhost =
-                    new MmRect(
-                        sourceBounds.X + dx,
-                        sourceBounds.Y + dy,
-                        sourceBounds.Width,
-                        sourceBounds.Height);
-                break;
-            }
+                    layoutGhost =
+                        new MmRect(
+                            sourceBounds.X + dx,
+                            sourceBounds.Y + dy,
+                            sourceBounds.Width,
+                            sourceBounds.Height);
+                    break;
+                }
 
             case InteractionStateKind.MarqueeSelecting:
                 marquee =
