@@ -179,6 +179,10 @@ public sealed class SingleLineView : Control
     {
         base.Render(context);
 
+        context.FillRectangle(
+            Brushes.Transparent,
+            new Rect(Bounds.Size));
+
         if (_scene is null ||
             _drawingProfile is null ||
             _spatialIndex is null ||
