@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using Avalonia.Headless.XUnit;
+using Avalonia.Media;
 using UI_Unilineal.Domain.Profiles;
 using UI_Unilineal.Engine.Composition;
 using UI_Unilineal.Rendering.Avalonia.Rendering;
@@ -89,7 +90,7 @@ public sealed class AvaloniaRenderResourcesTests
             });
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void ResolveSymbolGeometry_CacheKeyIncludesVariant()
     {
         var resources = new AvaloniaRenderResources(
@@ -113,7 +114,7 @@ public sealed class AvaloniaRenderResourcesTests
         Assert.True(first.Bounds.Height > 0);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void SymbolCache_IsBoundedAndEvictsOldestEntry()
     {
         var resources = new AvaloniaRenderResources(
