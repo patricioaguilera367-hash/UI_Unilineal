@@ -11,7 +11,7 @@
 
   <Grid RowDefinitions="Auto,*">
     <Border Padding="12">
-      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
         <Button
             x:Name="BackButton"
             Margin="0,0,8,0"
@@ -31,32 +31,48 @@
             Content="Symbols" />
 
         <Button
+            x:Name="GalleryGridButton"
             Grid.Column="3"
+            Margin="0,0,8,0"
+            Click="OnGalleryGridClicked"
+            Content="Grid: On"
+            IsEnabled="False" />
+
+        <Button
+            x:Name="GalleryBoundsButton"
+            Grid.Column="4"
+            Margin="0,0,16,0"
+            Click="OnGalleryBoundsClicked"
+            Content="Bounds: On"
+            IsEnabled="False" />
+
+        <Button
+            Grid.Column="5"
             Margin="0,0,8,0"
             Click="OnZoomOutClicked"
             Content="Zoom -" />
 
         <Button
-            Grid.Column="4"
+            Grid.Column="6"
             Margin="0,0,8,0"
             Click="OnZoomInClicked"
             Content="Zoom +" />
 
         <Button
-            Grid.Column="5"
+            Grid.Column="7"
             Margin="0,0,16,0"
             Click="OnFitClicked"
             Content="Fit" />
 
         <TextBlock
-            Grid.Column="6"
+            Grid.Column="8"
             VerticalAlignment="Center"
             FontWeight="SemiBold"
             Text="UI_Unilineal" />
 
         <TextBlock
             x:Name="RouteText"
-            Grid.Column="7"
+            Grid.Column="9"
             Margin="16,0,0,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
@@ -195,7 +211,7 @@
                 Margin="0,12,0,0"
                 Opacity="0.7"
                 TextWrapping="Wrap"
-                Text="Symbols opens the profile-driven review gallery. Bounding boxes, centre guides and anchor markers are inspection overlays only." />
+                Text="Symbols opens the profile-driven review gallery. Grid and nominal bounds/guides can be toggled independently; anchor markers remain visible for connection review." />
 
             <TextBlock
                 Margin="0,4,0,0"
