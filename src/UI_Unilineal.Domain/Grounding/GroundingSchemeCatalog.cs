@@ -5,7 +5,8 @@ public sealed record GroundingSchemeCatalog
     public GroundingSchemeCatalog(
         string selectionMode,
         string defaultSchemeId,
-        IReadOnlyList<GroundingSchemeDefinition> schemes)
+        IReadOnlyList<GroundingSchemeDefinition> schemes,
+        IReadOnlyList<GroundingPreviewPresetDefinition> previewPresets)
     {
         if (string.IsNullOrWhiteSpace(selectionMode))
         {
@@ -41,9 +42,32 @@ public sealed record GroundingSchemeCatalog
                 nameof(defaultSchemeId));
         }
 
+        ArgumentNullException.ThrowIfNull(previewPresets);
+
         SelectionMode = selectionMode;
         DefaultSchemeId = defaultSchemeId;
         Schemes = Array.AsReadOnly(schemes.ToArray());
+        PreviewPresets =
+            Array.AsReadOnly(previewPresets.ToArray());
+
+        foreach (GroundingSchemeDefinition scheme in Schemes)
+        {
+            if (scheme.PreviewPresetId is null)
+            {
+                continue;
+            }
+
+            if (!PreviewPresets.Any(preset =>
+                    string.Equals(
+                        preset.Id,
+                        scheme.PreviewPresetId,
+                        StringComparison.Ordinal)))
+            {
+                throw new ArgumentException(
+                    $"Grounding scheme '{scheme.Id}' references missing preview preset '{scheme.PreviewPresetId}'.",
+                    nameof(previewPresets));
+            }
+        }
     }
 
     public string SelectionMode { get; }
@@ -51,7 +75,51 @@ public sealed record GroundingSchemeCatalog
     public string DefaultSchemeId { get; }
 
     public IReadOnlyList<GroundingSchemeDefinition> Schemes { get; }
+
+    public IReadOnlyList<GroundingPreviewPresetDefinition> PreviewPresets { get; }
 }
+
+public sealed record GroundingPreviewPresetDefinition
+{
+    public GroundingPreviewPresetDefinition(
+        string id,
+        string status,
+        IReadOnlyList<GroundingPreviewSymbolPlacement> symbols,
+        IReadOnlyList<GroundingPreviewSegment> segments)
+    {
+        Id = string.IsNullOrWhiteSpace(id)
+            ? throw new ArgumentException("Required.", nameof(id))
+            : id;
+        Status = string.IsNullOrWhiteSpace(status)
+            ? throw new ArgumentException("Required.", nameof(status))
+            : status;
+        Symbols = Array.AsReadOnly(
+            (symbols ?? throw new ArgumentNullException(nameof(symbols)))
+                .ToArray());
+        Segments = Array.AsReadOnly(
+            (segments ?? throw new ArgumentNullException(nameof(segments)))
+                .ToArray());
+    }
+
+    public string Id { get; }
+
+    public string Status { get; }
+
+    public IReadOnlyList<GroundingPreviewSymbolPlacement> Symbols { get; }
+
+    public IReadOnlyList<GroundingPreviewSegment> Segments { get; }
+}
+
+public sealed record GroundingPreviewSymbolPlacement(
+    string SymbolId,
+    double X,
+    double Y);
+
+public sealed record GroundingPreviewSegment(
+    double X1,
+    double Y1,
+    double X2,
+    double Y2);
 
 public sealed record GroundingSchemeDefinition
 {
