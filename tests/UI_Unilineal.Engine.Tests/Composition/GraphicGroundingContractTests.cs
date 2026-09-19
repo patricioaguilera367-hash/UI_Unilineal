@@ -105,7 +105,7 @@ public sealed class GraphicGroundingContractTests
 
         Assert.All(
             profile.Symbols,
-            symbol => Assert.Equal(["APP:SYMBOLS"], symbol.ProvenanceIds));
+            symbol => Assert.Equal(new[] { "APP:SYMBOLS" }, symbol.ProvenanceIds));
     }
 
     [Fact]
