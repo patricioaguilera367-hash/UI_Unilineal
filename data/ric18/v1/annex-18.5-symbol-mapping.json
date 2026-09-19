@@ -57,10 +57,26 @@
   },
   {
     "symbolId": "RCD",
-    "annex18_5Analogue": "Differential protection shown below each branch breaker as a rectangular P/D device with diagonal separator.",
+    "annex18_5Analogue": "Differential protection shown below each branch breaker as a P/D rectangular device with diagonal separator.",
     "referenceStatus": "VERIFIED",
-    "currentGeometryStatus": "MISMATCH",
-    "shapeSourceId": "APP:SYMBOLS",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "RCD_2X",
+    "annex18_5Analogue": "P/D differential protection with associated 2x nominal-current notation, differential current in mA and type text.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "RCD_4X",
+    "annex18_5Analogue": "Same P/D differential protection geometry, associated with 4x nominal-current notation for four protected conductors.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
     "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
   },
   {
@@ -101,6 +117,14 @@
     "referenceStatus": "AMBIGUOUS",
     "currentGeometryStatus": "APP_ONLY",
     "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "CIRCUIT_MARKER",
+    "annex18_5Analogue": "Numbered circle used at the lower end of each outgoing circuit, with the circuit use text shown separately below.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
     "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
   },
   {
