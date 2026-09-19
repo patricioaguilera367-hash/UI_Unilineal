@@ -34,5 +34,23 @@
     "annex": null,
     "figure": null,
     "description": "Initial application layout constants; no regulatory geometry claim."
+  },
+  {
+    "id": "APP:GRAPHIC_CONVENTIONS",
+    "classification": "APP_CONVENTION",
+    "document": null,
+    "section": null,
+    "annex": null,
+    "figure": null,
+    "description": "Application-owned symbol-family sizes, alignment axes and authoring constraints. These values are not claimed as RIC dimensions."
+  },
+  {
+    "id": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "classification": "RIC18_REFERENCE",
+    "document": "Pliego Técnico Normativo RIC N°18",
+    "section": null,
+    "annex": "18.5",
+    "figure": "Diagrama unilineal",
+    "description": "Graphic reference for recognizable unilineal arrangement and symbol analogues. It is not used as evidence for exact symbol dimensions or spacing unless explicitly stated elsewhere."
   }
 ]
