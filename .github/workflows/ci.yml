@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - feature/v1-single-line-engine
+      - feature/ric18-graphic-grounding
   pull_request:
 
 jobs:
