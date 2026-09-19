@@ -52,11 +52,14 @@ public sealed class Ric18DrawingProfileLoaderTests
             "BREAKER_3X",
             "BREAKER_4X",
             "RCD",
+            "RCD_2X",
+            "RCD_4X",
             "FUSE",
             "BUS",
             "GROUND",
             "CONNECTION_NODE",
             "DOWNSTREAM_BOARD",
+            "CIRCUIT_MARKER",
             "FINAL_LOAD",
             "UNKNOWN_ENDPOINT"
         ];
