@@ -1,4 +1,4 @@
-namespace UI_Unilineal.Domain.Grounding;
+﻿namespace UI_Unilineal.Domain.Grounding;
 
 public sealed record GroundingSchemeCatalog
 {
