@@ -16,6 +16,8 @@ public sealed partial class MainWindow : Window
 {
     private readonly SingleLineWorkspaceViewModel _viewModel;
     private bool _showingSymbolGallery;
+    private bool _galleryShowGrid = true;
+    private bool _galleryShowBounds = true;
 
     public MainWindow()
     {
@@ -59,6 +61,34 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e) =>
         ShowSymbolGallery();
+
+    private void OnGalleryGridClicked(
+        object? sender,
+        RoutedEventArgs e)
+    {
+        if (!_showingSymbolGallery)
+        {
+            return;
+        }
+
+        _galleryShowGrid = !_galleryShowGrid;
+        RefreshSymbolGallery(
+            fitScene: false);
+    }
+
+    private void OnGalleryBoundsClicked(
+        object? sender,
+        RoutedEventArgs e)
+    {
+        if (!_showingSymbolGallery)
+        {
+            return;
+        }
+
+        _galleryShowBounds = !_galleryShowBounds;
+        RefreshSymbolGallery(
+            fitScene: false);
+    }
 
     private void OnBoardB1Clicked(
         object? sender,
@@ -310,17 +340,30 @@ public sealed partial class MainWindow : Window
             _viewModel.Profile;
         DiagramView.InteractionMode =
             InteractionMode.Navigate;
-        DiagramView.Scene =
-            SymbolGallerySceneBuilder.Build(
-                _viewModel.Profile);
 
         BackButton.IsEnabled = true;
         RouteText.Text = "RIC18 Symbol Gallery";
 
+        RefreshSymbolGallery(
+            fitScene: true);
+    }
+
+    private void RefreshSymbolGallery(
+        bool fitScene)
+    {
+        DiagramView.Scene =
+            SymbolGallerySceneBuilder.Build(
+                _viewModel.Profile,
+                _galleryShowGrid,
+                _galleryShowBounds);
+
         UpdateInteractionShell();
 
-        Dispatcher.UIThread.Post(
-            DiagramView.FitScene);
+        if (fitScene)
+        {
+            Dispatcher.UIThread.Post(
+                DiagramView.FitScene);
+        }
     }
 
     private void ApplyWorkspace(
@@ -374,6 +417,19 @@ public sealed partial class MainWindow : Window
         ElectricalModeButton.IsEnabled =
             !_showingSymbolGallery &&
             _viewModel.Capabilities.CanEditElectrical;
+
+        GalleryGridButton.IsEnabled =
+            _showingSymbolGallery;
+        GalleryBoundsButton.IsEnabled =
+            _showingSymbolGallery;
+        GalleryGridButton.Content =
+            _galleryShowGrid
+                ? "Grid: On"
+                : "Grid: Off";
+        GalleryBoundsButton.Content =
+            _galleryShowBounds
+                ? "Bounds: On"
+                : "Bounds: Off";
         UndoLayoutButton.IsEnabled =
             !_showingSymbolGallery &&
             _viewModel.CanUndoLayout;
@@ -397,7 +453,7 @@ public sealed partial class MainWindow : Window
 
         CapabilitiesText.Text =
             _showingSymbolGallery
-                ? "Gallery — read-only review of the active drawing profile. Dashed boxes/guides and anchor circles are inspection overlays."
+                ? "Gallery — read-only review. Grid and nominal bounds/guides are optional inspection overlays; anchor circles mark connection points."
                 : $"Host capabilities — Layout: {EnabledText(_viewModel.Capabilities.CanEditLayout)}, " +
                   $"Electrical: {EnabledText(_viewModel.Capabilities.CanEditElectrical)}";
 
