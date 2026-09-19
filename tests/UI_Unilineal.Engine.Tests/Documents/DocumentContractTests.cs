@@ -121,7 +121,7 @@ public sealed class DocumentContractTests
     private static DiagramScene CreateScene() =>
         new(
             new SceneId("scene/demo"),
-            DiagramSceneKind.Summary,
+            DiagramSceneKind.ProjectSummary,
             new MmRect(0, 0, 100, 100),
             [],
             new DiagramSceneMetadata(
