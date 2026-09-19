@@ -15,6 +15,7 @@ namespace UI_Unilineal.Playground.Views;
 public sealed partial class MainWindow : Window
 {
     private readonly SingleLineWorkspaceViewModel _viewModel;
+    private bool _showingSymbolGallery;
 
     public MainWindow()
     {
@@ -32,6 +33,14 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            _viewModel.ShowSummary();
+            ApplyWorkspace(
+                fitScene: true);
+            return;
+        }
+
         _viewModel.Back();
         ApplyWorkspace(
             fitScene: true);
@@ -45,6 +54,11 @@ public sealed partial class MainWindow : Window
         ApplyWorkspace(
             fitScene: true);
     }
+
+    private void OnSymbolsClicked(
+        object? sender,
+        RoutedEventArgs e) =>
+        ShowSymbolGallery();
 
     private void OnBoardB1Clicked(
         object? sender,
@@ -95,6 +109,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         _viewModel.UndoLayout();
         ApplyWorkspace(
             fitScene: false);
@@ -104,6 +123,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         _viewModel.RedoLayout();
         ApplyWorkspace(
             fitScene: false);
@@ -113,6 +137,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         _viewModel.SetSelectedLayoutLockMode(
             LayoutLockMode.Pinned);
         ApplyWorkspace(
@@ -123,6 +152,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         _viewModel.SetSelectedLayoutLockMode(
             LayoutLockMode.Locked);
         ApplyWorkspace(
@@ -133,6 +167,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         _viewModel.ResetSelectedLayout();
         ApplyWorkspace(
             fitScene: false);
@@ -142,6 +181,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         InteractionSelectionChangedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         _viewModel.ApplySelection(
             e.Intent);
         UpdateInteractionShell();
@@ -151,6 +195,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         LayoutMoveRequestedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         _viewModel.ApplyLayoutMove(
             e.Intent);
         ApplyWorkspace(
@@ -161,6 +210,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         ElectricalProposalRequestedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         _viewModel.CreateElectricalProposal(
             e.Intent);
         UpdateInteractionShell();
@@ -178,6 +232,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         await _viewModel.ExecutePendingElectricalAsync(
             confirmationGranted: false);
         ApplyWorkspace(
@@ -188,6 +247,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         await _viewModel.ExecutePendingElectricalAsync(
             confirmationGranted: true);
         ApplyWorkspace(
@@ -198,6 +262,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         _viewModel.CancelElectricalProposal();
         UpdateInteractionShell();
     }
@@ -205,6 +274,11 @@ public sealed partial class MainWindow : Window
     private void SetInteractionMode(
         InteractionMode mode)
     {
+        if (_showingSymbolGallery)
+        {
+            return;
+        }
+
         if (!_viewModel.TrySetInteractionMode(mode))
         {
             UpdateInteractionShell();
@@ -224,9 +298,36 @@ public sealed partial class MainWindow : Window
             fitScene: true);
     }
 
+    private void ShowSymbolGallery()
+    {
+        _showingSymbolGallery = true;
+
+        _viewModel.TrySetInteractionMode(
+            InteractionMode.Navigate);
+        _viewModel.CancelElectricalProposal();
+
+        DiagramView.DrawingProfile =
+            _viewModel.Profile;
+        DiagramView.InteractionMode =
+            InteractionMode.Navigate;
+        DiagramView.Scene =
+            SymbolGallerySceneBuilder.Build(
+                _viewModel.Profile);
+
+        BackButton.IsEnabled = true;
+        RouteText.Text = "RIC18 Symbol Gallery";
+
+        UpdateInteractionShell();
+
+        Dispatcher.UIThread.Post(
+            DiagramView.FitScene);
+    }
+
     private void ApplyWorkspace(
         bool fitScene)
     {
+        _showingSymbolGallery = false;
+
         DiagramView.DrawingProfile =
             _viewModel.Profile;
         DiagramView.InteractionMode =
@@ -254,25 +355,34 @@ public sealed partial class MainWindow : Window
     private void UpdateInteractionShell()
     {
         ModeText.Text =
-            $"Mode: {_viewModel.InteractionMode}";
+            _showingSymbolGallery
+                ? "Mode: Symbol review (read-only)"
+                : $"Mode: {_viewModel.InteractionMode}";
         InteractionStateText.Text =
             $"State: {DiagramView.InteractionState.Kind}";
 
         SelectionText.Text =
-            _viewModel.SelectedEntity is null
-                ? "Selection: —"
-                : $"Selection: {_viewModel.SelectedEntity.Kind} {_viewModel.SelectedEntity.Uid.Value}";
+            _showingSymbolGallery
+                ? "Selection: gallery inspection only"
+                : _viewModel.SelectedEntity is null
+                    ? "Selection: —"
+                    : $"Selection: {_viewModel.SelectedEntity.Kind} {_viewModel.SelectedEntity.Uid.Value}";
 
         LayoutModeButton.IsEnabled =
+            !_showingSymbolGallery &&
             _viewModel.Capabilities.CanEditLayout;
         ElectricalModeButton.IsEnabled =
+            !_showingSymbolGallery &&
             _viewModel.Capabilities.CanEditElectrical;
         UndoLayoutButton.IsEnabled =
+            !_showingSymbolGallery &&
             _viewModel.CanUndoLayout;
         RedoLayoutButton.IsEnabled =
+            !_showingSymbolGallery &&
             _viewModel.CanRedoLayout;
 
         bool selectedLayoutEditable =
+            !_showingSymbolGallery &&
             _viewModel.Capabilities.CanEditLayout &&
             _viewModel.InteractionMode ==
             InteractionMode.Layout &&
@@ -286,13 +396,19 @@ public sealed partial class MainWindow : Window
             selectedLayoutEditable;
 
         CapabilitiesText.Text =
-            $"Host capabilities — Layout: {EnabledText(_viewModel.Capabilities.CanEditLayout)}, " +
-            $"Electrical: {EnabledText(_viewModel.Capabilities.CanEditElectrical)}";
+            _showingSymbolGallery
+                ? "Gallery — read-only review of the active drawing profile. Dashed boxes/guides and anchor circles are inspection overlays."
+                : $"Host capabilities — Layout: {EnabledText(_viewModel.Capabilities.CanEditLayout)}, " +
+                  $"Electrical: {EnabledText(_viewModel.Capabilities.CanEditElectrical)}";
 
         ElectricalCommandProposal? proposal =
-            _viewModel.PendingElectricalProposal;
+            _showingSymbolGallery
+                ? null
+                : _viewModel.PendingElectricalProposal;
         CommandResult? result =
-            _viewModel.LastElectricalResult;
+            _showingSymbolGallery
+                ? null
+                : _viewModel.LastElectricalResult;
 
         ElectricalPreviewPanel.IsVisible =
             proposal is not null ||
