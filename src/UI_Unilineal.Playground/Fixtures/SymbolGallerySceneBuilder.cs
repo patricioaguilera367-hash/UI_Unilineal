@@ -554,7 +554,8 @@ public static class SymbolGallerySceneBuilder
         {
             "SourceUtility" or "ServiceEntrance" => "1 — Supply",
             "Breaker" or "ResidualCurrentDevice" or "Fuse" => "4 — Protection · generic / compatibility",
-            "Bus" or "Ground" or "ConnectionNode" => "6 — Distribution & grounding",
+            "Bus" or "Ground" or "ServiceGround" or "ProtectiveGround" or "ConnectionNode" =>
+                "6 — Distribution & grounding",
             "FinalLoad" => "7 — Legacy final-load compatibility",
             _ => "8 — Destinations & fallback"
         };
@@ -606,6 +607,9 @@ public static class SymbolGallerySceneBuilder
         {
             "BREAKER" => "BREAKER · generic compatibility",
             "RCD" => "RCD · generic compatibility",
+            "GROUND" => "GROUND · legacy compatibility",
+            "GROUND_TP" => "GROUND_TP · Tierra de protección",
+            "GROUND_TS" => "GROUND_TS · Tierra de servicio",
             "FINAL_LOAD" => "FINAL_LOAD · legacy compatibility",
             _ => symbol.Id
         };
