@@ -591,48 +591,48 @@ public sealed class SingleLineWorkspaceViewModel
                 break;
 
             case EntityKind.Circuit:
-            {
-                CircuitInput? circuit =
-                    _input.Circuits.SingleOrDefault(
-                        candidate =>
-                            candidate.Uid ==
-                            source.Entity.Uid);
-
-                if (circuit is null)
                 {
-                    return null;
+                    CircuitInput? circuit =
+                        _input.Circuits.SingleOrDefault(
+                            candidate =>
+                                candidate.Uid ==
+                                source.Entity.Uid);
+
+                    if (circuit is null)
+                    {
+                        return null;
+                    }
+
+                    origin =
+                        new EntityReference(
+                            circuit.BoardUid,
+                            EntityKind.Board);
+                    throughCircuitUid =
+                        circuit.Uid;
+                    break;
                 }
 
-                origin =
-                    new EntityReference(
-                        circuit.BoardUid,
-                        EntityKind.Board);
-                throughCircuitUid =
-                    circuit.Uid;
-                break;
-            }
-
             case EntityKind.Board:
-            {
-                CircuitInput? feeder =
-                    _input.Circuits
-                        .Where(candidate =>
-                            candidate.BoardUid ==
-                            source.Entity.Uid &&
-                            candidate.Role ==
-                            CircuitRole.Feeder)
-                        .OrderBy(
-                            candidate => candidate.Number)
-                        .ThenBy(
-                            candidate => candidate.Uid.Value,
-                            StringComparer.Ordinal)
-                        .FirstOrDefault();
+                {
+                    CircuitInput? feeder =
+                        _input.Circuits
+                            .Where(candidate =>
+                                candidate.BoardUid ==
+                                source.Entity.Uid &&
+                                candidate.Role ==
+                                CircuitRole.Feeder)
+                            .OrderBy(
+                                candidate => candidate.Number)
+                            .ThenBy(
+                                candidate => candidate.Uid.Value,
+                                StringComparer.Ordinal)
+                            .FirstOrDefault();
 
-                origin = source.Entity;
-                throughCircuitUid =
-                    feeder?.Uid;
-                break;
-            }
+                    origin = source.Entity;
+                    throughCircuitUid =
+                        feeder?.Uid;
+                    break;
+                }
 
             default:
                 return null;
