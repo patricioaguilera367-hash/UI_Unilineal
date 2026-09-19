@@ -2,6 +2,61 @@
 
 namespace UI_Unilineal.Engine.Documents;
 
+public sealed record SheetContinuation
+{
+    public SheetContinuation(
+        int sequenceIndex,
+        int sequenceCount,
+        int? previousSheetNumber,
+        int? nextSheetNumber)
+    {
+        if (sequenceCount <= 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sequenceCount));
+        }
+
+        if (sequenceIndex <= 0 ||
+            sequenceIndex > sequenceCount)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sequenceIndex));
+        }
+
+        ValidateNeighbor(
+            previousSheetNumber,
+            sequenceCount,
+            nameof(previousSheetNumber));
+        ValidateNeighbor(
+            nextSheetNumber,
+            sequenceCount,
+            nameof(nextSheetNumber));
+
+        SequenceIndex = sequenceIndex;
+        SequenceCount = sequenceCount;
+        PreviousSheetNumber = previousSheetNumber;
+        NextSheetNumber = nextSheetNumber;
+    }
+
+    public int SequenceIndex { get; }
+
+    public int SequenceCount { get; }
+
+    public int? PreviousSheetNumber { get; }
+
+    public int? NextSheetNumber { get; }
+
+    private static void ValidateNeighbor(
+        int? value,
+        int sequenceCount,
+        string parameterName)
+    {
+        if (value is <= 0 ||
+            value > sequenceCount)
+        {
+            throw new ArgumentOutOfRangeException(parameterName);
+        }
+    }
+}
+
 public sealed class DrawingSheet
 {
     public DrawingSheet(
@@ -12,7 +67,8 @@ public sealed class DrawingSheet
         MmRect sceneViewport,
         SheetMargins margins,
         TitleBlock titleBlock,
-        DiagramScene scene)
+        DiagramScene scene,
+        SheetContinuation? continuation = null)
     {
         if (sheetNumber <= 0)
         {
@@ -31,11 +87,20 @@ public sealed class DrawingSheet
         ValidateMargins(paper, margins);
         ValidateSceneViewport(paper, margins, sceneViewport);
 
+        if (continuation is not null &&
+            continuation.SequenceIndex != sheetNumber)
+        {
+            throw new ArgumentException(
+                "Continuation sequence must match the sheet number.",
+                nameof(continuation));
+        }
+
         SheetNumber = sheetNumber;
         Scale = scale;
         ViewBox = viewBox;
         SceneViewport = sceneViewport;
         Margins = margins;
+        Continuation = continuation;
     }
 
     public int SheetNumber { get; }
@@ -53,6 +118,8 @@ public sealed class DrawingSheet
     public TitleBlock TitleBlock { get; }
 
     public DiagramScene Scene { get; }
+
+    public SheetContinuation? Continuation { get; }
 
     private static void ValidateMargins(
         PaperSize paper,
