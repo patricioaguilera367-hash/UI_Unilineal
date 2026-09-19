@@ -381,10 +381,34 @@ public sealed class SvgExporter
             CultureInfo.InvariantCulture);
 
     private static string EscapeText(string value) =>
-        value
+        SanitizeXmlCharacters(value)
             .Replace("&", "&amp;", StringComparison.Ordinal)
             .Replace("<", "&lt;", StringComparison.Ordinal)
             .Replace(">", "&gt;", StringComparison.Ordinal);
+
+    private static string SanitizeXmlCharacters(string value)
+    {
+        var output =
+            new StringBuilder(value.Length);
+
+        foreach (Rune rune in value.EnumerateRunes())
+        {
+            int codePoint =
+                rune.Value;
+            bool allowed =
+                codePoint is 0x09 or 0x0A or 0x0D ||
+                codePoint is >= 0x20 and <= 0xD7FF ||
+                codePoint is >= 0xE000 and <= 0xFFFD ||
+                codePoint is >= 0x10000 and <= 0x10FFFF;
+
+            output.Append(
+                allowed
+                    ? rune.ToString()
+                    : "\uFFFD");
+        }
+
+        return output.ToString();
+    }
 
     private static string EscapeAttribute(string value) =>
         EscapeText(value)
