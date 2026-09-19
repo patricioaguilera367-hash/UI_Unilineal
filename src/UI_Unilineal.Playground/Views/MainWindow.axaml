@@ -60,31 +60,138 @@
 
     <Grid
         Grid.Row="1"
-        ColumnDefinitions="220,*">
+        ColumnDefinitions="280,*">
       <Border
           Margin="12,0,0,12"
           Padding="12"
           BorderThickness="1"
           CornerRadius="6">
-        <StackPanel Spacing="8">
-          <TextBlock
-              FontWeight="SemiBold"
-              Text="Navigation" />
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="8">
+            <TextBlock
+                FontWeight="SemiBold"
+                Text="Navigation" />
 
-          <Button
-              Click="OnBoardB1Clicked"
-              Content="B1 — TGBT" />
+            <Button
+                Click="OnBoardB1Clicked"
+                Content="B1 — TGBT" />
 
-          <Button
-              Click="OnBoardB2Clicked"
-              Content="B2 — TDA" />
+            <Button
+                Click="OnBoardB2Clicked"
+                Content="B2 — TDA" />
 
-          <TextBlock
-              Margin="0,12,0,0"
-              Opacity="0.7"
-              TextWrapping="Wrap"
-              Text="Shell navigation and viewport controls stay outside the renderer." />
-        </StackPanel>
+            <TextBlock
+                Margin="0,12,0,0"
+                FontWeight="SemiBold"
+                Text="Interaction mode" />
+
+            <Button
+                Click="OnNavigateModeClicked"
+                Content="Navigate" />
+
+            <Button
+                x:Name="LayoutModeButton"
+                Click="OnLayoutModeClicked"
+                Content="Layout" />
+
+            <Button
+                x:Name="ElectricalModeButton"
+                Click="OnElectricalModeClicked"
+                Content="Electrical" />
+
+            <TextBlock
+                x:Name="ModeText"
+                Opacity="0.8" />
+
+            <TextBlock
+                x:Name="InteractionStateText"
+                Opacity="0.8" />
+
+            <TextBlock
+                x:Name="SelectionText"
+                TextWrapping="Wrap" />
+
+            <TextBlock
+                Margin="0,12,0,0"
+                FontWeight="SemiBold"
+                Text="Layout history" />
+
+            <Button
+                x:Name="UndoLayoutButton"
+                Click="OnUndoLayoutClicked"
+                Content="Undo layout" />
+
+            <Button
+                x:Name="RedoLayoutButton"
+                Click="OnRedoLayoutClicked"
+                Content="Redo layout" />
+
+            <Button
+                x:Name="PinSelectedButton"
+                Click="OnPinSelectedClicked"
+                Content="Pin selected" />
+
+            <Button
+                x:Name="LockSelectedButton"
+                Click="OnLockSelectedClicked"
+                Content="Lock selected" />
+
+            <Button
+                x:Name="ResetSelectedButton"
+                Click="OnResetSelectedClicked"
+                Content="Reset selected position" />
+
+            <TextBlock
+                x:Name="CapabilitiesText"
+                Margin="0,8,0,0"
+                Opacity="0.7"
+                TextWrapping="Wrap" />
+
+            <Border
+                x:Name="ElectricalPreviewPanel"
+                Margin="0,12,0,0"
+                Padding="10"
+                BorderThickness="1"
+                CornerRadius="4"
+                IsVisible="False">
+              <StackPanel Spacing="8">
+                <TextBlock
+                    FontWeight="SemiBold"
+                    Text="Electrical command preview" />
+
+                <TextBlock
+                    x:Name="ElectricalProposalText"
+                    TextWrapping="Wrap" />
+
+                <TextBlock
+                    x:Name="ElectricalStatusText"
+                    Opacity="0.8"
+                    TextWrapping="Wrap" />
+
+                <Button
+                    x:Name="ApplyElectricalButton"
+                    Click="OnApplyElectricalClicked"
+                    Content="Apply" />
+
+                <Button
+                    x:Name="ConfirmElectricalButton"
+                    Click="OnConfirmElectricalClicked"
+                    Content="Confirm &amp; apply" />
+
+                <Button
+                    x:Name="CancelElectricalButton"
+                    Click="OnCancelElectricalClicked"
+                    Content="Cancel proposal" />
+              </StackPanel>
+            </Border>
+
+            <TextBlock
+                Margin="0,12,0,0"
+                Opacity="0.7"
+                TextWrapping="Wrap"
+                Text="The renderer only translates gestures. Playground owns navigation, command history, capability gating and demo host execution." />
+          </StackPanel>
+        </ScrollViewer>
       </Border>
 
       <Border
@@ -95,7 +202,11 @@
         <rendering:SingleLineView
             x:Name="DiagramView"
             HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch" />
+            VerticalAlignment="Stretch"
+            ElectricalProposalRequested="OnElectricalProposalRequested"
+            InteractionStateChanged="OnInteractionStateChanged"
+            LayoutMoveRequested="OnLayoutMoveRequested"
+            SelectionChanged="OnSelectionChanged" />
       </Border>
     </Grid>
   </Grid>
