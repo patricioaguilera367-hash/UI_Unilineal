@@ -501,6 +501,40 @@ public sealed class PdfExporter
                         break;
                     }
 
+                case 'A':
+                    {
+                        double radiusX = ReadNumber(tokens, ref index);
+                        double radiusY = ReadNumber(tokens, ref index);
+                        double rotationDegrees = ReadNumber(tokens, ref index);
+                        bool largeArc = ReadArcFlag(tokens, ref index);
+                        bool sweep = ReadArcFlag(tokens, ref index);
+                        double x = ReadNumber(tokens, ref index);
+                        double y = ReadNumber(tokens, ref index);
+
+                        ResolvePoint(
+                            relative,
+                            ref x,
+                            ref y,
+                            currentX,
+                            currentY);
+
+                        AppendCircularArc(
+                            output,
+                            mapper,
+                            new MmPoint(currentX, currentY),
+                            new MmPoint(x, y),
+                            radiusX,
+                            radiusY,
+                            rotationDegrees,
+                            largeArc,
+                            sweep,
+                            path.Id);
+
+                        currentX = x;
+                        currentY = y;
+                        break;
+                    }
+
                 case 'C':
                     {
                         double x1 = ReadNumber(tokens, ref index);
@@ -751,6 +785,175 @@ public sealed class PdfExporter
 
         x += currentX;
         y += currentY;
+    }
+
+    private static void AppendCircularArc(
+        StringBuilder output,
+        PageMapper mapper,
+        MmPoint start,
+        MmPoint end,
+        double radiusX,
+        double radiusY,
+        double rotationDegrees,
+        bool largeArc,
+        bool sweep,
+        SceneId pathId)
+    {
+        if (!double.IsFinite(radiusX) ||
+            !double.IsFinite(radiusY) ||
+            radiusX <= 0 ||
+            radiusY <= 0 ||
+            Math.Abs(radiusX - radiusY) > 0.000001 ||
+            Math.Abs(rotationDegrees) > 0.000001)
+        {
+            throw new InvalidOperationException(
+                $"PDF path '{pathId.Value}' uses an SVG arc outside the supported circular, zero-rotation subset.");
+        }
+
+        double dx = (start.X - end.X) / 2.0;
+        double dy = (start.Y - end.Y) / 2.0;
+        double radius = radiusX;
+        double chordSquared = (dx * dx) + (dy * dy);
+
+        if (chordSquared <= 0.000000000001)
+        {
+            return;
+        }
+
+        double lambda = chordSquared / (radius * radius);
+        if (lambda > 1)
+        {
+            radius *= Math.Sqrt(lambda);
+        }
+
+        double radiusSquared = radius * radius;
+        double numerator =
+            Math.Max(
+                0,
+                radiusSquared - chordSquared);
+        double coefficient =
+            Math.Sqrt(
+                numerator /
+                chordSquared);
+
+        if (largeArc == sweep)
+        {
+            coefficient = -coefficient;
+        }
+
+        double centerX =
+            ((start.X + end.X) / 2.0) +
+            (coefficient * dy);
+        double centerY =
+            ((start.Y + end.Y) / 2.0) -
+            (coefficient * dx);
+
+        double startAngle =
+            Math.Atan2(
+                start.Y - centerY,
+                start.X - centerX);
+        double endAngle =
+            Math.Atan2(
+                end.Y - centerY,
+                end.X - centerX);
+        double sweepAngle =
+            endAngle - startAngle;
+
+        if (sweep && sweepAngle < 0)
+        {
+            sweepAngle += Math.PI * 2;
+        }
+        else if (!sweep && sweepAngle > 0)
+        {
+            sweepAngle -= Math.PI * 2;
+        }
+
+        int segmentCount =
+            Math.Max(
+                1,
+                (int)Math.Ceiling(
+                    Math.Abs(sweepAngle) /
+                    (Math.PI / 2.0)));
+        double segmentAngle =
+            sweepAngle /
+            segmentCount;
+        double angle = startAngle;
+
+        for (int segment = 0;
+             segment < segmentCount;
+             segment++)
+        {
+            double nextAngle =
+                angle + segmentAngle;
+            double alpha =
+                (4.0 / 3.0) *
+                Math.Tan(
+                    (nextAngle - angle) /
+                    4.0);
+
+            var control1 =
+                new MmPoint(
+                    centerX +
+                    (radius *
+                     (Math.Cos(angle) -
+                      (alpha * Math.Sin(angle)))),
+                    centerY +
+                    (radius *
+                     (Math.Sin(angle) +
+                      (alpha * Math.Cos(angle)))));
+            var control2 =
+                new MmPoint(
+                    centerX +
+                    (radius *
+                     (Math.Cos(nextAngle) +
+                      (alpha * Math.Sin(nextAngle)))),
+                    centerY +
+                    (radius *
+                     (Math.Sin(nextAngle) -
+                      (alpha * Math.Cos(nextAngle)))));
+            var segmentEnd =
+                new MmPoint(
+                    centerX +
+                    (radius * Math.Cos(nextAngle)),
+                    centerY +
+                    (radius * Math.Sin(nextAngle)));
+
+            PdfPoint mappedControl1 =
+                mapper.MapPoint(control1);
+            PdfPoint mappedControl2 =
+                mapper.MapPoint(control2);
+            PdfPoint mappedEnd =
+                mapper.MapPoint(segmentEnd);
+
+            AppendCurve(
+                output,
+                mappedControl1.X,
+                mappedControl1.Y,
+                mappedControl2.X,
+                mappedControl2.Y,
+                mappedEnd.X,
+                mappedEnd.Y);
+
+            angle = nextAngle;
+        }
+    }
+
+    private static bool ReadArcFlag(
+        IReadOnlyList<string> tokens,
+        ref int index)
+    {
+        double value =
+            ReadNumber(
+                tokens,
+                ref index);
+
+        return value switch
+        {
+            0 => false,
+            1 => true,
+            _ => throw new InvalidOperationException(
+                "SVG arc flags must be 0 or 1.")
+        };
     }
 
     private static double ReadNumber(
