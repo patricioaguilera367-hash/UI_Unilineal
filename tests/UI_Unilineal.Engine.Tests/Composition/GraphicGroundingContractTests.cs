@@ -85,7 +85,7 @@ public sealed class GraphicGroundingContractTests
         string[] allowedReferenceStatuses =
             ["VERIFIED", "PARTIAL", "NOT_SHOWN", "AMBIGUOUS"];
         string[] allowedGeometryStatuses =
-            ["PARTIAL_MATCH", "MISMATCH", "APP_ONLY"];
+            ["REFERENCE_ALIGNED", "PARTIAL_MATCH", "MISMATCH", "APP_ONLY"];
 
         Assert.All(entries, entry =>
         {
@@ -95,17 +95,26 @@ public sealed class GraphicGroundingContractTests
             Assert.Contains(
                 entry.GetProperty("currentGeometryStatus").GetString(),
                 allowedGeometryStatuses);
-            Assert.Equal(
-                "APP:SYMBOLS",
-                entry.GetProperty("shapeSourceId").GetString());
-            Assert.Equal(
-                "APP:GRAPHIC_CONVENTIONS",
-                entry.GetProperty("sizeSourceId").GetString());
-        });
+            string shapeSourceId =
+                entry.GetProperty("shapeSourceId").GetString()!;
+            string sizeSourceId =
+                entry.GetProperty("sizeSourceId").GetString()!;
 
-        Assert.All(
-            profile.Symbols,
-            symbol => Assert.Equal(new[] { "APP:SYMBOLS" }, symbol.ProvenanceIds));
+            Assert.Contains(
+                profile.Provenance,
+                source => source.Id == shapeSourceId);
+            Assert.Contains(
+                profile.Provenance,
+                source => source.Id == sizeSourceId);
+
+            string symbolId =
+                entry.GetProperty("symbolId").GetString()!;
+            var symbol = profile.Symbols.Single(
+                candidate => candidate.Id == symbolId);
+
+            Assert.Contains(shapeSourceId, symbol.ProvenanceIds);
+            Assert.Contains(sizeSourceId, symbol.ProvenanceIds);
+        });
     }
 
     [Fact]
