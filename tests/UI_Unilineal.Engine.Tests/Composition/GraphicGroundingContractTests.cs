@@ -1,5 +1,6 @@
 using System.Text.Json;
 using UI_Unilineal.Domain.Profiles;
+using UI_Unilineal.Domain.Symbols;
 using UI_Unilineal.Engine.Composition;
 
 namespace UI_Unilineal.Engine.Tests.Composition;
@@ -115,6 +116,46 @@ public sealed class GraphicGroundingContractTests
             Assert.Contains(shapeSourceId, symbol.ProvenanceIds);
             Assert.Contains(sizeSourceId, symbol.ProvenanceIds);
         });
+    }
+
+
+    [Fact]
+    public void BreakerVariants_UseSharedCellAnchorsAndOnePoleMarkerPerProtectedConductor()
+    {
+        RIC18DrawingProfile profile = LoadProfile();
+
+        for (int multiplicity = 1; multiplicity <= 4; multiplicity++)
+        {
+            SymbolDefinition symbol = profile.Symbols.Single(
+                candidate => candidate.Id == $"BREAKER_{multiplicity}X");
+
+            Assert.Equal(12, symbol.NominalBounds.Width, 6);
+            Assert.Equal(16, symbol.NominalBounds.Height, 6);
+
+            AnchorDefinition input = symbol.Anchors.Single(anchor => anchor.Id == "IN");
+            AnchorDefinition output = symbol.Anchors.Single(anchor => anchor.Id == "OUT");
+
+            Assert.Equal(6, input.Point.X, 6);
+            Assert.Equal(0, input.Point.Y, 6);
+            Assert.Equal(6, output.Point.X, 6);
+            Assert.Equal(16, output.Point.Y, 6);
+
+            int horizontalPoleMarkers = symbol.Primitives
+                .OfType<LineSymbolPrimitive>()
+                .Count(line =>
+                    Math.Abs(line.Start.Y - line.End.Y) < 0.000001);
+
+            Assert.Equal(multiplicity, horizontalPoleMarkers);
+            Assert.Equal(
+                2,
+                symbol.Primitives.OfType<CircleSymbolPrimitive>().Count());
+            Assert.Contains(
+                "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+                symbol.ProvenanceIds);
+            Assert.Contains(
+                "APP:GRAPHIC_CONVENTIONS",
+                symbol.ProvenanceIds);
+        }
     }
 
     [Fact]
