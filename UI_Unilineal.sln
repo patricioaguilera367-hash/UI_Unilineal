@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI_Unilineal.Rendering.Aval
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI_Unilineal.Playground", "src\UI_Unilineal.Playground\UI_Unilineal.Playground.csproj", "{437D695E-720B-4F32-AFFB-86C841961515}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI_Unilineal.Export.Svg", "src\UI_Unilineal.Export.Svg\UI_Unilineal.Export.Svg.csproj", "{C5C9D8D0-1A8E-4A75-9C3A-7B23191A0001}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI_Unilineal.Domain.Tests", "tests\UI_Unilineal.Domain.Tests\UI_Unilineal.Domain.Tests.csproj", "{295A823F-A552-4D44-A561-E5E963A1314C}"
@@ -20,6 +22,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI_Unilineal.Engine.Tests", "tests\UI_Unilineal.Engine.Tests\UI_Unilineal.Engine.Tests.csproj", "{E0FB4ACC-B0AD-4B70-9FF8-43D9B7555D52}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI_Unilineal.Rendering.Avalonia.Tests", "tests\UI_Unilineal.Rendering.Avalonia.Tests\UI_Unilineal.Rendering.Avalonia.Tests.csproj", "{B67A78C6-E802-44D5-9B14-F2B40AD6B926}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI_Unilineal.Export.Svg.Tests", "tests\UI_Unilineal.Export.Svg.Tests\UI_Unilineal.Export.Svg.Tests.csproj", "{C5C9D8D0-1A8E-4A75-9C3A-7B23191A0002}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
