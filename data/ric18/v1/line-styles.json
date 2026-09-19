@@ -1,9 +1,65 @@
 [
-  { "id": "POWER", "role": "Power", "widthMm": 0.35, "pattern": "Solid", "provenanceId": "APP:STYLES" },
-  { "id": "BUS", "role": "Bus", "widthMm": 0.70, "pattern": "Solid", "provenanceId": "APP:STYLES" },
-  { "id": "GROUND", "role": "Ground", "widthMm": 0.35, "pattern": "Solid", "provenanceId": "APP:STYLES" },
-  { "id": "REFERENCE", "role": "Reference", "widthMm": 0.25, "pattern": "Dashed", "provenanceId": "APP:STYLES" },
-  { "id": "GALLERY_GRID", "role": "Reference", "widthMm": 0.10, "pattern": "Dotted", "provenanceId": "APP:STYLES" },
-  { "id": "ANNOTATION", "role": "Annotation", "widthMm": 0.20, "pattern": "Solid", "provenanceId": "APP:STYLES" },
-  { "id": "ALTERNATE_SUPPLY", "role": "AlternateSupply", "widthMm": 0.35, "pattern": "Dashed", "provenanceId": "APP:STYLES" }
+  {
+    "id": "POWER",
+    "role": "Power",
+    "widthMm": 0.35,
+    "pattern": "Solid",
+    "provenanceId": "APP:STYLES"
+  },
+  {
+    "id": "BUS",
+    "role": "Bus",
+    "widthMm": 0.7,
+    "pattern": "Solid",
+    "provenanceId": "APP:STYLES"
+  },
+  {
+    "id": "GROUND",
+    "role": "Ground",
+    "widthMm": 0.35,
+    "pattern": "Solid",
+    "provenanceId": "APP:STYLES"
+  },
+  {
+    "id": "REFERENCE",
+    "role": "Reference",
+    "widthMm": 0.25,
+    "pattern": "Dashed",
+    "provenanceId": "APP:STYLES"
+  },
+  {
+    "id": "GALLERY_GRID",
+    "role": "Reference",
+    "widthMm": 0.06,
+    "pattern": "Dotted",
+    "provenanceId": "APP:STYLES"
+  },
+  {
+    "id": "GALLERY_BOUNDS",
+    "role": "Reference",
+    "widthMm": 0.1,
+    "pattern": "Dashed",
+    "provenanceId": "APP:STYLES"
+  },
+  {
+    "id": "GALLERY_GUIDE",
+    "role": "Annotation",
+    "widthMm": 0.08,
+    "pattern": "Dotted",
+    "provenanceId": "APP:STYLES"
+  },
+  {
+    "id": "ANNOTATION",
+    "role": "Annotation",
+    "widthMm": 0.2,
+    "pattern": "Solid",
+    "provenanceId": "APP:STYLES"
+  },
+  {
+    "id": "ALTERNATE_SUPPLY",
+    "role": "AlternateSupply",
+    "widthMm": 0.35,
+    "pattern": "Dashed",
+    "provenanceId": "APP:STYLES"
+  }
 ]
