@@ -216,11 +216,10 @@ public sealed class AvaloniaSceneRenderer
             brush);
 
         context.DrawText(
-            brush,
+            formatted,
             new Point(
                 text.Bounds.X,
-                text.Bounds.Y),
-            formatted);
+                text.Bounds.Y));
     }
 
     private static void DrawSymbol(
