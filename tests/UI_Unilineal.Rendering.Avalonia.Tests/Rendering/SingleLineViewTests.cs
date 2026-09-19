@@ -1,9 +1,14 @@
-﻿using Avalonia;
+﻿using System.Reflection;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Styling;
+using UI_Unilineal.Domain.Profiles;
 using UI_Unilineal.Domain.Scene;
+using UI_Unilineal.Engine.Composition;
 using UI_Unilineal.Engine.Layout;
 using UI_Unilineal.Rendering.Avalonia.HitTesting;
 using UI_Unilineal.Rendering.Avalonia.Rendering;
@@ -14,6 +19,63 @@ namespace UI_Unilineal.Rendering.Avalonia.Tests.Rendering;
 
 public sealed class SingleLineViewTests
 {
+    [AvaloniaFact]
+    public void DrawingResources_FollowInheritedThemeVariantWithoutMutatingScene()
+    {
+        RIC18DrawingProfile profile = Profile();
+        DiagramScene scene = Scene(
+            "theme/element",
+            new MmRect(10, 10, 12, 12),
+            new MmRect(0, 0, 100, 60));
+        string fingerprint =
+            DiagramSceneFingerprint.Compute(scene);
+        var view = new SingleLineView
+        {
+            Scene = scene,
+            DrawingProfile = profile
+        };
+        var window = new Window
+        {
+            Width = 400,
+            Height = 300,
+            RequestedThemeVariant = ThemeVariant.Dark,
+            Content = view
+        };
+
+        window.Show();
+
+        Assert.Equal(
+            ThemeVariant.Dark,
+            view.ActualThemeVariant);
+
+        AvaloniaRenderResources dark =
+            Resources(view);
+
+        Assert.Same(
+            Brushes.White,
+            dark.ResolveTextBrush("TECH"));
+
+        window.RequestedThemeVariant =
+            ThemeVariant.Light;
+
+        Assert.Equal(
+            ThemeVariant.Light,
+            view.ActualThemeVariant);
+
+        AvaloniaRenderResources light =
+            Resources(view);
+
+        Assert.NotSame(
+            dark,
+            light);
+        Assert.Same(
+            Brushes.Black,
+            light.ResolveTextBrush("TECH"));
+        Assert.Equal(
+            fingerprint,
+            DiagramSceneFingerprint.Compute(scene));
+    }
+
     [AvaloniaFact]
     public void SceneReplacement_IsAtomicAndDropsOldHitIndex()
     {
@@ -286,6 +348,51 @@ public sealed class SingleLineViewTests
         Assert.Equal(
             fingerprint,
             DiagramSceneFingerprint.Compute(scene));
+    }
+
+    private static AvaloniaRenderResources Resources(
+        SingleLineView view)
+    {
+        FieldInfo field =
+            typeof(SingleLineView).GetField(
+                "_resources",
+                BindingFlags.Instance |
+                BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException(
+                "SingleLineView resources field was not found.");
+
+        return Assert.IsType<AvaloniaRenderResources>(
+            field.GetValue(view));
+    }
+
+    private static RIC18DrawingProfile Profile()
+    {
+        DirectoryInfo? directory =
+            new(AppContext.BaseDirectory);
+
+        while (directory is not null)
+        {
+            string solution =
+                Path.Combine(
+                    directory.FullName,
+                    "UI_Unilineal.sln");
+
+            if (File.Exists(solution))
+            {
+                return new Ric18DrawingProfileLoader()
+                    .LoadDirectory(
+                        Path.Combine(
+                            directory.FullName,
+                            "data",
+                            "ric18",
+                            "v1"));
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException(
+            "Could not locate UI_Unilineal repository root.");
     }
 
     private static Window Open(
