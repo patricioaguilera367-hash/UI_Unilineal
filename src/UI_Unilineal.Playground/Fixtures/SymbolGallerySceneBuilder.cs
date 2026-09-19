@@ -7,17 +7,25 @@ namespace UI_Unilineal.Playground.Fixtures;
 public static class SymbolGallerySceneBuilder
 {
     private const double SceneMarginMm = 10;
-    private const double CellWidthMm = 58;
+    private const double CellWidthMm = 68;
     private const double CellHeightMm = 54;
     private const int Columns = 4;
+    private const double GridSpacingMm = 20;
+    private const double GridClearanceMm = 1.5;
 
-    public static DiagramScene Build(RIC18DrawingProfile profile)
+    public static DiagramScene Build(
+        RIC18DrawingProfile profile,
+        bool showGrid = true,
+        bool showBounds = true)
     {
         ArgumentNullException.ThrowIfNull(profile);
 
         var elements = new List<SceneElement>();
+        var nominalBounds = new List<MmRect>();
         var grouped = profile.Symbols
             .OrderBy(symbol => FamilyOrder(Family(symbol)))
+            .ThenBy(symbol => Family(symbol), StringComparer.Ordinal)
+            .ThenBy(symbol => SymbolOrder(symbol))
             .ThenBy(symbol => symbol.Id, StringComparer.Ordinal)
             .GroupBy(Family)
             .ToArray();
@@ -28,7 +36,7 @@ public static class SymbolGallerySceneBuilder
             double headingY = SceneMarginMm + row * CellHeightMm;
             elements.Add(Text(
                 $"gallery/family/{Slug(family.Key)}",
-                new MmRect(SceneMarginMm, headingY, 120, 5),
+                new MmRect(SceneMarginMm, headingY, 180, 5),
                 family.Key,
                 "TECH",
                 zIndex: 10));
@@ -40,11 +48,13 @@ public static class SymbolGallerySceneBuilder
             {
                 int column = index % Columns;
                 int familyRow = index / Columns;
-                AddSymbolCell(
+                MmRect bounds = AddSymbolCell(
                     elements,
                     symbol,
                     SceneMarginMm + column * CellWidthMm,
-                    SceneMarginMm + (row + familyRow) * CellHeightMm);
+                    SceneMarginMm + (row + familyRow) * CellHeightMm,
+                    showBounds);
+                nominalBounds.Add(bounds);
                 index++;
             }
 
@@ -54,14 +64,21 @@ public static class SymbolGallerySceneBuilder
         double width = SceneMarginMm * 2 + Columns * CellWidthMm;
         double height = SceneMarginMm * 2 + Math.Max(1, row) * CellHeightMm;
 
-        AddGrid(elements, width, height);
+        if (showGrid)
+        {
+            AddGrid(
+                elements,
+                width,
+                height,
+                showBounds ? nominalBounds : []);
+        }
 
         var metadata = new DiagramSceneMetadata(
             profile.ProfileId,
             profile.Version,
             "symbol-gallery",
-            "symbol-gallery-v1",
-            "symbol-gallery",
+            "symbol-gallery-v2",
+            $"symbol-gallery:grid={showGrid};bounds={showBounds}",
             "symbol-gallery");
 
         return new DiagramScene(
@@ -70,17 +87,21 @@ public static class SymbolGallerySceneBuilder
             metadata);
     }
 
-    private static void AddSymbolCell(
+    private static MmRect AddSymbolCell(
         ICollection<SceneElement> elements,
         SymbolDefinition symbol,
         double x,
-        double y)
+        double y,
+        bool showBounds)
     {
-        const double previewWidth = 48;
+        const double previewWidth = 58;
         const double previewHeight = 30;
 
+        int? breakerMultiplicity = BreakerMultiplicity(symbol.Id);
         double symbolX =
-            x + (previewWidth - symbol.NominalBounds.Width) / 2;
+            breakerMultiplicity is null
+                ? x + (previewWidth - symbol.NominalBounds.Width) / 2
+                : x + 9;
         double symbolY =
             y + 5 + (previewHeight - symbol.NominalBounds.Height) / 2;
 
@@ -92,37 +113,40 @@ public static class SymbolGallerySceneBuilder
 
         string slug = Slug(symbol.Id);
 
-        elements.Add(new RectangleSceneElement(
-            new SceneId($"gallery/{slug}/bounds"),
-            symbolBounds,
-            SceneLayer.Annotation,
-            1,
-            SceneVisibility.Interactive,
-            null,
-            new Dictionary<string, string>
-            {
-                ["gallery"] = "nominal-bounds"
-            },
-            "REFERENCE"));
+        if (showBounds)
+        {
+            elements.Add(new RectangleSceneElement(
+                new SceneId($"gallery/{slug}/bounds"),
+                symbolBounds,
+                SceneLayer.Annotation,
+                1,
+                SceneVisibility.Interactive,
+                null,
+                new Dictionary<string, string>
+                {
+                    ["gallery"] = "nominal-bounds"
+                },
+                "GALLERY_BOUNDS"));
 
-        double centerX = symbolBounds.X + symbolBounds.Width / 2;
-        double centerY = symbolBounds.Y + symbolBounds.Height / 2;
+            double centerX = symbolBounds.X + symbolBounds.Width / 2;
+            double centerY = symbolBounds.Y + symbolBounds.Height / 2;
 
-        elements.Add(Line(
-            $"gallery/{slug}/guide-x",
-            new MmPoint(symbolBounds.X - 2, centerY),
-            new MmPoint(symbolBounds.Right + 2, centerY),
-            "REFERENCE",
-            SceneLayer.Annotation,
-            0));
+            elements.Add(Line(
+                $"gallery/{slug}/guide-x",
+                new MmPoint(symbolBounds.X - 1.5, centerY),
+                new MmPoint(symbolBounds.Right + 1.5, centerY),
+                "GALLERY_GUIDE",
+                SceneLayer.Annotation,
+                0));
 
-        elements.Add(Line(
-            $"gallery/{slug}/guide-y",
-            new MmPoint(centerX, symbolBounds.Y - 2),
-            new MmPoint(centerX, symbolBounds.Bottom + 2),
-            "REFERENCE",
-            SceneLayer.Annotation,
-            0));
+            elements.Add(Line(
+                $"gallery/{slug}/guide-y",
+                new MmPoint(centerX, symbolBounds.Y - 1.5),
+                new MmPoint(centerX, symbolBounds.Bottom + 1.5),
+                "GALLERY_GUIDE",
+                SceneLayer.Annotation,
+                0));
+        }
 
         elements.Add(new SymbolSceneElement(
             new SceneId($"gallery/{slug}/symbol"),
@@ -146,7 +170,7 @@ public static class SymbolGallerySceneBuilder
             double anchorY =
                 symbolY +
                 (anchor.Point.Y - symbol.NominalBounds.Y);
-            const double radius = 0.9;
+            const double radius = 0.8;
 
             elements.Add(new CircleSceneElement(
                 new SceneId($"gallery/{slug}/anchor-{Slug(anchor.Id)}"),
@@ -169,10 +193,20 @@ public static class SymbolGallerySceneBuilder
                 "ANNOTATION"));
         }
 
+        if (breakerMultiplicity is int multiplicity)
+        {
+            AddBreakerSampleLabel(
+                elements,
+                slug,
+                x + 27,
+                symbolY + 3,
+                multiplicity);
+        }
+
         elements.Add(Text(
             $"gallery/{slug}/id",
             new MmRect(x, y + 37, previewWidth, 4),
-            symbol.Id,
+            DisplayId(symbol),
             "TECH",
             10));
 
@@ -189,36 +223,192 @@ public static class SymbolGallerySceneBuilder
             $"{symbol.NominalBounds.Width:0.##} x {symbol.NominalBounds.Height:0.##} mm",
             "LABEL_SMALL",
             10));
+
+        return symbolBounds;
+    }
+
+    private static void AddBreakerSampleLabel(
+        ICollection<SceneElement> elements,
+        string slug,
+        double x,
+        double y,
+        int multiplicity)
+    {
+        elements.Add(Text(
+            $"gallery/{slug}/rating-poles",
+            new MmRect(x, y, 24, 4),
+            $"{multiplicity}x...A",
+            "TECH",
+            10));
+
+        elements.Add(Text(
+            $"gallery/{slug}/rating-ka",
+            new MmRect(x, y + 4.5, 24, 4),
+            "...kA",
+            "TECH",
+            10));
+
+        elements.Add(Text(
+            $"gallery/{slug}/rating-reserve",
+            new MmRect(x, y + 9, 24, 4),
+            ".......",
+            "LABEL_SMALL",
+            10));
     }
 
     private static void AddGrid(
         ICollection<SceneElement> elements,
         double width,
-        double height)
+        double height,
+        IReadOnlyList<MmRect> exclusions)
     {
-        const double spacing = 20;
+        int lineIndex = 0;
 
-        for (double x = 0; x <= width; x += spacing)
+        for (double x = 0; x <= width; x += GridSpacingMm)
         {
-            elements.Add(Line(
-                $"gallery/grid/v-{x:0}",
-                new MmPoint(x, 0),
-                new MmPoint(x, height),
-                "GALLERY_GRID",
-                SceneLayer.Background,
-                -100));
+            IReadOnlyList<(double Start, double End)> blocked =
+                MergeIntervals(
+                    exclusions
+                        .Where(bounds =>
+                            x >= bounds.X - GridClearanceMm &&
+                            x <= bounds.Right + GridClearanceMm)
+                        .Select(bounds =>
+                            (
+                                Math.Max(0, bounds.Y - GridClearanceMm),
+                                Math.Min(height, bounds.Bottom + GridClearanceMm)
+                            )));
+
+            AddGridSegments(
+                elements,
+                vertical: true,
+                fixedCoordinate: x,
+                extent: height,
+                blocked,
+                ref lineIndex);
         }
 
-        for (double y = 0; y <= height; y += spacing)
+        for (double y = 0; y <= height; y += GridSpacingMm)
         {
-            elements.Add(Line(
-                $"gallery/grid/h-{y:0}",
-                new MmPoint(0, y),
-                new MmPoint(width, y),
-                "GALLERY_GRID",
-                SceneLayer.Background,
-                -100));
+            IReadOnlyList<(double Start, double End)> blocked =
+                MergeIntervals(
+                    exclusions
+                        .Where(bounds =>
+                            y >= bounds.Y - GridClearanceMm &&
+                            y <= bounds.Bottom + GridClearanceMm)
+                        .Select(bounds =>
+                            (
+                                Math.Max(0, bounds.X - GridClearanceMm),
+                                Math.Min(width, bounds.Right + GridClearanceMm)
+                            )));
+
+            AddGridSegments(
+                elements,
+                vertical: false,
+                fixedCoordinate: y,
+                extent: width,
+                blocked,
+                ref lineIndex);
         }
+    }
+
+    private static void AddGridSegments(
+        ICollection<SceneElement> elements,
+        bool vertical,
+        double fixedCoordinate,
+        double extent,
+        IReadOnlyList<(double Start, double End)> blocked,
+        ref int lineIndex)
+    {
+        double cursor = 0;
+
+        foreach ((double start, double end) in blocked)
+        {
+            if (start - cursor > 0.05)
+            {
+                AddGridSegment(
+                    elements,
+                    vertical,
+                    fixedCoordinate,
+                    cursor,
+                    start,
+                    lineIndex++);
+            }
+
+            cursor = Math.Max(cursor, end);
+        }
+
+        if (extent - cursor > 0.05)
+        {
+            AddGridSegment(
+                elements,
+                vertical,
+                fixedCoordinate,
+                cursor,
+                extent,
+                lineIndex++);
+        }
+    }
+
+    private static void AddGridSegment(
+        ICollection<SceneElement> elements,
+        bool vertical,
+        double fixedCoordinate,
+        double start,
+        double end,
+        int index)
+    {
+        MmPoint from =
+            vertical
+                ? new MmPoint(fixedCoordinate, start)
+                : new MmPoint(start, fixedCoordinate);
+        MmPoint to =
+            vertical
+                ? new MmPoint(fixedCoordinate, end)
+                : new MmPoint(end, fixedCoordinate);
+
+        elements.Add(Line(
+            $"gallery/grid/segment-{index}",
+            from,
+            to,
+            "GALLERY_GRID",
+            SceneLayer.Background,
+            -100));
+    }
+
+    private static IReadOnlyList<(double Start, double End)> MergeIntervals(
+        IEnumerable<(double Start, double End)> intervals)
+    {
+        var ordered = intervals
+            .Where(interval => interval.End > interval.Start)
+            .OrderBy(interval => interval.Start)
+            .ToArray();
+
+        if (ordered.Length == 0)
+        {
+            return [];
+        }
+
+        var merged = new List<(double Start, double End)>();
+        double start = ordered[0].Start;
+        double end = ordered[0].End;
+
+        for (int index = 1; index < ordered.Length; index++)
+        {
+            (double nextStart, double nextEnd) = ordered[index];
+
+            if (nextStart <= end)
+            {
+                end = Math.Max(end, nextEnd);
+                continue;
+            }
+
+            merged.Add((start, end));
+            start = nextStart;
+            end = nextEnd;
+        }
+
+        merged.Add((start, end));
+        return merged;
     }
 
     private static LineSceneElement Line(
@@ -264,19 +454,52 @@ public static class SymbolGallerySceneBuilder
             value,
             styleId);
 
-    private static string Family(SymbolDefinition symbol) =>
-        symbol.SemanticRole switch
+    private static string Family(SymbolDefinition symbol)
+    {
+        if (BreakerMultiplicity(symbol.Id) is not null)
+        {
+            return "2 — BREAKER variants";
+        }
+
+        return symbol.SemanticRole switch
         {
             "SourceUtility" or "ServiceEntrance" => "1 — Supply",
-            "Breaker" or "ResidualCurrentDevice" or "Fuse" => "2 — Protection",
-            "Bus" or "Ground" or "ConnectionNode" => "3 — Distribution & grounding",
-            _ => "4 — Destinations & fallback"
+            "Breaker" or "ResidualCurrentDevice" or "Fuse" => "3 — Protection · generic / other",
+            "Bus" or "Ground" or "ConnectionNode" => "4 — Distribution & grounding",
+            _ => "5 — Destinations & fallback"
         };
+    }
 
     private static int FamilyOrder(string family) =>
         family.Length > 0 && char.IsDigit(family[0])
             ? family[0] - '0'
             : 99;
+
+    private static int SymbolOrder(SymbolDefinition symbol) =>
+        BreakerMultiplicity(symbol.Id) ?? int.MaxValue;
+
+    private static int? BreakerMultiplicity(string symbolId)
+    {
+        const string prefix = "BREAKER_";
+
+        if (!symbolId.StartsWith(prefix, StringComparison.Ordinal) ||
+            !symbolId.EndsWith("X", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        string value = symbolId[prefix.Length..^1];
+
+        return int.TryParse(value, out int multiplicity) &&
+               multiplicity is >= 1 and <= 4
+            ? multiplicity
+            : null;
+    }
+
+    private static string DisplayId(SymbolDefinition symbol) =>
+        symbol.Id == "BREAKER"
+            ? "BREAKER · generic compatibility"
+            : symbol.Id;
 
     private static string Slug(string value)
     {
