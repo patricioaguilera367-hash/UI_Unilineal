@@ -21,6 +21,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\UI_Unilineal.Domain\UI_Unilineal.Domain.csproj" />
     <ProjectReference Include="..\..\src\UI_Unilineal.Engine\UI_Unilineal.Engine.csproj" />
+    <ProjectReference Include="..\..\src\UI_Unilineal.Export.Svg\UI_Unilineal.Export.Svg.csproj" />
+    <ProjectReference Include="..\..\src\UI_Unilineal.Export.Pdf\UI_Unilineal.Export.Pdf.csproj" />
   </ItemGroup>
 
   <ItemGroup>
