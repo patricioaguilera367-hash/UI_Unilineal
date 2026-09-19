@@ -97,10 +97,26 @@
   },
   {
     "symbolId": "GROUND",
-    "annex18_5Analogue": "T.P. and T.S. grounding marks adjacent to the incoming point.",
-    "referenceStatus": "VERIFIED",
-    "currentGeometryStatus": "MISMATCH",
+    "annex18_5Analogue": "Legacy compatibility ground symbol. Canonical Annex 18.5 grounding marks are split into TP and TS.",
+    "referenceStatus": "PARTIAL",
+    "currentGeometryStatus": "PARTIAL_MATCH",
     "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "GROUND_TP",
+    "annex18_5Analogue": "T.P. protective-ground mark: horizontal bar with repeated diagonal hatching beneath it.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "GROUND_TS",
+    "annex18_5Analogue": "T.S. service-ground mark: conventional stacked horizontal earth bars.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
     "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
   },
   {
