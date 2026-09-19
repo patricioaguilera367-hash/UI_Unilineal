@@ -1,7 +1,7 @@
 # UI_Unilineal V1 — Architecture Design
 
 Date: 2026-09-16
-Status: Approved design; G0–G5 implemented and verified as of 2026-09-18
+Status: Approved design; G0–G8 implemented and verified as of 2026-09-19
 Branch: `feature/v1-single-line-engine`
 Baseline: `main` at `16f84591a5283bb2c314749b81f29040e8174f7f`
 Evidence branch: `spike/v0.4-dedicated-detail` is reference material only and is not a production base.

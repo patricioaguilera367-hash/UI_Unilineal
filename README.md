@@ -83,7 +83,7 @@ ProyectoElectrico main.
 
 ## Estado
 
-V1 G0–G7 implementado y cubierto por CI Windows/Linux:
+V1 G0–G8 implementado y cubierto por CI Windows/Linux:
 
 - `SingleLineInput` semántico e inmutable y topología explícita mediante
   `SupplyConnection`;
@@ -212,5 +212,49 @@ El Playground queda disponible para aceptación visual/runtime local con
 `dotnet run --project src\\UI_Unilineal.Playground\\UI_Unilineal.Playground.csproj -c Release`.
 La CI headless no sustituye esa inspección manual.
 
-El siguiente checkpoint es **G8: composición documental y exportación**.
-SVG/PDF y la integración real con `ProyectoElectrico` siguen fuera de G7.
+### G8 — documentos y exportación
+
+G8 añade composición física y exportación vectorial sin convertir al renderer
+ni al Playground en fuentes alternativas de geometría:
+
+```text
+DiagramScene
+      |
+      v
+DocumentComposer
+      |
+      v
+DrawingDocument / DrawingSheet[]
+      |                 |
+      v                 v
+SvgExporter         PdfExporter
+```
+
+- `DrawingDocument` y `DrawingSheet` separan papel, escala, márgenes,
+  viewport, title block y continuaciones del estado de pantalla;
+- A0–A4 y Custom usan dimensiones físicas explícitas en milímetros;
+- `DocumentPreflight` valida estilos, fonts, geometría y compatibilidad antes
+  de escribir bytes;
+- `ExportManifest` registra fingerprints semánticos, perfil, layout,
+  exporter, revisión y cantidad de hojas sin introducir timestamps;
+- SVG es determinista, autocontenido, seguro frente a texto XML hostil y
+  permanece vector/text;
+- PDF es determinista, multipágina, conserva MediaBox físico y utiliza
+  operadores vectoriales/texto sin image XObjects para primitivas soportadas;
+- ambos exporters consumen exactamente el mismo `DrawingDocument`;
+- los exporters de bajo nivel escriben a `Stream` y observan cancelación;
+- el Playground sólo orquesta exportación capability-gated y realiza
+  reemplazo atómico en el boundary de host;
+- architecture guards impiden dependencias Avalonia o `ProyectoElectrico`
+  dentro de los exporters.
+
+La evidencia G8 incluye goldens estructurales cross-format, equivalencia ante
+input semánticamente reordenado, casos Unicode/XML/PDF hostiles, geometría de
+papel límite, cancelación, atomicidad y CI Windows/Linux.
+
+La inspección visual/manual sigue siendo complementaria a la evidencia
+estructural headless; la CI no pretende certificar por sí sola calidad
+tipográfica o apreciación visual final.
+
+El siguiente checkpoint es **G9: hardening**. La integración real de lectura
+con `ProyectoElectrico` comienza en G10.

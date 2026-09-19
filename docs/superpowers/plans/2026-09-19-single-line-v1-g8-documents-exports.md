@@ -292,3 +292,29 @@ G8 is GREEN only when all of the following are simultaneously true:
 ## Sequencing rationale
 
 Tasks 42-44 establish the physical-document and validity contracts before any file format appears. Task 45 makes SVG the deterministic reference surface. Task 46 adds PDF only after shared document semantics are stable. Tasks 47-49 prove parity, shell composition and robustness. Task 50 closes the gate only after the exact final SHA is green on both CI runners.
+
+
+## Execution record — G8 closure
+
+G8 was executed sequentially without reopening G0-G7:
+
+- Task 42-44 established physical document contracts, deterministic
+  composition, print-style resolution, preflight and traceability.
+- Task 45 SVG GREEN: `2d546e4a7a46b9212e3742a59573e5980508e8cc`.
+- Task 46 PDF GREEN: `5d3b6d82671874ac3506fe1f14e5b316335e8b6a`.
+- Task 47 parity/goldens GREEN:
+  `7bb8f238205f57301cd570eb912a74cd490d98c9`.
+- Task 48 Playground/atomic host-boundary export GREEN:
+  `eab2d0fc7e853f0c7276ca01b08bfa2341f5b950`.
+- Task 49 hardening GREEN:
+  `4c031f28ef8640a051a13705ed1fce5b33178d0c`, CI #203 Windows + Ubuntu.
+- Task 50 self-review found no screen-capture/raster fallback path and
+  confirmed exporter projects remain downstream adapters depending only on
+  Domain + Engine.
+- `UI_Unilineal.sln` already contains SVG/PDF exporters and both exporter
+  test projects; no additional solution mutation was required at checkpoint.
+- Known limitation recorded: visual/manual inspection remains complementary
+  to headless structural evidence.
+
+The exact final checkpoint SHA is the commit carrying this execution record
+and must be GREEN on Windows and Ubuntu before G8 is declared closed.

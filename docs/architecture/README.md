@@ -371,3 +371,61 @@ de fuente que impide que Rendering posea histories o ejecución de host.
 
 G8 conserva la responsabilidad de `DrawingDocument`, SVG/PDF y composición
 física. La integración real con `ProyectoElectrico` permanece fuera de G7.
+
+
+## Checkpoint implementado: V1 G8
+
+G8 introduce composición documental física y dos adaptadores de exportación
+downstream sin alterar las responsabilidades de Domain, Engine o Rendering:
+
+```text
+DiagramScene
+      |
+      v
+DocumentComposer
+      |
+      v
+DrawingDocument / DrawingSheet[]
+      |                 |
+      v                 v
+UI_Unilineal.Export.Svg UI_Unilineal.Export.Pdf
+```
+
+`DrawingDocument` representa hojas físicas y no deriva escala o papel del
+viewport de Avalonia. Cada `DrawingSheet` conserva papel en milímetros,
+orientación, escala, view box, scene viewport, márgenes, title block y
+metadata de continuación.
+
+`DocumentComposer` aplica la política de escala/legibilidad, fallback de
+papel y continuaciones de forma determinista. `PrintStyleResolver`,
+`DocumentPreflight` y `ExportManifest` son compartidos por formatos para
+evitar que SVG y PDF inventen reglas independientes.
+
+Los proyectos `UI_Unilineal.Export.Svg` y `UI_Unilineal.Export.Pdf`
+referencian únicamente Domain + Engine. No dependen de Avalonia ni de
+`ProyectoElectrico`; los guards recorren sus fuentes y proyectos para
+detectar fugas. La solución incluye ambos exporters y sus proyectos de tests.
+
+SVG y PDF serializan el mismo `DrawingDocument`. SVG conserva dimensiones
+físicas/viewBox y contenido vector/text autocontenido. PDF emite páginas
+multipage con MediaBox físico y operadores vectoriales/texto. No existen
+rutas de screen capture, bitmap o fallback raster silencioso para primitivas
+soportadas.
+
+Los exporters de bajo nivel escriben a `Stream` y observan cancelación. El
+boundary de host, demostrado en Playground, ejecuta preflight antes de tocar
+el destino y usa temporal + reemplazo/move atómico para conservar el archivo
+anterior ante error o cancelación.
+
+La evidencia cross-format fija sheet count, papel, view box,
+SceneViewport y fingerprints; también prueba equivalencia frente a
+colecciones semánticamente reordenadas. El hardening cubre texto
+Unicode/XML/PDF hostil, geometría de papel límite, cancelación y determinismo
+con CI Windows/Linux.
+
+Limitación conocida: la evidencia headless/estructural no reemplaza la
+inspección visual/manual de composición, tipografía y apariencia técnica.
+Ambas formas de aceptación son complementarias.
+
+G9 conserva la responsabilidad de hardening ampliado. La integración de
+lectura con `ProyectoElectrico` permanece fuera de G8 y comienza en G10.
