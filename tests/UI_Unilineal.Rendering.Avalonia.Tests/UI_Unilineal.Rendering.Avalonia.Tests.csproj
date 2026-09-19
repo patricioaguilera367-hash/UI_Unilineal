@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\src\UI_Unilineal.Domain\UI_Unilineal.Domain.csproj" />
     <ProjectReference Include="..\..\src\UI_Unilineal.Engine\UI_Unilineal.Engine.csproj" />
     <ProjectReference Include="..\..\src\UI_Unilineal.Rendering.Avalonia\UI_Unilineal.Rendering.Avalonia.csproj" />
+    <ProjectReference Include="..\..\src\UI_Unilineal.Playground\UI_Unilineal.Playground.csproj" />
   </ItemGroup>
 
 </Project>
