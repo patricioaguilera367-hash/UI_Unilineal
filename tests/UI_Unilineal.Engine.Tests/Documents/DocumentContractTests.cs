@@ -130,5 +130,7 @@ public sealed class DocumentContractTests
                 "profile-fp",
                 "layout-v1",
                 "input-fp",
-                "projection-fp"));
+                "projection-fp"),
+            [],
+            []);
 }
