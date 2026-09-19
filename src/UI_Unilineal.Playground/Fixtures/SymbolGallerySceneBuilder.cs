@@ -318,13 +318,15 @@ public static class SymbolGallerySceneBuilder
         elements.Add(Text(
             $"gallery/{slug}/number",
             new MmRect(
-                symbolX + 7.05,
-                symbolY + 6.25,
-                3,
-                3),
+                symbolX + 3,
+                symbolY + 3,
+                10,
+                10),
             "1",
             "TECH",
-            20));
+            20,
+            SceneTextHorizontalAlignment.Center,
+            SceneTextVerticalAlignment.Center));
     }
 
     private static void AddGrid(
@@ -513,7 +515,11 @@ public static class SymbolGallerySceneBuilder
         MmRect bounds,
         string value,
         string styleId,
-        int zIndex) =>
+        int zIndex,
+        SceneTextHorizontalAlignment horizontalAlignment =
+            SceneTextHorizontalAlignment.Start,
+        SceneTextVerticalAlignment verticalAlignment =
+            SceneTextVerticalAlignment.Top) =>
         new(
             new SceneId(id),
             bounds,
@@ -523,7 +529,9 @@ public static class SymbolGallerySceneBuilder
             null,
             null,
             value,
-            styleId);
+            styleId,
+            horizontalAlignment,
+            verticalAlignment);
 
     private static string Family(SymbolDefinition symbol)
     {
