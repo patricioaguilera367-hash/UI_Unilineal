@@ -55,6 +55,10 @@ public sealed class GroundingSchemeCatalogLoader
             (dto.Schemes ?? [])
                 .Select(Convert)
                 .ToArray();
+        GroundingPreviewPresetDefinition[] previewPresets =
+            (dto.PreviewPresets ?? [])
+                .Select(ConvertPreviewPreset)
+                .ToArray();
 
         return new GroundingSchemeCatalog(
             Require(
@@ -63,7 +67,8 @@ public sealed class GroundingSchemeCatalogLoader
             Require(
                 dto.DefaultSchemeId,
                 "grounding.defaultSchemeId"),
-            schemes);
+            schemes,
+            previewPresets);
     }
 
     private static GroundingSchemeDefinition Convert(
@@ -100,6 +105,33 @@ public sealed class GroundingSchemeCatalogLoader
                             "grounding.connection.targetRole")))
                 .ToArray());
 
+    private static GroundingPreviewPresetDefinition ConvertPreviewPreset(
+        PreviewPresetDto dto) =>
+        new(
+            Require(
+                dto.Id,
+                "grounding.previewPreset.id"),
+            Require(
+                dto.Status,
+                "grounding.previewPreset.status"),
+            (dto.Symbols ?? [])
+                .Select(symbol =>
+                    new GroundingPreviewSymbolPlacement(
+                        Require(
+                            symbol.SymbolId,
+                            "grounding.previewPreset.symbolId"),
+                        symbol.X,
+                        symbol.Y))
+                .ToArray(),
+            (dto.Segments ?? [])
+                .Select(segment =>
+                    new GroundingPreviewSegment(
+                        segment.X1,
+                        segment.Y1,
+                        segment.X2,
+                        segment.Y2))
+                .ToArray());
+
     private static string Require(
         string? value,
         string field) =>
@@ -115,6 +147,8 @@ public sealed class GroundingSchemeCatalogLoader
         public string? DefaultSchemeId { get; init; }
 
         public SchemeDto[]? Schemes { get; init; }
+
+        public PreviewPresetDto[]? PreviewPresets { get; init; }
     }
 
     private sealed class SchemeDto
@@ -138,6 +172,37 @@ public sealed class GroundingSchemeCatalogLoader
         public string? ConnectionStatus { get; init; }
 
         public ConnectionPointDto[]? ConnectionPoints { get; init; }
+    }
+
+    private sealed class PreviewPresetDto
+    {
+        public string? Id { get; init; }
+
+        public string? Status { get; init; }
+
+        public PreviewSymbolDto[]? Symbols { get; init; }
+
+        public PreviewSegmentDto[]? Segments { get; init; }
+    }
+
+    private sealed class PreviewSymbolDto
+    {
+        public string? SymbolId { get; init; }
+
+        public double X { get; init; }
+
+        public double Y { get; init; }
+    }
+
+    private sealed class PreviewSegmentDto
+    {
+        public double X1 { get; init; }
+
+        public double Y1 { get; init; }
+
+        public double X2 { get; init; }
+
+        public double Y2 { get; init; }
     }
 
     private sealed class ConnectionPointDto
