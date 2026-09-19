@@ -11,7 +11,7 @@
 
   <Grid RowDefinitions="Auto,*">
     <Border Padding="12">
-      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
         <Button
             x:Name="BackButton"
             Margin="0,0,8,0"
@@ -20,37 +20,43 @@
 
         <Button
             Grid.Column="1"
-            Margin="0,0,16,0"
+            Margin="0,0,8,0"
             Click="OnSummaryClicked"
             Content="Summary" />
 
         <Button
             Grid.Column="2"
+            Margin="0,0,16,0"
+            Click="OnSymbolsClicked"
+            Content="Symbols" />
+
+        <Button
+            Grid.Column="3"
             Margin="0,0,8,0"
             Click="OnZoomOutClicked"
             Content="Zoom -" />
 
         <Button
-            Grid.Column="3"
+            Grid.Column="4"
             Margin="0,0,8,0"
             Click="OnZoomInClicked"
             Content="Zoom +" />
 
         <Button
-            Grid.Column="4"
+            Grid.Column="5"
             Margin="0,0,16,0"
             Click="OnFitClicked"
             Content="Fit" />
 
         <TextBlock
-            Grid.Column="5"
+            Grid.Column="6"
             VerticalAlignment="Center"
             FontWeight="SemiBold"
             Text="UI_Unilineal" />
 
         <TextBlock
             x:Name="RouteText"
-            Grid.Column="6"
+            Grid.Column="7"
             Margin="16,0,0,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
@@ -187,6 +193,12 @@
 
             <TextBlock
                 Margin="0,12,0,0"
+                Opacity="0.7"
+                TextWrapping="Wrap"
+                Text="Symbols opens the profile-driven review gallery. Bounding boxes, centre guides and anchor markers are inspection overlays only." />
+
+            <TextBlock
+                Margin="0,4,0,0"
                 Opacity="0.7"
                 TextWrapping="Wrap"
                 Text="The renderer only translates gestures. Playground owns navigation, command history, capability gating and demo host execution." />
