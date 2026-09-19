@@ -1,0 +1,66 @@
+{
+  "selectionMode": "MANUAL",
+  "defaultSchemeId": "TN_S",
+  "schemes": [
+    {
+      "id": "TN_S",
+      "displayName": "TN-S — Neutralización",
+      "sourceDocument": "Pliego Técnico Normativo RIC N°05",
+      "sourceSection": "6.4.3",
+      "sourceFigure": "Figura 5.1",
+      "defaultSelected": true,
+      "symbolIds": ["GROUND_TP", "GROUND_TS"],
+      "previewPresetId": "TP_TS_SIDE_BY_SIDE_SHARED_UPSTREAM_BRANCH",
+      "connectionStatus": "PENDING_DEFINITION",
+      "connectionPoints": []
+    },
+    {
+      "id": "TN_C",
+      "displayName": "TN-C",
+      "sourceDocument": "Pliego Técnico Normativo RIC N°05",
+      "sourceSection": "6.4.4",
+      "sourceFigure": "Figura 5.2",
+      "defaultSelected": false,
+      "symbolIds": ["GROUND_TP", "GROUND_TS"],
+      "previewPresetId": null,
+      "connectionStatus": "PENDING_DEFINITION",
+      "connectionPoints": []
+    },
+    {
+      "id": "TN_C_S",
+      "displayName": "TN-C-S",
+      "sourceDocument": "Pliego Técnico Normativo RIC N°05",
+      "sourceSection": "6.4.5",
+      "sourceFigure": "Figura 5.3",
+      "defaultSelected": false,
+      "symbolIds": ["GROUND_TP", "GROUND_TS"],
+      "previewPresetId": null,
+      "connectionStatus": "PENDING_DEFINITION",
+      "connectionPoints": []
+    },
+    {
+      "id": "TT",
+      "displayName": "TT",
+      "sourceDocument": "Pliego Técnico Normativo RIC N°05",
+      "sourceSection": "6.5",
+      "sourceFigure": "Figura 5.4",
+      "defaultSelected": false,
+      "symbolIds": ["GROUND_TP", "GROUND_TS"],
+      "previewPresetId": null,
+      "connectionStatus": "PENDING_DEFINITION",
+      "connectionPoints": []
+    },
+    {
+      "id": "IT",
+      "displayName": "IT",
+      "sourceDocument": "Pliego Técnico Normativo RIC N°05",
+      "sourceSection": "6.6",
+      "sourceFigure": "Figura 5.5",
+      "defaultSelected": false,
+      "symbolIds": ["GROUND_TP", "GROUND_TS"],
+      "previewPresetId": null,
+      "connectionStatus": "PENDING_DEFINITION",
+      "connectionPoints": []
+    }
+  ]
+}
