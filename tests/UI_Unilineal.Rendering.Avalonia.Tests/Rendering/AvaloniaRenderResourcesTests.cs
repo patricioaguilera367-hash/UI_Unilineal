@@ -22,7 +22,7 @@ public sealed class AvaloniaRenderResourcesTests
             resources.ProfileFingerprint);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void ResolvePen_UsesProfileWidthAndPattern()
     {
         var resources = new AvaloniaRenderResources(
