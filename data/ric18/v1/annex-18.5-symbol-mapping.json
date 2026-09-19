@@ -19,8 +19,8 @@
     "symbolId": "BREAKER",
     "annex18_5Analogue": "Curved/open contact protection symbol shown at main and branch protections.",
     "referenceStatus": "VERIFIED",
-    "currentGeometryStatus": "PARTIAL_MATCH",
-    "shapeSourceId": "APP:SYMBOLS",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
     "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
   },
   {
