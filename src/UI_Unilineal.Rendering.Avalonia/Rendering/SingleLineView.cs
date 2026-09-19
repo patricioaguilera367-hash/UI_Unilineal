@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Styling;
 using UI_Unilineal.Domain.Profiles;
 using UI_Unilineal.Domain.Scene;
 using UI_Unilineal.Rendering.Avalonia.HitTesting;
@@ -40,6 +41,8 @@ public sealed class SingleLineView : Control
     {
         Focusable = true;
         ClipToBounds = true;
+        ActualThemeVariantChanged +=
+            (_, _) => RebuildResources();
     }
 
     public DiagramScene? Scene
@@ -85,13 +88,7 @@ public sealed class SingleLineView : Control
             }
 
             _drawingProfile = value;
-            _resources =
-                value is null
-                    ? null
-                    : new AvaloniaRenderResources(
-                        value,
-                        InteractiveThemeKind.Light);
-            InvalidateVisual();
+            RebuildResources();
         }
     }
 
@@ -385,6 +382,23 @@ public sealed class SingleLineView : Control
         _spacePressed = false;
         e.Handled = true;
     }
+
+    private void RebuildResources()
+    {
+        _resources =
+            _drawingProfile is null
+                ? null
+                : new AvaloniaRenderResources(
+                    _drawingProfile,
+                    ResolveInteractiveTheme());
+
+        InvalidateVisual();
+    }
+
+    private InteractiveThemeKind ResolveInteractiveTheme() =>
+        ActualThemeVariant == ThemeVariant.Dark
+            ? InteractiveThemeKind.Dark
+            : InteractiveThemeKind.Light;
 
     private void ZoomAtViewportCenter(
         double factor)
