@@ -277,7 +277,8 @@ public sealed class SingleLineLayoutEngine
                     sceneId,
                     expectedSceneKind,
                     sceneIssues),
-                profile);
+                profile,
+                measurement);
         }
         catch (Exception exception) when (IsExpectedPipelineException(exception))
         {
