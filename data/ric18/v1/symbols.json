@@ -767,17 +767,110 @@
         },
         "end": {
           "x": 6,
-          "y": 16
+          "y": 3
         }
       },
       {
-        "kind": "circle",
+        "kind": "rectangle",
         "styleId": "POWER",
-        "center": {
-          "x": 6,
-          "y": 8
+        "rectangle": {
+          "x": 2.5,
+          "y": 3,
+          "width": 7,
+          "height": 10
+        }
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 3.3,
+          "y": 12.2
         },
-        "radius": 4
+        "end": {
+          "x": 8.7,
+          "y": 3.8
+        }
+      },
+      {
+        "kind": "polyline",
+        "styleId": "POWER",
+        "points": [
+          {
+            "x": 3.35,
+            "y": 7
+          },
+          {
+            "x": 3.35,
+            "y": 4.2
+          },
+          {
+            "x": 4.55,
+            "y": 4.2
+          },
+          {
+            "x": 4.9,
+            "y": 4.55
+          },
+          {
+            "x": 4.9,
+            "y": 5.25
+          },
+          {
+            "x": 4.55,
+            "y": 5.6
+          },
+          {
+            "x": 3.35,
+            "y": 5.6
+          }
+        ]
+      },
+      {
+        "kind": "polyline",
+        "styleId": "POWER",
+        "points": [
+          {
+            "x": 7.1,
+            "y": 10.2
+          },
+          {
+            "x": 7.1,
+            "y": 12.7
+          },
+          {
+            "x": 8.25,
+            "y": 12.7
+          },
+          {
+            "x": 8.8,
+            "y": 12.15
+          },
+          {
+            "x": 8.8,
+            "y": 10.75
+          },
+          {
+            "x": 8.25,
+            "y": 10.2
+          },
+          {
+            "x": 7.1,
+            "y": 10.2
+          }
+        ]
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 13
+        },
+        "end": {
+          "x": 6,
+          "y": 16
+        }
       }
     ],
     "labelSlots": [
@@ -795,7 +888,309 @@
       }
     ],
     "provenanceIds": [
-      "APP:SYMBOLS",
+      "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+      "APP:GRAPHIC_CONVENTIONS"
+    ]
+  },
+  {
+    "id": "RCD_2X",
+    "semanticRole": "ResidualCurrentDevice",
+    "nominalBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 16
+    },
+    "anchors": [
+      {
+        "id": "IN",
+        "role": "PowerIn",
+        "point": {
+          "x": 6,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "OUT",
+        "role": "PowerOut",
+        "point": {
+          "x": 6,
+          "y": 16
+        },
+        "direction": "Down"
+      }
+    ],
+    "primitives": [
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 0
+        },
+        "end": {
+          "x": 6,
+          "y": 3
+        }
+      },
+      {
+        "kind": "rectangle",
+        "styleId": "POWER",
+        "rectangle": {
+          "x": 2.5,
+          "y": 3,
+          "width": 7,
+          "height": 10
+        }
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 3.3,
+          "y": 12.2
+        },
+        "end": {
+          "x": 8.7,
+          "y": 3.8
+        }
+      },
+      {
+        "kind": "polyline",
+        "styleId": "POWER",
+        "points": [
+          {
+            "x": 3.35,
+            "y": 7
+          },
+          {
+            "x": 3.35,
+            "y": 4.2
+          },
+          {
+            "x": 4.55,
+            "y": 4.2
+          },
+          {
+            "x": 4.9,
+            "y": 4.55
+          },
+          {
+            "x": 4.9,
+            "y": 5.25
+          },
+          {
+            "x": 4.55,
+            "y": 5.6
+          },
+          {
+            "x": 3.35,
+            "y": 5.6
+          }
+        ]
+      },
+      {
+        "kind": "polyline",
+        "styleId": "POWER",
+        "points": [
+          {
+            "x": 7.1,
+            "y": 10.2
+          },
+          {
+            "x": 7.1,
+            "y": 12.7
+          },
+          {
+            "x": 8.25,
+            "y": 12.7
+          },
+          {
+            "x": 8.8,
+            "y": 12.15
+          },
+          {
+            "x": 8.8,
+            "y": 10.75
+          },
+          {
+            "x": 8.25,
+            "y": 10.2
+          },
+          {
+            "x": 7.1,
+            "y": 10.2
+          }
+        ]
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 13
+        },
+        "end": {
+          "x": 6,
+          "y": 16
+        }
+      }
+    ],
+    "labelSlots": [],
+    "provenanceIds": [
+      "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+      "APP:GRAPHIC_CONVENTIONS"
+    ]
+  },
+  {
+    "id": "RCD_4X",
+    "semanticRole": "ResidualCurrentDevice",
+    "nominalBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 16
+    },
+    "anchors": [
+      {
+        "id": "IN",
+        "role": "PowerIn",
+        "point": {
+          "x": 6,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "OUT",
+        "role": "PowerOut",
+        "point": {
+          "x": 6,
+          "y": 16
+        },
+        "direction": "Down"
+      }
+    ],
+    "primitives": [
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 0
+        },
+        "end": {
+          "x": 6,
+          "y": 3
+        }
+      },
+      {
+        "kind": "rectangle",
+        "styleId": "POWER",
+        "rectangle": {
+          "x": 2.5,
+          "y": 3,
+          "width": 7,
+          "height": 10
+        }
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 3.3,
+          "y": 12.2
+        },
+        "end": {
+          "x": 8.7,
+          "y": 3.8
+        }
+      },
+      {
+        "kind": "polyline",
+        "styleId": "POWER",
+        "points": [
+          {
+            "x": 3.35,
+            "y": 7
+          },
+          {
+            "x": 3.35,
+            "y": 4.2
+          },
+          {
+            "x": 4.55,
+            "y": 4.2
+          },
+          {
+            "x": 4.9,
+            "y": 4.55
+          },
+          {
+            "x": 4.9,
+            "y": 5.25
+          },
+          {
+            "x": 4.55,
+            "y": 5.6
+          },
+          {
+            "x": 3.35,
+            "y": 5.6
+          }
+        ]
+      },
+      {
+        "kind": "polyline",
+        "styleId": "POWER",
+        "points": [
+          {
+            "x": 7.1,
+            "y": 10.2
+          },
+          {
+            "x": 7.1,
+            "y": 12.7
+          },
+          {
+            "x": 8.25,
+            "y": 12.7
+          },
+          {
+            "x": 8.8,
+            "y": 12.15
+          },
+          {
+            "x": 8.8,
+            "y": 10.75
+          },
+          {
+            "x": 8.25,
+            "y": 10.2
+          },
+          {
+            "x": 7.1,
+            "y": 10.2
+          }
+        ]
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 6,
+          "y": 13
+        },
+        "end": {
+          "x": 6,
+          "y": 16
+        }
+      }
+    ],
+    "labelSlots": [],
+    "provenanceIds": [
+      "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
       "APP:GRAPHIC_CONVENTIONS"
     ]
   },
@@ -1146,6 +1541,68 @@
     ]
   },
   {
+    "id": "CIRCUIT_MARKER",
+    "semanticRole": "CircuitMarker",
+    "nominalBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16
+    },
+    "anchors": [
+      {
+        "id": "IN",
+        "role": "PowerIn",
+        "point": {
+          "x": 8,
+          "y": 0
+        },
+        "direction": "Up"
+      }
+    ],
+    "primitives": [
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 8,
+          "y": 0
+        },
+        "end": {
+          "x": 8,
+          "y": 3
+        }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 8,
+          "y": 8
+        },
+        "radius": 5
+      }
+    ],
+    "labelSlots": [
+      {
+        "id": "NUMBER",
+        "bounds": {
+          "x": 6.4,
+          "y": 6.2,
+          "width": 3.2,
+          "height": 3.2
+        },
+        "priority": 0,
+        "required": true,
+        "textStyleId": "TECH"
+      }
+    ],
+    "provenanceIds": [
+      "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+      "APP:GRAPHIC_CONVENTIONS"
+    ]
+  },
+  {
     "id": "FINAL_LOAD",
     "semanticRole": "FinalLoad",
     "nominalBounds": {
@@ -1175,7 +1632,7 @@
         },
         "end": {
           "x": 8,
-          "y": 4
+          "y": 3
         }
       },
       {
@@ -1183,33 +1640,9 @@
         "styleId": "POWER",
         "center": {
           "x": 8,
-          "y": 9
+          "y": 8
         },
         "radius": 5
-      },
-      {
-        "kind": "line",
-        "styleId": "POWER",
-        "start": {
-          "x": 5,
-          "y": 6
-        },
-        "end": {
-          "x": 11,
-          "y": 12
-        }
-      },
-      {
-        "kind": "line",
-        "styleId": "POWER",
-        "start": {
-          "x": 11,
-          "y": 6
-        },
-        "end": {
-          "x": 5,
-          "y": 12
-        }
       }
     ],
     "labelSlots": [
@@ -1217,7 +1650,7 @@
         "id": "NAME",
         "bounds": {
           "x": 1,
-          "y": 12.5,
+          "y": 13,
           "width": 14,
           "height": 3
         },
