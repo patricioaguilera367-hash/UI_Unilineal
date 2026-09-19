@@ -172,27 +172,56 @@
         },
         "end": {
           "x": 6,
-          "y": 5
+          "y": 3.2
         }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 4.4
+        },
+        "radius": 1.2
+      },
+      {
+        "kind": "arc",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 8
+        },
+        "radius": 4,
+        "startDegrees": -65,
+        "sweepDegrees": 130
       },
       {
         "kind": "line",
         "styleId": "POWER",
         "start": {
-          "x": 4,
-          "y": 11
+          "x": 7.7,
+          "y": 8
         },
         "end": {
-          "x": 8,
-          "y": 5
+          "x": 10.4,
+          "y": 8
         }
+      },
+      {
+        "kind": "circle",
+        "styleId": "POWER",
+        "center": {
+          "x": 6,
+          "y": 11.6
+        },
+        "radius": 1.2
       },
       {
         "kind": "line",
         "styleId": "POWER",
         "start": {
           "x": 6,
-          "y": 11
+          "y": 12.8
         },
         "end": {
           "x": 6,
@@ -215,7 +244,7 @@
       }
     ],
     "provenanceIds": [
-      "APP:SYMBOLS",
+      "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
       "APP:GRAPHIC_CONVENTIONS"
     ]
   },
