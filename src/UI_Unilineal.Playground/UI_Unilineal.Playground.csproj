@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\UI_Unilineal.Domain\UI_Unilineal.Domain.csproj" />
     <ProjectReference Include="..\UI_Unilineal.Engine\UI_Unilineal.Engine.csproj" />
+    <ProjectReference Include="..\UI_Unilineal.Export.Pdf\UI_Unilineal.Export.Pdf.csproj" />
     <ProjectReference Include="..\UI_Unilineal.Rendering.Avalonia\UI_Unilineal.Rendering.Avalonia.csproj" />
   </ItemGroup>
 
