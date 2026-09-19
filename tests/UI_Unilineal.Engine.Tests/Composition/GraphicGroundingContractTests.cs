@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using UI_Unilineal.Domain.Profiles;
 using UI_Unilineal.Domain.Symbols;
 using UI_Unilineal.Engine.Composition;
