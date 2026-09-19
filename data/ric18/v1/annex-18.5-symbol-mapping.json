@@ -24,6 +24,38 @@
     "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
   },
   {
+    "symbolId": "BREAKER_1X",
+    "annex18_5Analogue": "Breaker/protection analogue with 1 horizontal pole marker and right-side 1x rating notation.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "BREAKER_2X",
+    "annex18_5Analogue": "Breaker/protection analogue with 2 horizontal pole markers and right-side 2x rating notation.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "BREAKER_3X",
+    "annex18_5Analogue": "Breaker/protection analogue with 3 horizontal pole markers and right-side 3x rating notation.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "BREAKER_4X",
+    "annex18_5Analogue": "Breaker/protection analogue with 4 horizontal pole markers and right-side 4x rating notation.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
     "symbolId": "RCD",
     "annex18_5Analogue": "Differential protection shown below each branch breaker as a rectangular P/D device with diagonal separator.",
     "referenceStatus": "VERIFIED",
