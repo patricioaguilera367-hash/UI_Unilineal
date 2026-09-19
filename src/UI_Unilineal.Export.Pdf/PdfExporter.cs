@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using UI_Unilineal.Domain.Profiles;
@@ -6,16 +6,6 @@ using UI_Unilineal.Domain.Scene;
 using UI_Unilineal.Engine.Documents;
 
 namespace UI_Unilineal.Export.Pdf;
-
-public sealed class PdfExportOptions
-{
-    public PdfExportOptions(ExportPreflightOptions? preflight = null)
-    {
-        Preflight = preflight ?? ExportPreflightOptions.NonStrict;
-    }
-
-    public ExportPreflightOptions Preflight { get; }
-}
 
 public sealed class PdfExporter
 {
@@ -433,132 +423,132 @@ public sealed class PdfExporter
             switch (char.ToUpperInvariant(command))
             {
                 case 'M':
-                {
-                    double x = ReadNumber(tokens, ref index);
-                    double y = ReadNumber(tokens, ref index);
-                    ResolvePoint(
-                        relative,
-                        ref x,
-                        ref y,
-                        currentX,
-                        currentY);
+                    {
+                        double x = ReadNumber(tokens, ref index);
+                        double y = ReadNumber(tokens, ref index);
+                        ResolvePoint(
+                            relative,
+                            ref x,
+                            ref y,
+                            currentX,
+                            currentY);
 
-                    currentX = x;
-                    currentY = y;
-                    subpathX = x;
-                    subpathY = y;
-                    AppendPointOperator(
-                        output,
-                        mapper.MapPoint(new MmPoint(x, y)),
-                        "m");
-                    command = relative ? 'l' : 'L';
-                    break;
-                }
+                        currentX = x;
+                        currentY = y;
+                        subpathX = x;
+                        subpathY = y;
+                        AppendPointOperator(
+                            output,
+                            mapper.MapPoint(new MmPoint(x, y)),
+                            "m");
+                        command = relative ? 'l' : 'L';
+                        break;
+                    }
 
                 case 'L':
-                {
-                    double x = ReadNumber(tokens, ref index);
-                    double y = ReadNumber(tokens, ref index);
-                    ResolvePoint(
-                        relative,
-                        ref x,
-                        ref y,
-                        currentX,
-                        currentY);
+                    {
+                        double x = ReadNumber(tokens, ref index);
+                        double y = ReadNumber(tokens, ref index);
+                        ResolvePoint(
+                            relative,
+                            ref x,
+                            ref y,
+                            currentX,
+                            currentY);
 
-                    currentX = x;
-                    currentY = y;
-                    AppendPointOperator(
-                        output,
-                        mapper.MapPoint(new MmPoint(x, y)),
-                        "l");
-                    break;
-                }
+                        currentX = x;
+                        currentY = y;
+                        AppendPointOperator(
+                            output,
+                            mapper.MapPoint(new MmPoint(x, y)),
+                            "l");
+                        break;
+                    }
 
                 case 'H':
-                {
-                    double x = ReadNumber(tokens, ref index);
-                    if (relative)
                     {
-                        x += currentX;
-                    }
+                        double x = ReadNumber(tokens, ref index);
+                        if (relative)
+                        {
+                            x += currentX;
+                        }
 
-                    currentX = x;
-                    AppendPointOperator(
-                        output,
-                        mapper.MapPoint(new MmPoint(
-                            currentX,
-                            currentY)),
-                        "l");
-                    break;
-                }
+                        currentX = x;
+                        AppendPointOperator(
+                            output,
+                            mapper.MapPoint(new MmPoint(
+                                currentX,
+                                currentY)),
+                            "l");
+                        break;
+                    }
 
                 case 'V':
-                {
-                    double y = ReadNumber(tokens, ref index);
-                    if (relative)
                     {
-                        y += currentY;
+                        double y = ReadNumber(tokens, ref index);
+                        if (relative)
+                        {
+                            y += currentY;
+                        }
+
+                        currentY = y;
+                        AppendPointOperator(
+                            output,
+                            mapper.MapPoint(new MmPoint(
+                                currentX,
+                                currentY)),
+                            "l");
+                        break;
                     }
 
-                    currentY = y;
-                    AppendPointOperator(
-                        output,
-                        mapper.MapPoint(new MmPoint(
-                            currentX,
-                            currentY)),
-                        "l");
-                    break;
-                }
-
                 case 'C':
-                {
-                    double x1 = ReadNumber(tokens, ref index);
-                    double y1 = ReadNumber(tokens, ref index);
-                    double x2 = ReadNumber(tokens, ref index);
-                    double y2 = ReadNumber(tokens, ref index);
-                    double x = ReadNumber(tokens, ref index);
-                    double y = ReadNumber(tokens, ref index);
+                    {
+                        double x1 = ReadNumber(tokens, ref index);
+                        double y1 = ReadNumber(tokens, ref index);
+                        double x2 = ReadNumber(tokens, ref index);
+                        double y2 = ReadNumber(tokens, ref index);
+                        double x = ReadNumber(tokens, ref index);
+                        double y = ReadNumber(tokens, ref index);
 
-                    ResolvePoint(
-                        relative,
-                        ref x1,
-                        ref y1,
-                        currentX,
-                        currentY);
-                    ResolvePoint(
-                        relative,
-                        ref x2,
-                        ref y2,
-                        currentX,
-                        currentY);
-                    ResolvePoint(
-                        relative,
-                        ref x,
-                        ref y,
-                        currentX,
-                        currentY);
+                        ResolvePoint(
+                            relative,
+                            ref x1,
+                            ref y1,
+                            currentX,
+                            currentY);
+                        ResolvePoint(
+                            relative,
+                            ref x2,
+                            ref y2,
+                            currentX,
+                            currentY);
+                        ResolvePoint(
+                            relative,
+                            ref x,
+                            ref y,
+                            currentX,
+                            currentY);
 
-                    PdfPoint control1 =
-                        mapper.MapPoint(new MmPoint(x1, y1));
-                    PdfPoint control2 =
-                        mapper.MapPoint(new MmPoint(x2, y2));
-                    PdfPoint end =
-                        mapper.MapPoint(new MmPoint(x, y));
+                        PdfPoint control1 =
+                            mapper.MapPoint(new MmPoint(x1, y1));
+                        PdfPoint control2 =
+                            mapper.MapPoint(new MmPoint(x2, y2));
+                        PdfPoint end =
+                            mapper.MapPoint(new MmPoint(x, y));
 
-                    AppendCurve(
-                        output,
-                        control1.X,
-                        control1.Y,
-                        control2.X,
-                        control2.Y,
-                        end.X,
-                        end.Y);
+                        AppendCurve(
+                            output,
+                            control1.X,
+                            control1.Y,
+                            control2.X,
+                            control2.Y,
+                            end.X,
+                            end.Y);
 
-                    currentX = x;
-                    currentY = y;
-                    break;
-                }
+                        currentX = x;
+                        currentY = y;
+                        break;
+                    }
 
                 case 'Z':
                     output.Append("h\n");
