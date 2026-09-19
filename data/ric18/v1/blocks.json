@@ -2,100 +2,287 @@
   {
     "id": "SOURCE_BLOCK",
     "semanticRole": "Source",
-    "minimumSize": { "width": 24, "height": 24 },
+    "minimumSize": {
+      "width": 24,
+      "height": 24
+    },
     "parts": [
-      { "id": "SOURCE", "symbolId": "SOURCE_UTILITY", "offset": { "x": 4, "y": 4 }, "labelSlotId": "NAME" }
+      {
+        "id": "SOURCE",
+        "symbolId": "SOURCE_UTILITY",
+        "offset": {
+          "x": 4,
+          "y": 4
+        },
+        "labelSlotId": "NAME"
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   },
   {
     "id": "BOARD_SUMMARY_BLOCK",
     "semanticRole": "BoardSummary",
-    "minimumSize": { "width": 30, "height": 24 },
+    "minimumSize": {
+      "width": 30,
+      "height": 24
+    },
     "parts": [
-      { "id": "BOARD", "symbolId": "DOWNSTREAM_BOARD", "offset": { "x": 4, "y": 4 }, "labelSlotId": "NAME" }
+      {
+        "id": "BOARD",
+        "symbolId": "DOWNSTREAM_BOARD",
+        "offset": {
+          "x": 4,
+          "y": 4
+        },
+        "labelSlotId": "NAME"
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   },
   {
     "id": "INCOMING_SUPPLY_BLOCK",
     "semanticRole": "IncomingSupply",
-    "minimumSize": { "width": 20, "height": 24 },
+    "minimumSize": {
+      "width": 20,
+      "height": 24
+    },
     "parts": [
-      { "id": "SERVICE", "symbolId": "SERVICE_ENTRANCE", "offset": { "x": 4, "y": 3 }, "labelSlotId": "CODE" }
+      {
+        "id": "SERVICE",
+        "symbolId": "SERVICE_ENTRANCE",
+        "offset": {
+          "x": 4,
+          "y": 3
+        },
+        "labelSlotId": "CODE"
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   },
   {
     "id": "MAIN_PROTECTION_BLOCK",
     "semanticRole": "MainProtection",
-    "minimumSize": { "width": 20, "height": 24 },
+    "minimumSize": {
+      "width": 20,
+      "height": 24
+    },
     "parts": [
-      { "id": "BREAKER", "symbolId": "BREAKER", "offset": { "x": 4, "y": 4 }, "labelSlotId": "RATING" }
+      {
+        "id": "BREAKER",
+        "symbolId": "BREAKER",
+        "offset": {
+          "x": 4,
+          "y": 4
+        },
+        "labelSlotId": "RATING"
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   },
   {
     "id": "MAIN_BUS_BLOCK",
     "semanticRole": "MainBus",
-    "minimumSize": { "width": 48, "height": 14 },
+    "minimumSize": {
+      "width": 48,
+      "height": 14
+    },
     "parts": [
-      { "id": "BUS", "symbolId": "BUS", "offset": { "x": 4, "y": 3 }, "labelSlotId": "CODE" }
+      {
+        "id": "BUS",
+        "symbolId": "BUS",
+        "offset": {
+          "x": 4,
+          "y": 3
+        },
+        "labelSlotId": "CODE"
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   },
   {
     "id": "CIRCUIT_BRANCH_BLOCK",
     "semanticRole": "CircuitBranch",
-    "minimumSize": { "width": 20, "height": 20 },
+    "minimumSize": {
+      "width": 20,
+      "height": 20
+    },
     "parts": [
-      { "id": "NODE", "symbolId": "CONNECTION_NODE", "offset": { "x": 7, "y": 7 }, "labelSlotId": null }
+      {
+        "id": "NODE",
+        "symbolId": "CONNECTION_NODE",
+        "offset": {
+          "x": 7,
+          "y": 7
+        },
+        "labelSlotId": null
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   },
   {
     "id": "PROTECTION_CHAIN_BLOCK",
     "semanticRole": "ProtectionChain",
-    "minimumSize": { "width": 20, "height": 24 },
+    "minimumSize": {
+      "width": 20,
+      "height": 24
+    },
     "parts": [
-      { "id": "PROTECTION", "symbolId": "BREAKER", "offset": { "x": 4, "y": 4 }, "labelSlotId": "RATING" }
+      {
+        "id": "PROTECTION",
+        "symbolId": "BREAKER",
+        "offset": {
+          "x": 4,
+          "y": 4
+        },
+        "labelSlotId": "RATING"
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   },
   {
     "id": "DOWNSTREAM_BOARD_BLOCK",
     "semanticRole": "DownstreamBoard",
-    "minimumSize": { "width": 30, "height": 24 },
+    "minimumSize": {
+      "width": 30,
+      "height": 24
+    },
     "parts": [
-      { "id": "BOARD", "symbolId": "DOWNSTREAM_BOARD", "offset": { "x": 4, "y": 4 }, "labelSlotId": "NAME" }
+      {
+        "id": "BOARD",
+        "symbolId": "DOWNSTREAM_BOARD",
+        "offset": {
+          "x": 4,
+          "y": 4
+        },
+        "labelSlotId": "NAME"
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   },
   {
     "id": "FINAL_LOAD_BLOCK",
     "semanticRole": "FinalLoad",
-    "minimumSize": { "width": 24, "height": 24 },
+    "minimumSize": {
+      "width": 24,
+      "height": 24
+    },
     "parts": [
-      { "id": "LOAD", "symbolId": "FINAL_LOAD", "offset": { "x": 4, "y": 4 }, "labelSlotId": "NAME" }
+      {
+        "id": "LOAD",
+        "symbolId": "FINAL_LOAD",
+        "offset": {
+          "x": 4,
+          "y": 4
+        },
+        "labelSlotId": "NAME"
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   },
   {
     "id": "GROUNDING_BLOCK",
     "semanticRole": "Grounding",
-    "minimumSize": { "width": 22, "height": 22 },
+    "minimumSize": {
+      "width": 22,
+      "height": 22
+    },
     "parts": [
-      { "id": "GROUND", "symbolId": "GROUND", "offset": { "x": 4, "y": 4 }, "labelSlotId": null }
+      {
+        "id": "GROUND_TS",
+        "symbolId": "GROUND_TS",
+        "offset": {
+          "x": 4,
+          "y": 4
+        },
+        "labelSlotId": null
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
+  },
+  {
+    "id": "GROUND_TP_BLOCK",
+    "semanticRole": "ProtectiveGrounding",
+    "minimumSize": {
+      "width": 22,
+      "height": 22
+    },
+    "parts": [
+      {
+        "id": "GROUND_TP",
+        "symbolId": "GROUND_TP",
+        "offset": {
+          "x": 4,
+          "y": 4
+        },
+        "labelSlotId": null
+      }
+    ],
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
+  },
+  {
+    "id": "GROUND_TS_BLOCK",
+    "semanticRole": "ServiceGrounding",
+    "minimumSize": {
+      "width": 22,
+      "height": 22
+    },
+    "parts": [
+      {
+        "id": "GROUND_TS",
+        "symbolId": "GROUND_TS",
+        "offset": {
+          "x": 4,
+          "y": 4
+        },
+        "labelSlotId": null
+      }
+    ],
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   },
   {
     "id": "UNKNOWN_BLOCK",
     "semanticRole": "Unknown",
-    "minimumSize": { "width": 26, "height": 24 },
+    "minimumSize": {
+      "width": 26,
+      "height": 24
+    },
     "parts": [
-      { "id": "UNKNOWN", "symbolId": "UNKNOWN_ENDPOINT", "offset": { "x": 4, "y": 4 }, "labelSlotId": "NAME" }
+      {
+        "id": "UNKNOWN",
+        "symbolId": "UNKNOWN_ENDPOINT",
+        "offset": {
+          "x": 4,
+          "y": 4
+        },
+        "labelSlotId": "NAME"
+      }
     ],
-    "provenanceIds": ["APP:BLOCKS"]
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
   }
 ]
