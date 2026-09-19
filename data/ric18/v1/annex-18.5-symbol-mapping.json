@@ -1,0 +1,90 @@
+[
+  {
+    "symbolId": "SOURCE_UTILITY",
+    "annex18_5Analogue": "Empresa distribuidora is represented as an upstream line/zone, not as the current circular source icon.",
+    "referenceStatus": "NOT_SHOWN",
+    "currentGeometryStatus": "APP_ONLY",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "SERVICE_ENTRANCE",
+    "annex18_5Analogue": "EMPALME enclosure containing meter and upstream protection.",
+    "referenceStatus": "PARTIAL",
+    "currentGeometryStatus": "MISMATCH",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "BREAKER",
+    "annex18_5Analogue": "Curved/open contact protection symbol shown at main and branch protections.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "PARTIAL_MATCH",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "RCD",
+    "annex18_5Analogue": "Differential protection shown below each branch breaker as a rectangular P/D device with diagonal separator.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "MISMATCH",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "FUSE",
+    "annex18_5Analogue": "No unambiguous fuse symbol is visible in the supplied Annex 18.5 reference.",
+    "referenceStatus": "NOT_SHOWN",
+    "currentGeometryStatus": "APP_ONLY",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "BUS",
+    "annex18_5Analogue": "Horizontal distribution bar with branch take-off nodes.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "PARTIAL_MATCH",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "GROUND",
+    "annex18_5Analogue": "T.P. and T.S. grounding marks adjacent to the incoming point.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "MISMATCH",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "CONNECTION_NODE",
+    "annex18_5Analogue": "Filled black junction dots on the main bus and incoming path.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "MISMATCH",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "DOWNSTREAM_BOARD",
+    "annex18_5Analogue": "Annex 18.5 shows a board enclosure, but not a canonical downstream-board endpoint symbol.",
+    "referenceStatus": "AMBIGUOUS",
+    "currentGeometryStatus": "APP_ONLY",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "FINAL_LOAD",
+    "annex18_5Analogue": "Outgoing circuits terminate in numbered circuit bubbles and textual load descriptions; no universal final-load icon is established by this figure.",
+    "referenceStatus": "NOT_SHOWN",
+    "currentGeometryStatus": "APP_ONLY",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "UNKNOWN_ENDPOINT",
+    "annex18_5Analogue": "No unknown/fallback endpoint symbol is defined by the supplied reference.",
+    "referenceStatus": "NOT_SHOWN",
+    "currentGeometryStatus": "APP_ONLY",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  }
+]
