@@ -32,9 +32,9 @@ public sealed class SvgExporterTests
         string svg = Encoding.UTF8.GetString(first);
 
         Assert.Equal(first, second);
-        Assert.Contains("width="297mm"", svg, StringComparison.Ordinal);
-        Assert.Contains("height="210mm"", svg, StringComparison.Ordinal);
-        Assert.Contains("viewBox="0 0 297 210"", svg, StringComparison.Ordinal);
+        Assert.Contains("width=\"297mm\"", svg, StringComparison.Ordinal);
+        Assert.Contains("height=\"210mm\"", svg, StringComparison.Ordinal);
+        Assert.Contains("viewBox=\"0 0 297 210\"", svg, StringComparison.Ordinal);
         Assert.Contains("<line", svg, StringComparison.Ordinal);
         Assert.Contains("<polyline", svg, StringComparison.Ordinal);
         Assert.Contains("<rect", svg, StringComparison.Ordinal);
@@ -50,7 +50,7 @@ public sealed class SvgExporterTests
     public async Task Project_text_is_xml_escaped_and_cannot_inject_markup()
     {
         (DrawingDocument document, ResolvedDrawingStyleSet styles) =
-            CreateDocument("A <script>alert(1)</script> & "x"");
+            CreateDocument("A <script>alert(1)</script> & \"x\"");
 
         string svg = Encoding.UTF8.GetString(
             await Export(new SvgExporter(), document, styles));
