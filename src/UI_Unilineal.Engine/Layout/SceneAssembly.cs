@@ -106,7 +106,16 @@ public sealed class SceneAssembly
 
     public DiagramScene Assemble(
         SceneAssemblyInput input,
-        RIC18DrawingProfile profile)
+        RIC18DrawingProfile profile) =>
+        Assemble(
+            input,
+            profile,
+            measurement: null);
+
+    public DiagramScene Assemble(
+        SceneAssemblyInput input,
+        RIC18DrawingProfile profile,
+        CompositionMeasurement? measurement)
     {
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(profile);
@@ -155,12 +164,18 @@ public sealed class SceneAssembly
                     $"Drawing profile is missing block definition '{block.BlockDefinitionId}'.");
             }
 
+            MeasuredBlock? measuredBlock =
+                measurement is null
+                    ? null
+                    : measurement.GetBlock(block.Id);
+
             AssembleBlock(
                 block,
                 positioned,
                 definition,
                 symbols,
                 lineStyles,
+                measuredBlock,
                 elements);
         }
 
@@ -247,6 +262,7 @@ public sealed class SceneAssembly
         BlockDefinition definition,
         IReadOnlyDictionary<string, SymbolDefinition> symbols,
         IReadOnlyDictionary<string, LineStyleDefinition> lineStyles,
+        MeasuredBlock? measuredBlock,
         ICollection<SceneElement> output)
     {
         if (positioned.Bounds.Width < definition.MinimumSize.Width ||
@@ -340,6 +356,7 @@ public sealed class SceneAssembly
                 part,
                 symbol,
                 origin,
+                measuredBlock,
                 output,
                 children);
         }
@@ -564,6 +581,7 @@ public sealed class SceneAssembly
         BlockPartDefinition part,
         SymbolDefinition symbol,
         MmPoint origin,
+        MeasuredBlock? measuredBlock,
         ICollection<SceneElement> output,
         ICollection<SceneId> children)
     {
@@ -585,9 +603,15 @@ public sealed class SceneAssembly
 
         SceneId id = new(
             $"{block.Id}/part/{part.Id}/label/{slot.Id}");
+        MmRect textBounds =
+            ResolveTextBounds(
+                slot,
+                origin,
+                measuredBlock);
+
         var element = new TextSceneElement(
             id,
-            Translate(slot.Bounds, origin),
+            textBounds,
             SceneLayer.Text,
             30,
             SceneVisibility.Both,
@@ -598,6 +622,35 @@ public sealed class SceneAssembly
 
         output.Add(element);
         children.Add(id);
+    }
+
+    private static MmRect ResolveTextBounds(
+        LabelSlot slot,
+        MmPoint origin,
+        MeasuredBlock? measuredBlock)
+    {
+        if (measuredBlock is null)
+        {
+            return Translate(
+                slot.Bounds,
+                origin);
+        }
+
+        if (!measuredBlock.Labels.TryGetValue(
+                slot.Id,
+                out TextMeasurement measurement))
+        {
+            throw new InvalidOperationException(
+                $"Measured block '{measuredBlock.BlockId}' does not contain label measurement '{slot.Id}'.");
+        }
+
+        return new MmRect(
+            origin.X + slot.Bounds.X,
+            origin.Y + slot.Bounds.Y,
+            Math.Max(
+                measurement.WidthMm,
+                MinimumPrimitiveExtentMm),
+            measurement.HeightMm);
     }
 
     private static SceneAnchor[] ResolveGroupAnchorIds(
