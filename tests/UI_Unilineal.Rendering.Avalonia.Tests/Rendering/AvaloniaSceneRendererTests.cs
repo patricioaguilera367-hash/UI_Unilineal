@@ -35,7 +35,7 @@ public sealed class AvaloniaSceneRendererTests
             SceneLayer.Power,
             50);
         var offscreen = RenderingSceneFixtures.Rectangle(
-            "offscreen",
+            "offscreen/element",
             new MmRect(250, 250, 10, 10),
             SceneLayer.Background,
             0);
@@ -98,7 +98,7 @@ public sealed class AvaloniaSceneRendererTests
         RIC18DrawingProfile profile = Profile();
         RectangleSceneElement target =
             RenderingSceneFixtures.Rectangle(
-                "target",
+                "overlay/target",
                 new MmRect(10, 10, 20, 15));
         DiagramScene scene =
             RenderingSceneFixtures.Scene(
@@ -175,7 +175,7 @@ public sealed class AvaloniaSceneRendererTests
     private static DiagramScene SceneWithEveryElementKind()
     {
         var line = new LineSceneElement(
-            new SceneId("line"),
+            new SceneId("fixture/line"),
             new MmRect(5, 5, 20, 0.001),
             SceneLayer.Power,
             10,
@@ -186,7 +186,7 @@ public sealed class AvaloniaSceneRendererTests
             new MmPoint(25, 5),
             "POWER");
         var polyline = new PolylineSceneElement(
-            new SceneId("polyline"),
+            new SceneId("fixture/polyline"),
             new MmRect(5, 12, 25, 10),
             SceneLayer.Power,
             11,
@@ -196,7 +196,7 @@ public sealed class AvaloniaSceneRendererTests
             [new MmPoint(5, 12), new MmPoint(15, 22), new MmPoint(30, 12)],
             "POWER");
         var rectangle = new RectangleSceneElement(
-            new SceneId("rectangle"),
+            new SceneId("fixture/rectangle"),
             new MmRect(35, 5, 15, 12),
             SceneLayer.Symbol,
             15,
@@ -205,7 +205,7 @@ public sealed class AvaloniaSceneRendererTests
             null,
             "POWER");
         var circle = new CircleSceneElement(
-            new SceneId("circle"),
+            new SceneId("fixture/circle"),
             new MmRect(55, 5, 12, 12),
             SceneLayer.Symbol,
             16,
@@ -216,7 +216,7 @@ public sealed class AvaloniaSceneRendererTests
             6,
             "POWER");
         var path = new PathSceneElement(
-            new SceneId("path"),
+            new SceneId("fixture/path"),
             new MmRect(72, 5, 18, 12),
             SceneLayer.Symbol,
             17,
@@ -226,7 +226,7 @@ public sealed class AvaloniaSceneRendererTests
             "M 72 5 L 90 17",
             "POWER");
         var text = new TextSceneElement(
-            new SceneId("text"),
+            new SceneId("fixture/text"),
             new MmRect(5, 30, 35, 6),
             SceneLayer.Text,
             30,
@@ -236,7 +236,7 @@ public sealed class AvaloniaSceneRendererTests
             "TD-01",
             "TECH");
         var symbol = new SymbolSceneElement(
-            new SceneId("symbol"),
+            new SceneId("fixture/symbol"),
             new MmRect(50, 27, 12, 16),
             SceneLayer.Symbol,
             20,
@@ -245,7 +245,7 @@ public sealed class AvaloniaSceneRendererTests
             null,
             "BREAKER");
         var group = new GroupSceneElement(
-            new SceneId("group"),
+            new SceneId("fixture/group"),
             new MmRect(0, 0, 100, 50),
             SceneLayer.Symbol,
             5,
