@@ -1,7 +1,8 @@
-﻿<Window
+<Window
     x:Class="UI_Unilineal.Playground.Views.MainWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:rendering="clr-namespace:UI_Unilineal.Rendering.Avalonia.Rendering;assembly=UI_Unilineal.Rendering.Avalonia"
     Width="1280"
     Height="800"
     MinWidth="900"
@@ -9,38 +10,93 @@
     Title="UI_Unilineal — Playground">
 
   <Grid RowDefinitions="Auto,*">
+    <Border Padding="12">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
+        <Button
+            x:Name="BackButton"
+            Margin="0,0,8,0"
+            Click="OnBackClicked"
+            Content="Back" />
 
-    <Border Padding="16">
-      <StackPanel>
+        <Button
+            Grid.Column="1"
+            Margin="0,0,16,0"
+            Click="OnSummaryClicked"
+            Content="Summary" />
+
+        <Button
+            Grid.Column="2"
+            Margin="0,0,8,0"
+            Click="OnZoomOutClicked"
+            Content="Zoom -" />
+
+        <Button
+            Grid.Column="3"
+            Margin="0,0,8,0"
+            Click="OnZoomInClicked"
+            Content="Zoom +" />
+
+        <Button
+            Grid.Column="4"
+            Margin="0,0,16,0"
+            Click="OnFitClicked"
+            Content="Fit" />
+
         <TextBlock
-            FontSize="20"
+            Grid.Column="5"
+            VerticalAlignment="Center"
             FontWeight="SemiBold"
             Text="UI_Unilineal" />
 
         <TextBlock
-            Margin="0,4,0,0"
-            Opacity="0.7"
-            Text="Playground desacoplado — Single Line Diagram Engine" />
-      </StackPanel>
-    </Border>
-
-    <Border
-        Grid.Row="1"
-        Margin="16"
-        BorderThickness="1"
-        CornerRadius="6">
-
-      <Grid>
-        <TextBlock
-            HorizontalAlignment="Center"
+            x:Name="RouteText"
+            Grid.Column="6"
+            Margin="16,0,0,0"
+            HorizontalAlignment="Right"
             VerticalAlignment="Center"
-            FontSize="16"
-            Opacity="0.6"
-            Text="El canvas del unifilar se implementará aquí." />
+            Opacity="0.7" />
       </Grid>
-
     </Border>
 
-  </Grid>
+    <Grid
+        Grid.Row="1"
+        ColumnDefinitions="220,*">
+      <Border
+          Margin="12,0,0,12"
+          Padding="12"
+          BorderThickness="1"
+          CornerRadius="6">
+        <StackPanel Spacing="8">
+          <TextBlock
+              FontWeight="SemiBold"
+              Text="Navigation" />
 
+          <Button
+              Click="OnBoardB1Clicked"
+              Content="B1 — TGBT" />
+
+          <Button
+              Click="OnBoardB2Clicked"
+              Content="B2 — TDA" />
+
+          <TextBlock
+              Margin="0,12,0,0"
+              Opacity="0.7"
+              TextWrapping="Wrap"
+              Text="Shell navigation and viewport controls stay outside the renderer." />
+        </StackPanel>
+      </Border>
+
+      <Border
+          Grid.Column="1"
+          Margin="12,0,12,12"
+          BorderThickness="1"
+          CornerRadius="6">
+        <rendering:SingleLineView
+            x:Name="DiagramView"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch" />
+      </Border>
+    </Grid>
+  </Grid>
 </Window>
