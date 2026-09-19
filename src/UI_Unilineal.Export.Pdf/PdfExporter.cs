@@ -573,12 +573,35 @@ public sealed class PdfExporter
         ResolvedTextStyle style,
         PageMapper mapper)
     {
-        PdfPoint topLeft = mapper.MapPoint(
-            new MmPoint(
-                text.Bounds.X,
-                text.Bounds.Y));
         double fontSize = style.HeightMm * PointsPerMillimeter;
-        double baselineY = topLeft.Y - fontSize;
+        double textWidth =
+            EstimateHelveticaTextWidth(
+                text.Text,
+                fontSize);
+        PdfRect bounds =
+            mapper.MapRect(text.Bounds);
+
+        double x = text.HorizontalAlignment switch
+        {
+            SceneTextHorizontalAlignment.Start => bounds.X,
+            SceneTextHorizontalAlignment.Center =>
+                bounds.X + ((bounds.Width - textWidth) / 2.0),
+            SceneTextHorizontalAlignment.End =>
+                bounds.X + bounds.Width - textWidth,
+            _ => throw new InvalidOperationException(
+                $"Unsupported horizontal text alignment '{text.HorizontalAlignment}'.")
+        };
+        double baselineY = text.VerticalAlignment switch
+        {
+            SceneTextVerticalAlignment.Top =>
+                bounds.Y + bounds.Height - fontSize,
+            SceneTextVerticalAlignment.Center =>
+                bounds.Y + ((bounds.Height - fontSize) / 2.0),
+            SceneTextVerticalAlignment.Bottom =>
+                bounds.Y,
+            _ => throw new InvalidOperationException(
+                $"Unsupported vertical text alignment '{text.VerticalAlignment}'.")
+        };
         string font = style.Bold ? "/F2" : "/F1";
 
         output.Append("0 g\n");
@@ -590,7 +613,7 @@ public sealed class PdfExporter
             .Append(" Tf\n");
         output
             .Append("1 0 0 1 ")
-            .Append(Number(topLeft.X))
+            .Append(Number(x))
             .Append(' ')
             .Append(Number(baselineY))
             .Append(" Tm\n");
@@ -599,6 +622,27 @@ public sealed class PdfExporter
             .Append(EscapePdfLiteral(text.Text))
             .Append(") Tj\n");
         output.Append("ET\n");
+    }
+
+    private static double EstimateHelveticaTextWidth(
+        string text,
+        double fontSize)
+    {
+        double emUnits = 0;
+
+        foreach (char character in text)
+        {
+            emUnits += character switch
+            {
+                >= '0' and <= '9' => 0.556,
+                'I' or 'i' or 'l' or '!' or '.' or ',' or ':' or ';' => 0.278,
+                'M' or 'W' or 'm' or 'w' => 0.833,
+                ' ' => 0.278,
+                _ => 0.556
+            };
+        }
+
+        return emUnits * fontSize;
     }
 
     private static void AppendStrokeStyle(
