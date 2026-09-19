@@ -69,13 +69,23 @@ public sealed class AvaloniaRenderResourcesTests
         Assert.Throws<KeyNotFoundException>(
             () =>
             {
-                _ = operation switch
+                switch (operation)
                 {
-                    "pen" => resources.ResolvePen(id),
-                    "typeface" => resources.ResolveTypeface(id),
-                    "symbol" => resources.ResolveSymbolGeometry(id),
-                    _ => throw new InvalidOperationException()
-                };
+                    case "pen":
+                        _ = resources.ResolvePen(id);
+                        break;
+
+                    case "typeface":
+                        _ = resources.ResolveTypeface(id);
+                        break;
+
+                    case "symbol":
+                        _ = resources.ResolveSymbolGeometry(id);
+                        break;
+
+                    default:
+                        throw new InvalidOperationException();
+                }
             });
     }
 
