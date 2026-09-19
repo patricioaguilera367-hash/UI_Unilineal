@@ -201,6 +201,51 @@ public sealed class SingleLineLayoutEngineTests
     }
 
     [Fact]
+    public void Layout_TextElementBoundsMatchInjectedMeasurement()
+    {
+        SingleLineProjection projection =
+            Project(SemanticFixtureFactory.Minimal());
+        RIC18DrawingProfile profile = Profile();
+        var metrics = new TrackingTextMetrics();
+
+        SingleLineLayoutResult result =
+            new SingleLineLayoutEngine(metrics)
+                .LayoutSummary(
+                    projection,
+                    profile);
+
+        Assert.True(
+            result.Success,
+            result.Failure?.Message);
+
+        DiagramScene scene =
+            Assert.IsType<DiagramScene>(
+                result.Scene);
+
+        TextSceneElement[] texts =
+            scene.Elements
+                .OfType<TextSceneElement>()
+                .ToArray();
+
+        Assert.NotEmpty(texts);
+
+        foreach (TextSceneElement text in texts)
+        {
+            TextMeasurement expected =
+                metrics.Measurements[text.Text];
+
+            Assert.Equal(
+                expected.WidthMm,
+                text.Bounds.Width,
+                12);
+            Assert.Equal(
+                expected.HeightMm,
+                text.Bounds.Height,
+                12);
+        }
+    }
+
+    [Fact]
     public void Engine_RequiresExplicitTextMetricsDependency()
     {
         var constructors =
@@ -290,6 +335,27 @@ public sealed class SingleLineLayoutEngineTests
 
     private static SingleLineLayoutEngine Engine() =>
         new(new DeterministicTextMetrics());
+
+    private sealed class TrackingTextMetrics : ITextMetrics
+    {
+        public Dictionary<string, TextMeasurement> Measurements { get; } =
+            new(StringComparer.Ordinal);
+
+        public TextMeasurement Measure(
+            string text,
+            TextStyleDefinition style)
+        {
+            var measurement =
+                new TextMeasurement(
+                    40 + text.Length,
+                    style.HeightMm);
+
+            Measurements[text] =
+                measurement;
+
+            return measurement;
+        }
+    }
 
     private sealed class CountingTextMetrics : ITextMetrics
     {
