@@ -1,4 +1,5 @@
 ﻿using UI_Unilineal.Domain.Grounding;
+using UI_Unilineal.Domain.Profiles;
 using UI_Unilineal.Domain.Symbols;
 using UI_Unilineal.Engine.Composition;
 
