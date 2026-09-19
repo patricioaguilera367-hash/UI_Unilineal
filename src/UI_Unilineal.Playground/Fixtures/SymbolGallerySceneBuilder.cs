@@ -7,7 +7,7 @@ namespace UI_Unilineal.Playground.Fixtures;
 public static class SymbolGallerySceneBuilder
 {
     private const double SceneMarginMm = 10;
-    private const double CellWidthMm = 68;
+    private const double CellWidthMm = 72;
     private const double CellHeightMm = 54;
     private const int Columns = 4;
     private const double GridSpacingMm = 20;
@@ -25,7 +25,7 @@ public static class SymbolGallerySceneBuilder
         var grouped = profile.Symbols
             .OrderBy(symbol => FamilyOrder(Family(symbol)))
             .ThenBy(symbol => Family(symbol), StringComparer.Ordinal)
-            .ThenBy(symbol => SymbolOrder(symbol))
+            .ThenBy(SymbolOrder)
             .ThenBy(symbol => symbol.Id, StringComparer.Ordinal)
             .GroupBy(Family)
             .ToArray();
@@ -36,7 +36,7 @@ public static class SymbolGallerySceneBuilder
             double headingY = SceneMarginMm + row * CellHeightMm;
             elements.Add(Text(
                 $"gallery/family/{Slug(family.Key)}",
-                new MmRect(SceneMarginMm, headingY, 180, 5),
+                new MmRect(SceneMarginMm, headingY, 200, 5),
                 family.Key,
                 "TECH",
                 zIndex: 10));
@@ -77,7 +77,7 @@ public static class SymbolGallerySceneBuilder
             profile.ProfileId,
             profile.Version,
             "symbol-gallery",
-            "symbol-gallery-v2",
+            "symbol-gallery-v3",
             $"symbol-gallery:grid={showGrid};bounds={showBounds}",
             "symbol-gallery");
 
@@ -94,14 +94,19 @@ public static class SymbolGallerySceneBuilder
         double y,
         bool showBounds)
     {
-        const double previewWidth = 58;
+        const double previewWidth = 62;
         const double previewHeight = 30;
 
         int? breakerMultiplicity = BreakerMultiplicity(symbol.Id);
+        int? rcdMultiplicity = RcdMultiplicity(symbol.Id);
+        bool hasRightSideLabel =
+            breakerMultiplicity is not null ||
+            rcdMultiplicity is not null;
+
         double symbolX =
-            breakerMultiplicity is null
-                ? x + (previewWidth - symbol.NominalBounds.Width) / 2
-                : x + 9;
+            hasRightSideLabel
+                ? x + 8
+                : x + (previewWidth - symbol.NominalBounds.Width) / 2;
         double symbolY =
             y + 5 + (previewHeight - symbol.NominalBounds.Height) / 2;
 
@@ -193,14 +198,33 @@ public static class SymbolGallerySceneBuilder
                 "ANNOTATION"));
         }
 
-        if (breakerMultiplicity is int multiplicity)
+        if (breakerMultiplicity is int breakerPoles)
         {
             AddBreakerSampleLabel(
                 elements,
                 slug,
-                x + 27,
+                x + 26,
                 symbolY + 3,
-                multiplicity);
+                breakerPoles);
+        }
+
+        if (rcdMultiplicity is int rcdPoles)
+        {
+            AddRcdSampleLabel(
+                elements,
+                slug,
+                x + 26,
+                symbolY + 2,
+                rcdPoles);
+        }
+
+        if (symbol.Id == "CIRCUIT_MARKER")
+        {
+            AddCircuitMarkerSampleNumber(
+                elements,
+                slug,
+                symbolX,
+                symbolY);
         }
 
         elements.Add(Text(
@@ -236,24 +260,71 @@ public static class SymbolGallerySceneBuilder
     {
         elements.Add(Text(
             $"gallery/{slug}/rating-poles",
-            new MmRect(x, y, 24, 4),
+            new MmRect(x, y, 28, 4),
             $"{multiplicity}x...A",
             "TECH",
             10));
 
         elements.Add(Text(
             $"gallery/{slug}/rating-ka",
-            new MmRect(x, y + 4.5, 24, 4),
+            new MmRect(x, y + 4.5, 28, 4),
             "...kA",
             "TECH",
             10));
 
         elements.Add(Text(
             $"gallery/{slug}/rating-reserve",
-            new MmRect(x, y + 9, 24, 4),
+            new MmRect(x, y + 9, 28, 4),
             ".......",
             "LABEL_SMALL",
             10));
+    }
+
+    private static void AddRcdSampleLabel(
+        ICollection<SceneElement> elements,
+        string slug,
+        double x,
+        double y,
+        int multiplicity)
+    {
+        elements.Add(Text(
+            $"gallery/{slug}/rating-poles",
+            new MmRect(x, y, 30, 4),
+            $"{multiplicity}x...A",
+            "TECH",
+            10));
+
+        elements.Add(Text(
+            $"gallery/{slug}/rating-ma",
+            new MmRect(x, y + 4.5, 30, 4),
+            "....mA",
+            "TECH",
+            10));
+
+        elements.Add(Text(
+            $"gallery/{slug}/rating-type",
+            new MmRect(x, y + 9, 30, 4),
+            "Tipo...",
+            "TECH",
+            10));
+    }
+
+    private static void AddCircuitMarkerSampleNumber(
+        ICollection<SceneElement> elements,
+        string slug,
+        double symbolX,
+        double symbolY)
+    {
+        elements.Add(Text(
+            $"gallery/{slug}/number",
+            new MmRect(
+                symbolX + 7.05,
+                symbolY + 6.25,
+                3,
+                3),
+            "1",
+            "TECH",
+            20));
     }
 
     private static void AddGrid(
@@ -461,12 +532,23 @@ public static class SymbolGallerySceneBuilder
             return "2 — BREAKER variants";
         }
 
+        if (RcdMultiplicity(symbol.Id) is not null)
+        {
+            return "3 — RCD variants";
+        }
+
+        if (symbol.Id == "CIRCUIT_MARKER")
+        {
+            return "5 — Circuit marker";
+        }
+
         return symbol.SemanticRole switch
         {
             "SourceUtility" or "ServiceEntrance" => "1 — Supply",
-            "Breaker" or "ResidualCurrentDevice" or "Fuse" => "3 — Protection · generic / other",
-            "Bus" or "Ground" or "ConnectionNode" => "4 — Distribution & grounding",
-            _ => "5 — Destinations & fallback"
+            "Breaker" or "ResidualCurrentDevice" or "Fuse" => "4 — Protection · generic / compatibility",
+            "Bus" or "Ground" or "ConnectionNode" => "6 — Distribution & grounding",
+            "FinalLoad" => "7 — Legacy final-load compatibility",
+            _ => "8 — Destinations & fallback"
         };
     }
 
@@ -476,12 +558,27 @@ public static class SymbolGallerySceneBuilder
             : 99;
 
     private static int SymbolOrder(SymbolDefinition symbol) =>
-        BreakerMultiplicity(symbol.Id) ?? int.MaxValue;
+        BreakerMultiplicity(symbol.Id) ??
+        RcdMultiplicity(symbol.Id) ??
+        int.MaxValue;
 
-    private static int? BreakerMultiplicity(string symbolId)
+    private static int? BreakerMultiplicity(string symbolId) =>
+        VariantMultiplicity(
+            symbolId,
+            "BREAKER_",
+            [1, 2, 3, 4]);
+
+    private static int? RcdMultiplicity(string symbolId) =>
+        VariantMultiplicity(
+            symbolId,
+            "RCD_",
+            [2, 4]);
+
+    private static int? VariantMultiplicity(
+        string symbolId,
+        string prefix,
+        IReadOnlyCollection<int> allowed)
     {
-        const string prefix = "BREAKER_";
-
         if (!symbolId.StartsWith(prefix, StringComparison.Ordinal) ||
             !symbolId.EndsWith("X", StringComparison.Ordinal))
         {
@@ -491,15 +588,19 @@ public static class SymbolGallerySceneBuilder
         string value = symbolId[prefix.Length..^1];
 
         return int.TryParse(value, out int multiplicity) &&
-               multiplicity is >= 1 and <= 4
+               allowed.Contains(multiplicity)
             ? multiplicity
             : null;
     }
 
     private static string DisplayId(SymbolDefinition symbol) =>
-        symbol.Id == "BREAKER"
-            ? "BREAKER · generic compatibility"
-            : symbol.Id;
+        symbol.Id switch
+        {
+            "BREAKER" => "BREAKER · generic compatibility",
+            "RCD" => "RCD · generic compatibility",
+            "FINAL_LOAD" => "FINAL_LOAD · legacy compatibility",
+            _ => symbol.Id
+        };
 
     private static string Slug(string value)
     {
