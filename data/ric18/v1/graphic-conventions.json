@@ -39,6 +39,8 @@
         "BREAKER_3X",
         "BREAKER_4X",
         "RCD",
+        "RCD_2X",
+        "RCD_4X",
         "FUSE"
       ],
       "nominalCell": {
@@ -92,7 +94,18 @@
       "anchorPolicy": "VerticalCenterline"
     },
     {
-      "id": "FINAL_LOAD",
+      "id": "CIRCUIT_MARKER",
+      "members": [
+        "CIRCUIT_MARKER"
+      ],
+      "nominalCell": {
+        "widthMm": 16,
+        "heightMm": 16
+      },
+      "anchorPolicy": "VerticalCenterline"
+    },
+    {
+      "id": "LEGACY_FINAL_LOAD",
       "members": [
         "FINAL_LOAD"
       ],
@@ -119,6 +132,8 @@
     "Inline protection devices share one vertical electrical axis; geometry may vary without moving IN/OUT anchors.",
     "Shape provenance and size provenance are independent.",
     "Annex 18.5 may justify a recognizable graphic analogue but not an exact physical size or spacing unless another explicit source does so.",
-    "Labels and annotations must not move electrical anchors."
+    "Labels and annotations must not move electrical anchors.",
+    "Circuit markers carry the circuit identifier; load/use text is composed separately below or adjacent to the marker.",
+    "RCD variants share one base P/D device geometry; pole count is expressed by the associated Nx rating notation, not by changing the P/D glyph."
   ]
 }
