@@ -583,20 +583,12 @@ public sealed class SceneAssembly
         double railRight =
             nominalRight;
 
-        if (block.SemanticRole == "MainBus" &&
-            mainBusAttachmentXs.Count > 0)
+        if (block.SemanticRole == "MainBus")
         {
-            railLeft =
-                Math.Max(
-                    nominalLeft,
-                    mainBusAttachmentXs.Min() -
-                    ConnectionNodeRadiusMm);
-            railRight =
-                Math.Min(
-                    nominalRight,
-                    mainBusAttachmentXs.Max() +
-                    ConnectionNodeRadiusMm);
-
+            // The distribution bus is a structural visual element, not merely
+            // the shortest segment connecting its current taps. Keeping the
+            // full rail visible preserves the RIC18 hierarchy even for a
+            // single circuit where IN and TAP may share the same junction.
             anchors.Add(
                 new SceneAnchor(
                     "OUT",
