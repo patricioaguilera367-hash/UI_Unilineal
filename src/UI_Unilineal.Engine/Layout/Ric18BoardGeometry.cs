@@ -88,7 +88,7 @@ public sealed record Ric18BoardLayoutTokens
 
         return new Ric18BoardLayoutTokens(
             boardOuterPaddingMm: Math.Max(5.0, grid * 2.0),
-            boardHeaderHeightMm: Math.Max(10.0, grid * 4.0),
+            boardHeaderHeightMm: Math.Max(14.0, grid * 4.0),
             elementGapMm: Math.Max(2.0, grid),
             minimumBoardWidthMm: Math.Max(56.0, grid * 20.0),
             minimumCircuitPitchMm: Math.Max(26.0, grid * 10.0),
