@@ -110,6 +110,30 @@
     ]
   },
   {
+    "id": "NEUTRAL_BUS_BLOCK",
+    "semanticRole": "NeutralBus",
+    "minimumSize": {
+      "width": 48,
+      "height": 10
+    },
+    "parts": [],
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
+  },
+  {
+    "id": "PE_BUS_BLOCK",
+    "semanticRole": "ProtectiveEarthBus",
+    "minimumSize": {
+      "width": 48,
+      "height": 10
+    },
+    "parts": [],
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
+  },
+  {
     "id": "CIRCUIT_BRANCH_BLOCK",
     "semanticRole": "CircuitBranch",
     "minimumSize": {
