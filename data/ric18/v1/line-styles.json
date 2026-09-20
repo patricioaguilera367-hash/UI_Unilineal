@@ -66,14 +66,14 @@
     "id": "NEUTRAL_AUX",
     "role": "Power",
     "widthMm": 0.25,
-    "pattern": "Dashed",
+    "pattern": "DashDot",
     "provenanceId": "APP:STYLES"
   },
   {
     "id": "GROUND_AUX",
     "role": "Ground",
     "widthMm": 0.25,
-    "pattern": "Dashed",
+    "pattern": "DashDot",
     "provenanceId": "APP:STYLES"
   }
 ]
