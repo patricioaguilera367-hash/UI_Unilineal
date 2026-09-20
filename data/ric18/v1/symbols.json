@@ -947,7 +947,7 @@
       {
         "id": "RATING",
         "bounds": {
-          "x": 15,
+          "x": 10,
           "y": 4,
           "width": 2,
           "height": 8
@@ -1129,7 +1129,7 @@
       {
         "id": "RATING",
         "bounds": {
-          "x": 15,
+          "x": 10,
           "y": 4,
           "width": 2,
           "height": 8
@@ -1311,7 +1311,7 @@
       {
         "id": "RATING",
         "bounds": {
-          "x": 15,
+          "x": 10,
           "y": 4,
           "width": 2,
           "height": 8
