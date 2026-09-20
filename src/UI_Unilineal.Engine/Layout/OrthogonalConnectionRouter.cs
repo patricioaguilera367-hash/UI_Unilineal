@@ -169,6 +169,7 @@ public sealed class OrthogonalConnectionRouter
         IReadOnlyList<MmPoint>? semanticLane =
             TryRouteAuxiliaryLane(
                 lineStyleId,
+                scene,
                 targetElement,
                 start,
                 end,
@@ -220,6 +221,7 @@ public sealed class OrthogonalConnectionRouter
 
     private static IReadOnlyList<MmPoint>? TryRouteAuxiliaryLane(
         string lineStyleId,
+        DiagramScene scene,
         SceneElement targetElement,
         MmPoint start,
         MmPoint end,
@@ -234,20 +236,20 @@ public sealed class OrthogonalConnectionRouter
 
         bool neutral =
             lineStyleId == "NEUTRAL_AUX";
+        MmRect routingEnvelope =
+            AuxiliaryRoutingEnvelope(
+                scene,
+                targetElement);
 
         double laneX =
             neutral
                 ? Math.Max(
                     start.X,
-                    Math.Max(
-                        end.X,
-                        targetElement.Bounds.Right) +
+                    routingEnvelope.Right +
                     tokens.AuxiliaryLaneOffsetMm)
                 : Math.Min(
                     start.X,
-                    Math.Min(
-                        end.X,
-                        targetElement.Bounds.X) -
+                    routingEnvelope.X -
                     tokens.AuxiliaryLaneOffsetMm);
 
         var candidate =
@@ -315,6 +317,13 @@ public sealed class OrthogonalConnectionRouter
         IEnumerable<(string Id, MmRect Bounds)> annotations =
             scene.Elements
                 .OfType<TextSceneElement>()
+                .Where(text =>
+                    !IsOwnedByEndpoint(
+                        text.Id,
+                        sourceElement.Id) &&
+                    !IsOwnedByEndpoint(
+                        text.Id,
+                        targetElement.Id))
                 .Select(text =>
                     (
                         text.Id.Value,
@@ -331,6 +340,105 @@ public sealed class OrthogonalConnectionRouter
                     item.Bounds,
                     profile.RouteClearanceMm))
             .ToArray();
+    }
+
+    private static MmRect AuxiliaryRoutingEnvelope(
+        DiagramScene scene,
+        SceneElement targetElement)
+    {
+        string? branchPrefix =
+            BranchPrefix(
+                targetElement.Id.Value);
+
+        if (branchPrefix is null)
+        {
+            return targetElement.Bounds;
+        }
+
+        GroupSceneElement[] branchGroups =
+            scene.Elements
+                .OfType<GroupSceneElement>()
+                .Where(group =>
+                    string.Equals(
+                        group.Id.Value,
+                        branchPrefix,
+                        StringComparison.Ordinal) ||
+                    group.Id.Value.StartsWith(
+                        branchPrefix + "/",
+                        StringComparison.Ordinal))
+                .ToArray();
+
+        if (branchGroups.Length == 0)
+        {
+            return targetElement.Bounds;
+        }
+
+        double left =
+            branchGroups.Min(group =>
+                group.Bounds.X);
+        double top =
+            branchGroups.Min(group =>
+                group.Bounds.Y);
+        double right =
+            branchGroups.Max(group =>
+                group.Bounds.Right);
+        double bottom =
+            branchGroups.Max(group =>
+                group.Bounds.Bottom);
+
+        return new MmRect(
+            left,
+            top,
+            right - left,
+            bottom - top);
+    }
+
+    private static string? BranchPrefix(
+        string elementId)
+    {
+        const string marker =
+            "/branch/";
+
+        int markerIndex =
+            elementId.IndexOf(
+                marker,
+                StringComparison.Ordinal);
+
+        if (markerIndex < 0)
+        {
+            return null;
+        }
+
+        int circuitStart =
+            markerIndex +
+            marker.Length;
+        int nextSlash =
+            elementId.IndexOf(
+                '/',
+                circuitStart);
+
+        return nextSlash < 0
+            ? elementId
+            : elementId[..nextSlash];
+    }
+
+    private static bool IsOwnedByEndpoint(
+        SceneId candidateId,
+        SceneId endpointId)
+    {
+        string candidate =
+            candidateId.Value;
+        string endpoint =
+            endpointId.Value;
+
+        return
+            string.Equals(
+                candidate,
+                endpoint,
+                StringComparison.Ordinal) ||
+            candidate.StartsWith(
+                endpoint + "/",
+                StringComparison.Ordinal);
     }
 
     private static bool IsSameBranchPath(
