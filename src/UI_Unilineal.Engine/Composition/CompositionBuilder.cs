@@ -105,7 +105,10 @@ public sealed class CompositionBuilder
                     ["CODE"] = detail.Board.Code,
                     ["NAME"] = detail.Board.Name
                 },
-                detail.Status,
+                ProjectionStatusResolver.Resolve(
+                    detail.Board.DataState,
+                    null,
+                    detail.Issues),
                 null));
 
         CompositionBlock[] incomingBlocks = detail.IncomingSupplies
