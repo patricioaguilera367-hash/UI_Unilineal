@@ -1,0 +1,74 @@
+{
+  "contractVersion": 1,
+  "capturedOn": "2026-09-20",
+  "status": "reference-not-regulatory-dimensions",
+  "sources": {
+    "ric18ReferenceImage": {
+      "role": "semantic-visual-authority",
+      "sha256": "10a1adfbca0399197cc82f47480218d9ec0e05b97f7294cc5e9417b851a521ba"
+    },
+    "handCopyDxf": {
+      "role": "measurable-geometric-example",
+      "format": "AutoCAD ASCII DXF AC1032",
+      "declaredUnits": "mm",
+      "sha256": "1591ce0774012e009cbe2ab116fac8af7d89a70af28804c97bcfe937d48665a9",
+      "entityCounts": {
+        "LINE": 269,
+        "MTEXT": 34,
+        "CIRCLE": 19,
+        "ARC": 12,
+        "SPLINE": 12,
+        "HATCH": 9,
+        "LWPOLYLINE": 7
+      }
+    }
+  },
+  "measuredExample": {
+    "boardFrameMm": {
+      "left": 28.35009727836075,
+      "right": 53.44154188346528,
+      "bottom": 38.77185890072627,
+      "top": 61.04051598775521,
+      "width": 25.091444605104527,
+      "height": 22.268657087028934,
+      "centerX": 40.89581958091218
+    },
+    "incomingAxisXmm": 40.89581958091218,
+    "mainBusYmm": 53.11180171612221,
+    "circuitAxesXmm": [
+      33.0555657855362,
+      40.89581958091218,
+      48.10878726116221
+    ],
+    "circuitAxesNormalizedToBoardWidth": [
+      0.187534199890976,
+      0.5,
+      0.7875166922599302
+    ]
+  },
+  "invariants": {
+    "readingDirection": "top-to-bottom",
+    "serviceEntranceOutsideAndAboveBoard": true,
+    "incomingAxisEqualsBoardCenter": true,
+    "mainProtectionSharesIncomingAxis": true,
+    "mainBusIncomingSharesIncomingAxis": true,
+    "protectiveEarthHeaderSide": "left",
+    "neutralHeaderSide": "right",
+    "circuitPowerAxisContinuous": true,
+    "oddMiddleCircuitMayCoincideWithIncomingAxis": true,
+    "evenCircuitSetStraddlesIncomingAxis": true,
+    "coincidentPhysicalJunctionsRenderAsSingleNode": true,
+    "syntheticJunctionNodeFill": "Solid",
+    "finalLoadsAndDownstreamBoardsOutsideBelowParentFrame": true,
+    "differentialNeutralPassesThroughRcd": true,
+    "protectiveEarthBypassesRcd": true
+  },
+  "nonNormativeMeasurements": [
+    "board dimensions",
+    "exact bus height ratio",
+    "exact text-box dimensions",
+    "leader lengths",
+    "exact circuit normalized positions",
+    "manual drawing offsets"
+  ]
+}
