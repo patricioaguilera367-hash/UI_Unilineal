@@ -100,10 +100,15 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         CompositionBlock[] neutralBuses = ByRole(composition, "NeutralBus");
         CompositionBlock[] peBuses = ByRole(composition, "ProtectiveEarthBus");
 
-        if (neutralBuses.Length != 1 || peBuses.Length != 1)
+        bool hasStructuralRails =
+            neutralBuses.Length > 0 ||
+            peBuses.Length > 0;
+
+        if (hasStructuralRails &&
+            (neutralBuses.Length != 1 || peBuses.Length != 1))
         {
             throw new InvalidOperationException(
-                "Board-detail composition must contain exactly one neutral bus and one protective-earth bus.");
+                "Board-detail composition must contain both neutral and protective-earth buses when structural rails are present.");
         }
 
         double branchSpan =
@@ -144,28 +149,31 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
             busPosition.Bounds.Bottom +
             profile.VerticalGapMm;
 
-        foreach (CompositionBlock rail in neutralBuses.Concat(peBuses))
+        if (hasStructuralRails)
         {
-            MmSize measured =
-                measurement.GetBlock(rail.Id).Size;
-            var bounds =
-                new MmRect(
-                    profile.GridMm,
-                    railY,
-                    railWidth,
-                    measured.Height);
+            foreach (CompositionBlock rail in neutralBuses.Concat(peBuses))
+            {
+                MmSize measured =
+                    measurement.GetBlock(rail.Id).Size;
+                var bounds =
+                    new MmRect(
+                        profile.GridMm,
+                        railY,
+                        railWidth,
+                        measured.Height);
 
-            Add(
-                rail.Id,
-                bounds,
-                positioned,
-                assigned,
-                ref maxRight,
-                ref maxBottom);
+                Add(
+                    rail.Id,
+                    bounds,
+                    positioned,
+                    assigned,
+                    ref maxRight,
+                    ref maxBottom);
 
-            railY =
-                bounds.Bottom +
-                profile.VerticalGapMm;
+                railY =
+                    bounds.Bottom +
+                    profile.VerticalGapMm;
+            }
         }
 
         double rowY = railY;
