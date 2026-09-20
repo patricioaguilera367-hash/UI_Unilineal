@@ -326,7 +326,7 @@ public sealed class CompositionBuilder
             {
                 ["TAPS"] = tapList
             },
-            ProjectionStatus.Complete,
+            ProjectionStatus.Ok,
             CompositionIdFactory.DetailBoard(boardUid));
 
     private static void ConnectIncomingPath(
