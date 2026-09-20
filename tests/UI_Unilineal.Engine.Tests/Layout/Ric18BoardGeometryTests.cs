@@ -173,7 +173,9 @@ public sealed class Ric18BoardGeometryTests
             tokens,
             circuitCount,
             Enumerable.Repeat(
-                    24.0,
+                    new Ric18CircuitExtent(
+                        10,
+                        14),
                     circuitCount)
                 .ToArray(),
             new MmSize(48, 14),
