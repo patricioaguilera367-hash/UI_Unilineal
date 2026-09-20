@@ -67,6 +67,7 @@ public sealed class Ric18DrawingProfileLoaderTests
             "CONNECTION_NODE",
             "DOWNSTREAM_BOARD",
             "CIRCUIT_MARKER",
+            "CIRCUIT_USE_TEXT",
             "FINAL_LOAD",
             "UNKNOWN_ENDPOINT"
         ];
