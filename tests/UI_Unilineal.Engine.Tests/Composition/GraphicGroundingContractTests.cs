@@ -181,6 +181,31 @@ public sealed class GraphicGroundingContractTests
     }
 
     [Fact]
+    public void DownstreamBoard_PowerAnchorsHaveVisibleLeadSegments()
+    {
+        RIC18DrawingProfile profile = LoadProfile();
+        SymbolDefinition symbol = profile.Symbols.Single(
+            candidate => candidate.Id == "DOWNSTREAM_BOARD");
+        LineSymbolPrimitive[] leads =
+            symbol.Primitives
+                .OfType<LineSymbolPrimitive>()
+                .ToArray();
+
+        foreach (string anchorId in new[] { "IN", "OUT" })
+        {
+            AnchorDefinition anchor =
+                symbol.Anchors.Single(candidate =>
+                    candidate.Id == anchorId);
+
+            Assert.Contains(
+                leads,
+                lead =>
+                    lead.Start == anchor.Point ||
+                    lead.End == anchor.Point);
+        }
+    }
+
+    [Fact]
     public void CircuitMarker_IsCenteredAndContainsNoCrossGlyph()
     {
         RIC18DrawingProfile profile = LoadProfile();
