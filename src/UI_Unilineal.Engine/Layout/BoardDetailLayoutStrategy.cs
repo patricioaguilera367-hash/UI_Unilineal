@@ -368,7 +368,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         double rightExtent =
             SemanticBranchWidthMm / 2.0;
 
-        foreach (CompositionBlock block in internalChildren)
+        foreach (CompositionBlock block in children)
         {
             MeasuredBlock measured =
                 measurement.GetBlock(block.Id);
