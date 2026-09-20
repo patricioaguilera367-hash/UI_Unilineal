@@ -21,7 +21,7 @@ internal sealed class BoardDetailProjectionBuilder
             .OrderBy(supply => supply.Priority)
             .ThenBy(supply => supply.Role)
             .ThenBy(supply => supply.Uid.Value, StringComparer.Ordinal)
-            .Select(supply => BuildIncomingSupply(supply, index, issues))
+            .Select(supply => BuildIncomingSupply(supply, input, index, issues))
             .ToArray();
 
         BusInput mainBusInput = ResolveMainBus(board, input);
@@ -63,6 +63,7 @@ internal sealed class BoardDetailProjectionBuilder
 
     private static IncomingSupplyProjection BuildIncomingSupply(
         SupplyConnection supply,
+        SingleLineInput input,
         SemanticEntityIndex index,
         IReadOnlyList<ProjectionIssue> issues)
     {
@@ -88,11 +89,40 @@ internal sealed class BoardDetailProjectionBuilder
             new EntityReference(supply.Uid, EntityKind.SupplyConnection),
             issues);
 
+        ServiceEntranceInput? serviceEntrance = null;
+        ProtectionInput? serviceProtection = null;
+
+        if (source is not null)
+        {
+            serviceEntrance = input.ServiceEntrances
+                .Where(item => item.SourceUid == source.Uid)
+                .OrderBy(item => item.Uid.Value, StringComparer.Ordinal)
+                .FirstOrDefault();
+
+            if (serviceEntrance?.ProtectionUid is EntityUid protectionUid)
+            {
+                serviceProtection = input.Protections
+                    .FirstOrDefault(item => item.Uid == protectionUid);
+            }
+
+            serviceProtection ??= input.Protections
+                .Where(item =>
+                    item.Owner ==
+                        new EntityReference(
+                            source.Uid,
+                            EntityKind.Source) &&
+                    item.Role == ProtectionRole.Main)
+                .OrderBy(item => item.Uid.Value, StringComparer.Ordinal)
+                .FirstOrDefault();
+        }
+
         return new IncomingSupplyProjection(
             supply,
             source,
             originBoard,
             throughCircuit,
+            serviceEntrance,
+            serviceProtection,
             ProjectionStatusResolver.Resolve(supply.DataState, null, supplyIssues));
     }
 
