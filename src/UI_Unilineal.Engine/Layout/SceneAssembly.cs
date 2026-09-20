@@ -104,6 +104,8 @@ public sealed class SceneAssemblyInput
 public sealed class SceneAssembly
 {
     private const double MinimumPrimitiveExtentMm = 0.001;
+    private const double ConnectionNodeRadiusMm = 1.2;
+    private const double MainBusIncomingNodePitchMm = 17;
 
     public DiagramScene Assemble(
         SceneAssemblyInput input,
@@ -464,36 +466,13 @@ public sealed class SceneAssembly
             block.SemanticRole == "MainBus"
                 ? 0
                 : 4;
-        double left =
+        double nominalLeft =
             positioned.Bounds.X + railInset;
-        double right =
+        double nominalRight =
             positioned.Bounds.Right - railInset;
         double y =
             positioned.Bounds.Y +
             (positioned.Bounds.Height / 2.0);
-
-        SceneId railId =
-            new($"{block.Id}/rail");
-
-        var rail = new LineSceneElement(
-            railId,
-            new MmRect(
-                left,
-                y,
-                Math.Max(
-                    right - left,
-                    MinimumPrimitiveExtentMm),
-                MinimumPrimitiveExtentMm),
-            layer,
-            15,
-            SceneVisibility.Both,
-            block.Entity,
-            GroupMetadata(block, definition.Id),
-            new MmPoint(left, y),
-            new MmPoint(right, y),
-            lineStyleId);
-
-        output.Add(rail);
 
         string[] taps =
             block.Labels.TryGetValue("TAPS", out string? raw) &&
@@ -506,23 +485,51 @@ public sealed class SceneAssembly
 
         var anchors =
             new List<SceneAnchor>();
+        var mainBusAttachmentXs =
+            new List<double>();
 
         if (block.SemanticRole == "MainBus")
         {
+            double incomingX =
+                nominalLeft +
+                ((nominalRight - nominalLeft) / 2.0);
+
+            if (taps.Length > 0 &&
+                taps.Length % 2 == 1)
+            {
+                incomingX -=
+                    MainBusIncomingNodePitchMm;
+            }
+
             anchors.Add(
                 new SceneAnchor(
                     "IN",
                     AnchorRole.PowerIn,
                     new MmPoint(
-                        left + ((right - left) / 2.0),
+                        incomingX,
                         y),
                     AnchorDirection.Up));
-            anchors.Add(
-                new SceneAnchor(
-                    "OUT",
-                    AnchorRole.PowerOut,
-                    new MmPoint(right, y),
-                    AnchorDirection.Right));
+            mainBusAttachmentXs.Add(
+                incomingX);
+
+            for (int index = 0; index < taps.Length; index++)
+            {
+                double fraction =
+                    (index + 0.5) /
+                    Math.Max(1, taps.Length);
+                double x =
+                    nominalLeft +
+                    ((nominalRight - nominalLeft) * fraction);
+
+                anchors.Add(
+                    new SceneAnchor(
+                        $"TAP:{taps[index]}",
+                        AnchorRole.BusTap,
+                        new MmPoint(x, y),
+                        AnchorDirection.Down));
+                mainBusAttachmentXs.Add(
+                    x);
+            }
         }
         else
         {
@@ -530,43 +537,120 @@ public sealed class SceneAssembly
                 new SceneAnchor(
                     "IN",
                     anchorRole,
-                    new MmPoint(left, y),
+                    new MmPoint(nominalLeft, y),
                     AnchorDirection.Left));
             anchors.Add(
                 new SceneAnchor(
                     "OUT",
                     anchorRole,
-                    new MmPoint(right, y),
+                    new MmPoint(nominalRight, y),
                     AnchorDirection.Right));
+
+            for (int index = 0; index < taps.Length; index++)
+            {
+                double fraction =
+                    (index + 1.0) /
+                    (taps.Length + 1.0);
+                double x =
+                    nominalLeft +
+                    ((nominalRight - nominalLeft) * fraction);
+
+                anchors.Add(
+                    new SceneAnchor(
+                        $"TAP:{taps[index]}",
+                        anchorRole,
+                        new MmPoint(x, y),
+                        AnchorDirection.Down));
+            }
         }
 
-        for (int index = 0; index < taps.Length; index++)
+        double railLeft =
+            nominalLeft;
+        double railRight =
+            nominalRight;
+
+        if (block.SemanticRole == "MainBus" &&
+            mainBusAttachmentXs.Count > 0)
         {
-            double fraction =
-                block.SemanticRole == "MainBus"
-                    ? (index + 0.5) /
-                      Math.Max(1, taps.Length)
-                    : (index + 1.0) /
-                      (taps.Length + 1.0);
-            double x =
-                left +
-                ((right - left) * fraction);
+            railLeft =
+                Math.Max(
+                    nominalLeft,
+                    mainBusAttachmentXs.Min() -
+                    ConnectionNodeRadiusMm);
+            railRight =
+                Math.Min(
+                    nominalRight,
+                    mainBusAttachmentXs.Max() +
+                    ConnectionNodeRadiusMm);
 
             anchors.Add(
                 new SceneAnchor(
-                    $"TAP:{taps[index]}",
-                    block.SemanticRole == "MainBus"
-                        ? AnchorRole.BusTap
-                        : anchorRole,
-                    new MmPoint(x, y),
-                    AnchorDirection.Down));
+                    "OUT",
+                    AnchorRole.PowerOut,
+                    new MmPoint(railRight, y),
+                    AnchorDirection.Right));
         }
+
+        SceneId railId =
+            new($"{block.Id}/rail");
+
+        output.Add(
+            new LineSceneElement(
+                railId,
+                new MmRect(
+                    railLeft,
+                    y,
+                    Math.Max(
+                        railRight - railLeft,
+                        MinimumPrimitiveExtentMm),
+                    MinimumPrimitiveExtentMm),
+                layer,
+                15,
+                SceneVisibility.Both,
+                block.Entity,
+                GroupMetadata(block, definition.Id),
+                new MmPoint(railLeft, y),
+                new MmPoint(railRight, y),
+                lineStyleId));
 
         var children =
             new List<SceneId>
             {
                 railId
             };
+
+        if (block.SemanticRole == "MainBus")
+        {
+            foreach (SceneAnchor anchor in anchors.Where(candidate =>
+                         candidate.Id == "IN" ||
+                         candidate.Id.StartsWith(
+                             "TAP:",
+                             StringComparison.Ordinal)))
+            {
+                SceneId nodeId =
+                    new(
+                        $"{block.Id}/node/{anchor.Id.Replace(':', '-')}");
+
+                output.Add(
+                    new CircleSceneElement(
+                        nodeId,
+                        new MmRect(
+                            anchor.Point.X - ConnectionNodeRadiusMm,
+                            anchor.Point.Y - ConnectionNodeRadiusMm,
+                            ConnectionNodeRadiusMm * 2.0,
+                            ConnectionNodeRadiusMm * 2.0),
+                        layer,
+                        20,
+                        SceneVisibility.Both,
+                        block.Entity,
+                        GroupMetadata(block, definition.Id),
+                        anchor.Point,
+                        ConnectionNodeRadiusMm,
+                        lineStyleId));
+
+                children.Add(nodeId);
+            }
+        }
 
         if (block.Labels.TryGetValue("LABEL", out string? label) &&
             !string.IsNullOrWhiteSpace(label))
