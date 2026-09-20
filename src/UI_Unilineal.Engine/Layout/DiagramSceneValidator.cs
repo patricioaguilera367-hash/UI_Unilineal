@@ -304,13 +304,7 @@ public sealed class DiagramSceneValidator
 
             foreach (TextSceneElement text in texts)
             {
-                if (IsOwnedBy(
-                        text.Id,
-                        connection.Source.ElementId) ||
-                    IsOwnedBy(
-                        text.Id,
-                        connection.Target.ElementId) ||
-                    !RouteCrossesInterior(
+                if (!RouteCrossesInterior(
                         route.Points,
                         text.Bounds))
                 {
@@ -325,13 +319,6 @@ public sealed class DiagramSceneValidator
             }
         }
     }
-
-    private static bool IsOwnedBy(
-        SceneId childId,
-        SceneId ownerId) =>
-        childId.Value.StartsWith(
-            ownerId.Value + "/",
-            StringComparison.Ordinal);
 
     private static bool IsStructuralRail(
         GroupSceneElement group)
