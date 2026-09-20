@@ -374,7 +374,14 @@ public sealed class PdfExporter
             center.X + radiusX,
             center.Y);
 
-        output.Append("S\n");
+        if (HasSolidFill(circle))
+        {
+            output.Append("0 g\nB\n");
+        }
+        else
+        {
+            output.Append("S\n");
+        }
     }
 
     private static void AppendPath(
@@ -993,6 +1000,16 @@ public sealed class PdfExporter
     private static bool IsCommand(string token) =>
         token.Length == 1 &&
         char.IsLetter(token[0]);
+
+    private static bool HasSolidFill(
+        SceneElement element) =>
+        element.Metadata.TryGetValue(
+            "fillMode",
+            out string? fillMode) &&
+        string.Equals(
+            fillMode,
+            "Solid",
+            StringComparison.Ordinal);
 
     private static bool IsPrintable(SceneElement element) =>
         element.Visibility is
