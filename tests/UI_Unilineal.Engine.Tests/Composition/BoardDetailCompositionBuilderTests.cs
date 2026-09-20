@@ -43,6 +43,80 @@ public sealed class BoardDetailCompositionBuilderTests
     }
 
     [Fact]
+    public void BuildBoardDetail_ServiceEntranceAssemblyKeepsManualMeterAndProtectionData()
+    {
+        SingleLineInput source = SemanticFixtureFactory.Minimal();
+        SourceInput utility = Assert.Single(source.Sources);
+
+        var serviceProtection =
+            new ProtectionInput(
+                new EntityUid("PR-SERVICE"),
+                new EntityReference(
+                    utility.Uid,
+                    EntityKind.Source),
+                new EntityReference(
+                    utility.Uid,
+                    EntityKind.Source),
+                ProtectionKind.Breaker,
+                ProtectionRole.Main,
+                2,
+                25m,
+                6m,
+                "C",
+                null,
+                null,
+                null,
+                null,
+                OperationalState.Active,
+                DataState.Complete);
+        var serviceEntrance =
+            new ServiceEntranceInput(
+                new EntityUid("SE1"),
+                utility.Uid,
+                MeterKind.SinglePhase,
+                "BT1",
+                "Cliente residencial",
+                serviceProtection.Uid,
+                InputValueAuthority.Manual,
+                OperationalState.Active,
+                DataState.Complete);
+
+        SingleLineInput input = Rebuild(
+            source,
+            protections: [.. source.Protections, serviceProtection],
+            serviceEntrances: [serviceEntrance]);
+        SingleLineProjection projection = Project(input);
+
+        DrawingComposition composition =
+            new CompositionBuilder().BuildBoardDetail(
+                projection,
+                new EntityUid("B1"),
+                Profile());
+
+        CompositionBlock empalme = Assert.Single(
+            composition.Blocks,
+            block =>
+                block.BlockDefinitionId ==
+                "SERVICE_ENTRANCE_ASSEMBLY_BLOCK");
+
+        Assert.Equal(
+            "EMPALME",
+            empalme.Labels["TITLE"]);
+        Assert.Equal(
+            "M 1F",
+            empalme.Labels["METER_CODE"]);
+        Assert.Contains(
+            "BT1",
+            empalme.Labels["TARIFF"]);
+        Assert.Contains(
+            "Manual",
+            empalme.Labels["PROTECTION_TEXT"]);
+        Assert.Equal(
+            "BREAKER_2X",
+            empalme.SymbolOverrides["PROTECTION"]);
+    }
+
+    [Fact]
     public void BuildBoardDetail_MapsDownstreamBoardAndFinalLoadDestinations()
     {
         SingleLineProjection projection = Project(SemanticFixtureFactory.NestedBoards());
@@ -203,7 +277,8 @@ public sealed class BoardDetailCompositionBuilderTests
     private static SingleLineInput Rebuild(
         SingleLineInput source,
         IEnumerable<ProtectionInput>? protections = null,
-        IEnumerable<GroundingInput>? grounding = null) =>
+        IEnumerable<GroundingInput>? grounding = null,
+        IEnumerable<ServiceEntranceInput>? serviceEntrances = null) =>
         new(
             source.Project,
             source.Sources,
@@ -215,7 +290,7 @@ public sealed class BoardDetailCompositionBuilderTests
             grounding ?? source.Grounding,
             source.Results,
             source.Metadata,
-            source.ServiceEntrances);
+            serviceEntrances ?? source.ServiceEntrances);
 
     private static SingleLineProjection Project(SingleLineInput input)
     {
