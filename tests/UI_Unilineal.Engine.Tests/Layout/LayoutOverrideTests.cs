@@ -10,6 +10,38 @@ namespace UI_Unilineal.Engine.Tests.Layout;
 public sealed class LayoutOverrideTests
 {
     [Fact]
+    public void Apply_EmptyState_PreservesAutomaticLayoutExactly()
+    {
+        PositionedLayout automatic =
+            Layout(
+                Block("A", 10, 10),
+                Block("B", 10, 10));
+        DrawingComposition composition =
+            Composition(
+                EntityBlock("A", "E1"),
+                EntityBlock("B", "E2"));
+        var state =
+            new DiagramLayoutState(
+                DiagramSceneKind.ProjectSummary,
+                new EntityUid("P1"),
+                "1",
+                [],
+                null);
+
+        PositionedLayout result =
+            new LayoutOverrideApplicator().Apply(
+                automatic,
+                composition,
+                state,
+                Profile());
+
+        Assert.Same(
+            automatic,
+            result);
+    }
+
+
+    [Fact]
     public void Apply_LockedEntityNeverMovesEvenWhenItCreatesOverlap()
     {
         RIC18DrawingProfile profile = Profile();

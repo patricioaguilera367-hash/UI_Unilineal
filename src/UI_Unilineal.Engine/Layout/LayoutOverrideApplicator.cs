@@ -17,6 +17,11 @@ public sealed class LayoutOverrideApplicator
         ArgumentNullException.ThrowIfNull(state);
         ArgumentNullException.ThrowIfNull(profile);
 
+        if (state.Overrides.Count == 0)
+        {
+            return automaticLayout;
+        }
+
         Dictionary<string, CompositionBlock> blockByEntity =
             BuildEntityIndex(composition);
 
