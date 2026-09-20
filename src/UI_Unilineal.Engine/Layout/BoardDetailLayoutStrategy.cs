@@ -379,12 +379,14 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
             leftExtent =
                 Math.Max(
                     leftExtent,
-                    axisOffset);
+                    axisOffset +
+                    tokens.AuxiliaryLaneOffsetMm);
             rightExtent =
                 Math.Max(
                     rightExtent,
                     measured.Size.Width -
-                    axisOffset);
+                    axisOffset +
+                    tokens.AuxiliaryLaneOffsetMm);
         }
 
         double internalContentHeight =
