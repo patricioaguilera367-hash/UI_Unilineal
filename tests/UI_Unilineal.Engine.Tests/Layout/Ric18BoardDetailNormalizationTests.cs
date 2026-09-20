@@ -304,6 +304,43 @@ public sealed class Ric18BoardDetailNormalizationTests
     }
 
     [Fact]
+    public void SyntheticConnectionNodes_AreMarkedForSolidFill()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+
+        CircleSceneElement[] nodes =
+            scene.Elements
+                .OfType<CircleSceneElement>()
+                .Where(circle =>
+                    circle.Id.Value.Contains(
+                        "/node/",
+                        StringComparison.Ordinal) ||
+                    circle.Id.Value.Contains(
+                        "/terminal/",
+                        StringComparison.Ordinal))
+                .ToArray();
+
+        Assert.NotEmpty(
+            nodes);
+
+        Assert.All(
+            nodes,
+            node =>
+            {
+                Assert.True(
+                    node.Metadata.TryGetValue(
+                        "fillMode",
+                        out string? fillMode));
+                Assert.Equal(
+                    "Solid",
+                    fillMode);
+            });
+    }
+
+    [Fact]
     public void DestinationAuxiliaryAnchors_AreBackedByVisibleTerminalNodes()
     {
         DiagramScene scene =
