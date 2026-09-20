@@ -270,16 +270,25 @@
     "id": "FINAL_LOAD_BLOCK",
     "semanticRole": "FinalLoad",
     "minimumSize": {
-      "width": 24,
-      "height": 24
+      "width": 28,
+      "height": 30
     },
     "parts": [
       {
-        "id": "LOAD",
-        "symbolId": "FINAL_LOAD",
+        "id": "MARKER",
+        "symbolId": "CIRCUIT_MARKER",
         "offset": {
-          "x": 4,
-          "y": 4
+          "x": 6,
+          "y": 2
+        },
+        "labelSlotId": "NUMBER"
+      },
+      {
+        "id": "USE",
+        "symbolId": "CIRCUIT_USE_TEXT",
+        "offset": {
+          "x": 2,
+          "y": 21
         },
         "labelSlotId": "NAME"
       }
