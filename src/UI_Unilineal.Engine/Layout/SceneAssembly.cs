@@ -725,94 +725,6 @@ public sealed class SceneAssembly
                 anchors));
     }
 
-    private static void AssembleServiceEntranceFrame(
-        CompositionBlock block,
-        PositionedCompositionBlock positioned,
-        BlockDefinition definition,
-        ICollection<SceneElement> output,
-        ICollection<SceneId> children)
-    {
-        const double inset = 2;
-        const double headerHeight = 10;
-        MmRect frameBounds =
-            new(
-                positioned.Bounds.X + inset,
-                positioned.Bounds.Y + inset,
-                Math.Max(
-                    positioned.Bounds.Width - (inset * 2),
-                    MinimumPrimitiveExtentMm),
-                Math.Max(
-                    positioned.Bounds.Height - (inset * 2),
-                    MinimumPrimitiveExtentMm));
-        SceneId frameId =
-            new($"{block.Id}/service-frame");
-
-        output.Add(
-            new RectangleSceneElement(
-                frameId,
-                frameBounds,
-                SceneLayer.Symbol,
-                15,
-                SceneVisibility.Both,
-                block.Entity,
-                GroupMetadata(block, definition.Id),
-                "POWER"));
-        children.Add(frameId);
-
-        SceneId headerId =
-            new($"{block.Id}/service-header");
-        MmPoint headerStart =
-            new(
-                frameBounds.X,
-                frameBounds.Y + headerHeight);
-        MmPoint headerEnd =
-            new(
-                frameBounds.Right,
-                frameBounds.Y + headerHeight);
-
-        output.Add(
-            new LineSceneElement(
-                headerId,
-                BoundsFor([headerStart, headerEnd]),
-                SceneLayer.Power,
-                15,
-                SceneVisibility.Both,
-                block.Entity,
-                GroupMetadata(block, definition.Id),
-                headerStart,
-                headerEnd,
-                "POWER"));
-        children.Add(headerId);
-
-        if (block.Labels.TryGetValue(
-                "TITLE",
-                out string? title) &&
-            !string.IsNullOrWhiteSpace(title))
-        {
-            SceneId titleId =
-                new($"{block.Id}/service-title");
-
-            output.Add(
-                new TextSceneElement(
-                    titleId,
-                    new MmRect(
-                        frameBounds.X + 2,
-                        frameBounds.Y + 2,
-                        Math.Max(
-                            frameBounds.Width - 4,
-                            MinimumPrimitiveExtentMm),
-                        5),
-                    SceneLayer.Text,
-                    30,
-                    SceneVisibility.Both,
-                    block.Entity,
-                    GroupMetadata(block, definition.Id),
-                    title,
-                    "TECH"));
-            children.Add(titleId);
-        }
-    }
-
     private static void AddServiceEntranceInternalLinks(
         CompositionBlock block,
         PositionedCompositionBlock positioned,
@@ -873,8 +785,16 @@ public sealed class SceneAssembly
             positioned.Bounds.X +
             protectionPart.Offset.X +
             protectionIn.Point.X;
+        BlockPartDefinition? framePart =
+            definition.Parts.SingleOrDefault(part =>
+                string.Equals(
+                    part.Id,
+                    "FRAME",
+                    StringComparison.Ordinal));
         double frameHeaderY =
-            positioned.Bounds.Y + 12;
+            positioned.Bounds.Y +
+            (framePart?.Offset.Y ?? 2) +
+            8;
         double meterTop =
             positioned.Bounds.Y +
             meterPart.Offset.Y +
@@ -1034,21 +954,6 @@ public sealed class SceneAssembly
 
         foreach (BlockPartDefinition part in definition.Parts)
         {
-            if (block.SemanticRole == "ServiceEntranceAssembly" &&
-                string.Equals(
-                    part.Id,
-                    "FRAME",
-                    StringComparison.Ordinal))
-            {
-                AssembleServiceEntranceFrame(
-                    block,
-                    positioned,
-                    definition,
-                    output,
-                    children);
-                continue;
-            }
-
             string symbolId = block.SymbolOverrides.TryGetValue(
                 part.Id,
                 out string? overrideSymbolId)
