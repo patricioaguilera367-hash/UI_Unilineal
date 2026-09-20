@@ -54,6 +54,65 @@ public sealed class SingleLineLayoutEngineTests
     }
 
     [Fact]
+    public void LayoutSummary_Nested_PreservesVerticalElectricalAxis()
+    {
+        SingleLineProjection projection =
+            Project(
+                SemanticFixtureFactory.NestedBoards());
+        RIC18DrawingProfile profile = Profile();
+
+        SingleLineLayoutResult result =
+            Engine().LayoutSummary(
+                projection,
+                profile);
+
+        Assert.True(
+            result.Success,
+            result.Failure?.Message);
+        DiagramScene scene =
+            Assert.IsType<DiagramScene>(
+                result.Scene);
+        GroupSceneElement source =
+            Assert.IsType<GroupSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "summary/source/S1"));
+        GroupSceneElement main =
+            Assert.IsType<GroupSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "summary/board/B1"));
+        GroupSceneElement downstream =
+            Assert.IsType<GroupSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "summary/board/B2"));
+
+        double sourceAxis =
+            source.Bounds.X +
+            (source.Bounds.Width / 2.0);
+        double mainAxis =
+            main.Bounds.X +
+            (main.Bounds.Width / 2.0);
+        double downstreamAxis =
+            downstream.Bounds.X +
+            (downstream.Bounds.Width / 2.0);
+
+        Assert.Equal(
+            sourceAxis,
+            mainAxis,
+            precision: 8);
+        Assert.Equal(
+            mainAxis,
+            downstreamAxis,
+            precision: 8);
+        Assert.True(main.Bounds.Y > source.Bounds.Y);
+        Assert.True(
+            downstream.Bounds.Y >
+            main.Bounds.Y);
+    }
+
+    [Fact]
     public void LayoutBoardDetail_Nested_ProducesRoutedOrthogonalScene()
     {
         SingleLineProjection projection =

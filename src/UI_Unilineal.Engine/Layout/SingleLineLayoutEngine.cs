@@ -232,12 +232,6 @@ public sealed class SingleLineLayoutEngine
                     layoutState,
                     profile.Layout);
             }
-            else if (expectedSceneKind == DiagramSceneKind.ProjectSummary)
-            {
-                positioned = new CollisionResolver().Resolve(
-                    positioned,
-                    profile.Layout);
-            }
         }
         catch (Exception exception) when (IsExpectedPipelineException(exception))
         {
