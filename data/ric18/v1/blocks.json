@@ -102,30 +102,30 @@
       },
       {
         "id": "PROTECTION_TEXT",
-        "symbolId": "TEXT_VALUE",
+        "symbolId": "SERVICE_PROTECTION_TEXT",
         "offset": {
           "x": 23,
           "y": 35
         },
-        "labelSlotId": "VALUE"
+        "labelSlotId": "PROTECTION_TEXT"
       },
       {
         "id": "TARIFF",
-        "symbolId": "TEXT_VALUE",
+        "symbolId": "SERVICE_TARIFF_TEXT",
         "offset": {
           "x": 23,
           "y": 46
         },
-        "labelSlotId": "VALUE"
+        "labelSlotId": "TARIFF"
       },
       {
         "id": "DETAILS",
-        "symbolId": "TEXT_VALUE",
+        "symbolId": "SERVICE_DETAILS_TEXT",
         "offset": {
           "x": 23,
           "y": 54
         },
-        "labelSlotId": "VALUE"
+        "labelSlotId": "DETAILS"
       }
     ],
     "provenanceIds": [
