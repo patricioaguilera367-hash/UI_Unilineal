@@ -693,6 +693,8 @@ public sealed class CompositionBuilder
             entity,
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
+                ["NUMBER"] = branch.Circuit.Number.ToString(
+                    CultureInfo.InvariantCulture),
                 ["NAME"] = branch.Destination.Label
             },
             branch.Status,
