@@ -101,6 +101,34 @@ public sealed record Ric18BoardLayoutTokens
     }
 }
 
+public sealed record Ric18CircuitExtent
+{
+    public Ric18CircuitExtent(
+        double leftMm,
+        double rightMm)
+    {
+        ValidateNonNegative(leftMm, nameof(leftMm));
+        ValidateNonNegative(rightMm, nameof(rightMm));
+
+        LeftMm = leftMm;
+        RightMm = rightMm;
+    }
+
+    public double LeftMm { get; }
+
+    public double RightMm { get; }
+
+    private static void ValidateNonNegative(
+        double value,
+        string parameterName)
+    {
+        if (!double.IsFinite(value) || value < 0)
+        {
+            throw new ArgumentOutOfRangeException(parameterName);
+        }
+    }
+}
+
 public sealed record Ric18BoardGeometry(
     double BoardLeft,
     double BoardTop,
@@ -124,7 +152,7 @@ public sealed class Ric18BoardGeometryPlanner
         LayoutProfile profile,
         Ric18BoardLayoutTokens tokens,
         int circuitCount,
-        IReadOnlyList<double> requiredCircuitWidthsMm,
+        IReadOnlyList<Ric18CircuitExtent> circuitExtents,
         MmSize mainBusMeasuredSize,
         MmSize protectiveEarthSize,
         MmSize neutralSize,
@@ -136,18 +164,18 @@ public sealed class Ric18BoardGeometryPlanner
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(tokens);
-        ArgumentNullException.ThrowIfNull(requiredCircuitWidthsMm);
+        ArgumentNullException.ThrowIfNull(circuitExtents);
 
         if (circuitCount < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(circuitCount));
         }
 
-        if (requiredCircuitWidthsMm.Count != circuitCount)
+        if (circuitExtents.Count != circuitCount)
         {
             throw new ArgumentException(
-                "Circuit width count must match circuit count.",
-                nameof(requiredCircuitWidthsMm));
+                "Circuit extent count must match circuit count.",
+                nameof(circuitExtents));
         }
 
         ValidateNonNegative(
@@ -157,26 +185,33 @@ public sealed class Ric18BoardGeometryPlanner
             centeredHeaderRightExtentMm,
             nameof(centeredHeaderRightExtentMm));
 
-        double widestCircuit =
-            requiredCircuitWidthsMm.Count == 0
+        double maximumLeftExtent =
+            circuitExtents.Count == 0
                 ? 0
-                : requiredCircuitWidthsMm.Max();
+                : circuitExtents.Max(extent => extent.LeftMm);
+        double maximumRightExtent =
+            circuitExtents.Count == 0
+                ? 0
+                : circuitExtents.Max(extent => extent.RightMm);
 
         double circuitPitch =
             Math.Max(
                 tokens.MinimumCircuitPitchMm,
-                widestCircuit +
-                (tokens.AnnotationClearanceMm * 2.0));
+                maximumRightExtent +
+                tokens.AnnotationClearanceMm +
+                maximumLeftExtent);
 
-        double minimumBranchAreaWidth =
+        double circuitSpan =
             circuitCount == 0
-                ? mainBusMeasuredSize.Width
-                : circuitCount * circuitPitch;
+                ? 0
+                : ((circuitCount - 1) * circuitPitch) +
+                  maximumLeftExtent +
+                  maximumRightExtent;
 
         double branchAreaWidth =
             Math.Max(
                 mainBusMeasuredSize.Width,
-                minimumBranchAreaWidth);
+                circuitSpan);
 
         double leftHeaderHalfWidth =
             tokens.BoardOuterPaddingMm +
@@ -224,12 +259,12 @@ public sealed class Ric18BoardGeometryPlanner
 
         for (int index = 0; index < circuitCount; index++)
         {
-            double axis =
-                branchAreaLeft +
-                (actualBranchAreaWidth *
-                 (index + 0.5) /
-                 circuitCount);
-            circuitAxes.Add(axis);
+            double centeredIndex =
+                index -
+                ((circuitCount - 1) / 2.0);
+            circuitAxes.Add(
+                centerX +
+                (centeredIndex * circuitPitch));
         }
 
         double headerAccessoryBottom =
