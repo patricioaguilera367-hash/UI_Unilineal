@@ -12,7 +12,8 @@ public sealed class SingleLineInput
         IEnumerable<ProtectionInput> protections,
         IEnumerable<GroundingInput> grounding,
         IEnumerable<ElectricalResultInput> results,
-        SingleLineInputMetadata metadata)
+        SingleLineInputMetadata metadata,
+        IEnumerable<ServiceEntranceInput>? serviceEntrances = null)
     {
         Project = project ?? throw new ArgumentNullException(nameof(project));
         Sources = Copy(sources, nameof(sources));
@@ -23,6 +24,9 @@ public sealed class SingleLineInput
         Protections = Copy(protections, nameof(protections));
         Grounding = Copy(grounding, nameof(grounding));
         Results = Copy(results, nameof(results));
+        ServiceEntrances = Copy(
+            serviceEntrances ?? [],
+            nameof(serviceEntrances));
         Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
     }
 
@@ -35,6 +39,7 @@ public sealed class SingleLineInput
     public IReadOnlyList<ProtectionInput> Protections { get; }
     public IReadOnlyList<GroundingInput> Grounding { get; }
     public IReadOnlyList<ElectricalResultInput> Results { get; }
+    public IReadOnlyList<ServiceEntranceInput> ServiceEntrances { get; }
     public SingleLineInputMetadata Metadata { get; }
 
     private static IReadOnlyList<T> Copy<T>(IEnumerable<T> values, string parameterName)
