@@ -104,13 +104,16 @@ public sealed class CompositionBuilder
             .ToArray();
         blocks.AddRange(mainProtections);
 
-        CompositionBlock bus = CreateBusBlock(boardUid, detail.MainBus);
-        blocks.Add(bus);
-
         string tapList = string.Join(
             "|",
             detail.Branches
                 .Select(branch => branch.Circuit.Uid.Value));
+
+        CompositionBlock bus = CreateBusBlock(
+            boardUid,
+            detail.MainBus,
+            tapList);
+        blocks.Add(bus);
 
         CompositionBlock neutralBus = CreateStructuralRail(
             CompositionIdFactory.DetailNeutralBus(boardUid),
@@ -370,7 +373,8 @@ public sealed class CompositionBuilder
 
     private static CompositionBlock CreateBusBlock(
         EntityUid boardUid,
-        BusProjection bus) =>
+        BusProjection bus,
+        string tapList) =>
         new(
             CompositionIdFactory.DetailBus(boardUid, bus.Bus.Uid),
             "MAIN_BUS_BLOCK",
@@ -378,7 +382,8 @@ public sealed class CompositionBuilder
             new EntityReference(bus.Bus.Uid, EntityKind.Bus),
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                ["CODE"] = bus.Bus.Code
+                ["CODE"] = bus.Bus.Code,
+                ["TAPS"] = tapList
             },
             bus.Status,
             CompositionIdFactory.DetailBoard(boardUid));
@@ -498,7 +503,7 @@ public sealed class CompositionBuilder
             new CompositionAnchorRef(
                 bus.Id,
                 AnchorRole.BusTap,
-                "TAP"),
+                $"TAP:{branch.Circuit.Uid.Value}"),
             new CompositionAnchorRef(
                 branchId,
                 AnchorRole.PowerIn,
