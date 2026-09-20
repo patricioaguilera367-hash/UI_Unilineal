@@ -80,6 +80,8 @@ public sealed class AvaloniaRenderResources
                 LinePattern.Solid => null,
                 LinePattern.Dashed =>
                     new DashStyle([4.0, 2.0], 0),
+                LinePattern.DashDot =>
+                    new DashStyle([4.0, 2.0, 1.0, 2.0], 0),
                 LinePattern.Dotted =>
                     new DashStyle([1.0, 2.0], 0),
                 _ => throw new InvalidOperationException(
