@@ -13,6 +13,7 @@ public sealed class GeneratedLayoutInvariantTests
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
+    [InlineData(3)]
     [InlineData(4)]
     [InlineData(12)]
     [InlineData(24)]
@@ -84,6 +85,7 @@ public sealed class GeneratedLayoutInvariantTests
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
+    [InlineData(3)]
     [InlineData(4)]
     [InlineData(12)]
     public void GeneratedBoardDetail_MainBusTapsMatchCircuitColumnAxes(
@@ -149,6 +151,125 @@ public sealed class GeneratedLayoutInvariantTests
                 0,
                 1e-9);
         }
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    [InlineData(5)]
+    public void GeneratedBoardDetail_OddCircuitCountKeepsMiddleCircuitOnIncomingAxis(
+        int circuitCount)
+    {
+        RIC18DrawingProfile profile = Profile();
+        SingleLineProjection projection =
+            Project(
+                GeneratedInput(
+                    circuitCount,
+                    reverse: false));
+        SingleLineLayoutResult result =
+            new SingleLineLayoutEngine(
+                new DeterministicTextMetrics())
+                .LayoutBoardDetail(
+                    projection,
+                    new EntityUid("B1"),
+                    profile);
+
+        Assert.True(
+            result.Success,
+            result.Failure?.Message);
+        DiagramScene scene =
+            Assert.IsType<DiagramScene>(
+                result.Scene);
+        GroupSceneElement bus =
+            Assert.IsType<GroupSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "detail/B1/bus/BUS:B1:MAIN"));
+
+        SceneAnchor incoming =
+            bus.Anchors.Single(anchor =>
+                anchor.Id == "IN");
+        int middleIndex =
+            (circuitCount + 1) / 2;
+        string suffix =
+            middleIndex.ToString(
+                "D3",
+                System.Globalization.CultureInfo.InvariantCulture);
+        SceneAnchor middleTap =
+            bus.Anchors.Single(anchor =>
+                anchor.Id == $"TAP:C{suffix}");
+
+        Assert.InRange(
+            Math.Abs(
+                incoming.Point.X -
+                middleTap.Point.X),
+            0,
+            1e-9);
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    [InlineData(6)]
+    public void GeneratedBoardDetail_EvenCircuitCountStraddlesIncomingAxisSymmetrically(
+        int circuitCount)
+    {
+        RIC18DrawingProfile profile = Profile();
+        SingleLineProjection projection =
+            Project(
+                GeneratedInput(
+                    circuitCount,
+                    reverse: false));
+        SingleLineLayoutResult result =
+            new SingleLineLayoutEngine(
+                new DeterministicTextMetrics())
+                .LayoutBoardDetail(
+                    projection,
+                    new EntityUid("B1"),
+                    profile);
+
+        Assert.True(
+            result.Success,
+            result.Failure?.Message);
+        DiagramScene scene =
+            Assert.IsType<DiagramScene>(
+                result.Scene);
+        GroupSceneElement bus =
+            Assert.IsType<GroupSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "detail/B1/bus/BUS:B1:MAIN"));
+
+        SceneAnchor incoming =
+            bus.Anchors.Single(anchor =>
+                anchor.Id == "IN");
+        int leftIndex =
+            circuitCount / 2;
+        int rightIndex =
+            leftIndex + 1;
+        string leftSuffix =
+            leftIndex.ToString(
+                "D3",
+                System.Globalization.CultureInfo.InvariantCulture);
+        string rightSuffix =
+            rightIndex.ToString(
+                "D3",
+                System.Globalization.CultureInfo.InvariantCulture);
+        double leftX =
+            bus.Anchors.Single(anchor =>
+                anchor.Id == $"TAP:C{leftSuffix}").Point.X;
+        double rightX =
+            bus.Anchors.Single(anchor =>
+                anchor.Id == $"TAP:C{rightSuffix}").Point.X;
+
+        Assert.True(leftX < incoming.Point.X);
+        Assert.True(rightX > incoming.Point.X);
+        Assert.InRange(
+            Math.Abs(
+                (incoming.Point.X - leftX) -
+                (rightX - incoming.Point.X)),
+            0,
+            1e-9);
     }
 
     [Theory]
