@@ -344,7 +344,20 @@
         }
       }
     ],
-    "labelSlots": [],
+    "labelSlots": [
+      {
+        "id": "RATING",
+        "bounds": {
+          "x": 10,
+          "y": 4,
+          "width": 2,
+          "height": 8
+        },
+        "priority": 0,
+        "required": false,
+        "textStyleId": "LABEL_SMALL"
+      }
+    ],
     "provenanceIds": [
       "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
       "APP:GRAPHIC_CONVENTIONS"
@@ -458,7 +471,20 @@
         }
       }
     ],
-    "labelSlots": [],
+    "labelSlots": [
+      {
+        "id": "RATING",
+        "bounds": {
+          "x": 10,
+          "y": 4,
+          "width": 2,
+          "height": 8
+        },
+        "priority": 0,
+        "required": false,
+        "textStyleId": "LABEL_SMALL"
+      }
+    ],
     "provenanceIds": [
       "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
       "APP:GRAPHIC_CONVENTIONS"
@@ -584,7 +610,20 @@
         }
       }
     ],
-    "labelSlots": [],
+    "labelSlots": [
+      {
+        "id": "RATING",
+        "bounds": {
+          "x": 10,
+          "y": 4,
+          "width": 2,
+          "height": 8
+        },
+        "priority": 0,
+        "required": false,
+        "textStyleId": "LABEL_SMALL"
+      }
+    ],
     "provenanceIds": [
       "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
       "APP:GRAPHIC_CONVENTIONS"
@@ -722,7 +761,20 @@
         }
       }
     ],
-    "labelSlots": [],
+    "labelSlots": [
+      {
+        "id": "RATING",
+        "bounds": {
+          "x": 10,
+          "y": 4,
+          "width": 2,
+          "height": 8
+        },
+        "priority": 0,
+        "required": false,
+        "textStyleId": "LABEL_SMALL"
+      }
+    ],
     "provenanceIds": [
       "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
       "APP:GRAPHIC_CONVENTIONS"
@@ -1073,7 +1125,20 @@
         }
       }
     ],
-    "labelSlots": [],
+    "labelSlots": [
+      {
+        "id": "RATING",
+        "bounds": {
+          "x": 10,
+          "y": 4,
+          "width": 2,
+          "height": 8
+        },
+        "priority": 0,
+        "required": false,
+        "textStyleId": "LABEL_SMALL"
+      }
+    ],
     "provenanceIds": [
       "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
       "APP:GRAPHIC_CONVENTIONS"
@@ -1242,7 +1307,20 @@
         }
       }
     ],
-    "labelSlots": [],
+    "labelSlots": [
+      {
+        "id": "RATING",
+        "bounds": {
+          "x": 10,
+          "y": 4,
+          "width": 2,
+          "height": 8
+        },
+        "priority": 0,
+        "required": false,
+        "textStyleId": "LABEL_SMALL"
+      }
+    ],
     "provenanceIds": [
       "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
       "APP:GRAPHIC_CONVENTIONS"
