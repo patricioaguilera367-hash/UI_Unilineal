@@ -48,6 +48,59 @@ public sealed class SvgExporterTests
     }
 
     [Fact]
+    public async Task Solid_junction_circle_exports_with_black_fill()
+    {
+        var solidNode =
+            new CircleSceneElement(
+                new SceneId("scene/demo/solid-node"),
+                new MmRect(84, 10, 4, 4),
+                SceneLayer.Power,
+                20,
+                SceneVisibility.Both,
+                null,
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["fillMode"] = "Solid"
+                },
+                new MmPoint(86, 12),
+                2,
+                "POWER");
+        (DrawingDocument document, ResolvedDrawingStyleSet styles) =
+            CreateDocument(
+                "Demo",
+                solidNode);
+
+        string svg =
+            Encoding.UTF8.GetString(
+                await Export(
+                    new SvgExporter(),
+                    document,
+                    styles));
+        XDocument xml =
+            XDocument.Parse(svg);
+        XNamespace ns =
+            "http://www.w3.org/2000/svg";
+
+        XElement solid =
+            xml.Descendants(ns + "circle")
+                .Single(element =>
+                    (string?)element.Attribute("data-scene-id") ==
+                    "scene/demo/solid-node");
+        XElement hollow =
+            xml.Descendants(ns + "circle")
+                .Single(element =>
+                    (string?)element.Attribute("data-scene-id") ==
+                    "scene/demo/circle");
+
+        Assert.Equal(
+            "black",
+            (string?)solid.Attribute("fill"));
+        Assert.Equal(
+            "none",
+            (string?)hollow.Attribute("fill"));
+    }
+
+    [Fact]
     public async Task Project_text_is_xml_escaped_and_cannot_inject_markup()
     {
         (DrawingDocument document, ResolvedDrawingStyleSet styles) =
