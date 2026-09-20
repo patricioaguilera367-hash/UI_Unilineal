@@ -81,8 +81,8 @@
     "id": "SERVICE_ENTRANCE_ASSEMBLY_BLOCK",
     "semanticRole": "ServiceEntranceAssembly",
     "minimumSize": {
-      "width": 54,
-      "height": 66
+      "width": 50,
+      "height": 50
     },
     "parts": [
       {
@@ -98,8 +98,8 @@
         "id": "METER",
         "symbolId": "METER",
         "offset": {
-          "x": 10,
-          "y": 14
+          "x": 11,
+          "y": 12
         },
         "labelSlotId": "METER_CODE"
       },
@@ -107,8 +107,8 @@
         "id": "PROTECTION",
         "symbolId": "BREAKER",
         "offset": {
-          "x": 9,
-          "y": 34
+          "x": 10,
+          "y": 29
         },
         "labelSlotId": null
       },
@@ -116,8 +116,8 @@
         "id": "PROTECTION_TEXT",
         "symbolId": "SERVICE_PROTECTION_TEXT",
         "offset": {
-          "x": 23,
-          "y": 35
+          "x": 24,
+          "y": 29
         },
         "labelSlotId": "PROTECTION_TEXT"
       },
@@ -125,8 +125,8 @@
         "id": "TARIFF",
         "symbolId": "SERVICE_TARIFF_TEXT",
         "offset": {
-          "x": 23,
-          "y": 46
+          "x": 24,
+          "y": 37
         },
         "labelSlotId": "TARIFF"
       },
@@ -134,8 +134,8 @@
         "id": "DETAILS",
         "symbolId": "SERVICE_DETAILS_TEXT",
         "offset": {
-          "x": 23,
-          "y": 54
+          "x": 24,
+          "y": 43
         },
         "labelSlotId": "DETAILS"
       }
