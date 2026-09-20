@@ -395,6 +395,9 @@ public sealed class SvgExporter
             case LinePattern.Dashed:
                 output.Append(" stroke-dasharray=\"4 2\"");
                 break;
+            case LinePattern.DashDot:
+                output.Append(" stroke-dasharray=\"4 2 1 2\"");
+                break;
             case LinePattern.Dotted:
                 output.Append(" stroke-dasharray=\"1 2\"");
                 break;
