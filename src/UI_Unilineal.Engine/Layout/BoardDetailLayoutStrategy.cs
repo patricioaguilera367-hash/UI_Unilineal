@@ -14,6 +14,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
     private const double SemanticBranchWidthMm = 4;
     private const double SemanticBranchHeightMm = 2;
     private const double MainBusVisualHeightMm = 6;
+    private const double MainBusIncomingNodePitchMm = 17;
 
     public PositionedLayout Layout(
         DrawingComposition composition,
@@ -54,6 +55,8 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
         var positioned = new List<PositionedCompositionBlock>();
         var assigned = new HashSet<string>(StringComparer.Ordinal);
+        var externalDestinations =
+            new List<(CompositionBlock Block, double PowerAxisX)>();
         double maxRight = 0;
         double maxBottom = 0;
 
@@ -88,6 +91,11 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
             boardLeft + BoardSideMarginMm;
         double centerX =
             boardLeft + (boardWidth / 2.0);
+        double incomingAxisX =
+            columns.Length > 0 &&
+            columns.Length % 2 == 1
+                ? centerX - MainBusIncomingNodePitchMm
+                : centerX;
 
         // Incoming supply/EMPALME is external to the board and its electrical
         // power axis is kept collinear with the board incoming path.
@@ -98,7 +106,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 measurement.GetBlock(block.Id);
             AddOnPowerAxis(
                 block.Id,
-                centerX,
+                incomingAxisX,
                 y,
                 measured,
                 positioned,
@@ -155,7 +163,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
             AddOnPowerAxis(
                 block.Id,
-                centerX,
+                incomingAxisX,
                 mainProtectionBottom,
                 measured,
                 positioned,
@@ -226,6 +234,16 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
             foreach (CompositionBlock block in column.Children)
             {
+                if (block.SemanticRole is
+                        "DownstreamBoard" or
+                        "FinalLoad" or
+                        "Unknown")
+                {
+                    externalDestinations.Add(
+                        (block, slotCenterX));
+                    continue;
+                }
+
                 MeasuredBlock measured =
                     measurement.GetBlock(block.Id);
 
@@ -271,6 +289,30 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
             assigned,
             ref maxRight,
             ref maxBottom);
+
+        double externalDestinationY =
+            boardBottom +
+            InternalVerticalGapMm;
+
+        foreach ((CompositionBlock block, double powerAxisX) in
+                 externalDestinations
+                     .OrderBy(
+                         item => item.Block.Id,
+                         StringComparer.Ordinal))
+        {
+            MeasuredBlock measured =
+                measurement.GetBlock(block.Id);
+
+            AddOnPowerAxis(
+                block.Id,
+                powerAxisX,
+                externalDestinationY,
+                measured,
+                positioned,
+                assigned,
+                ref maxRight,
+                ref maxBottom);
+        }
 
         // Preserve explicit visibility of any future non-template extension
         // without allowing it to deform the deterministic RIC18 core.
