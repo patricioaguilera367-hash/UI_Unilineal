@@ -82,6 +82,33 @@ public sealed class Ric18BoardGeometryTests
     }
 
     [Fact]
+    public void Planner_HeaderWidthPreventsSideRailsFromTouchingCenteredProtection()
+    {
+        LayoutProfile profile = Layout();
+        Ric18BoardLayoutTokens tokens =
+            Ric18BoardLayoutTokens.From(profile);
+        Ric18BoardGeometry geometry =
+            Plan(
+                profile,
+                tokens,
+                1);
+
+        double protectionLeft =
+            geometry.CenterX - 10;
+        double protectionRight =
+            geometry.CenterX + 10;
+
+        Assert.True(
+            geometry.ProtectiveEarthBounds.Right +
+            tokens.AnnotationClearanceMm <=
+            protectionLeft);
+        Assert.True(
+            protectionRight +
+            tokens.AnnotationClearanceMm <=
+            geometry.NeutralBounds.X);
+    }
+
+    [Fact]
     public void Planner_BusAndHeaderRailsShareOneCoherentBoardEnvelope()
     {
         LayoutProfile profile = Layout();
@@ -153,7 +180,9 @@ public sealed class Ric18BoardGeometryTests
             new MmSize(18, 8),
             new MmSize(18, 8),
             incomingStackBottom: 26.5,
-            mainProtectionStackHeight: 24,
+            mainProtectionStackHeight: 20,
+            centeredHeaderLeftExtentMm: 10,
+            centeredHeaderRightExtentMm: 10,
             maximumBranchContentHeight: 48);
 
     private static LayoutProfile Layout() =>
