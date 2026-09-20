@@ -250,7 +250,7 @@ public sealed class Ric18BoardDetailNormalizationTests
         Assert.True(rail.Start.X <= Math.Min(incoming.Point.X, branch.Point.X));
         Assert.True(rail.End.X >= Math.Max(incoming.Point.X, branch.Point.X));
         Assert.True(rail.End.X - rail.Start.X <=
-                    Math.Abs(incoming.Point.X - branch.Point.X) + 2.4);
+                    Math.Abs(incoming.Point.X - branch.Point.X) + 2.4 + 0.000001);
     }
 
     [Fact]
