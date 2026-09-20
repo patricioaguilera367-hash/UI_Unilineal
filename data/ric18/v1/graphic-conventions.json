@@ -36,8 +36,8 @@
         "EMPALME_FRAME"
       ],
       "nominalCell": {
-        "widthMm": 50,
-        "heightMm": 62
+        "widthMm": 28,
+        "heightMm": 46
       },
       "anchorPolicy": "AssemblyFrame"
     },
