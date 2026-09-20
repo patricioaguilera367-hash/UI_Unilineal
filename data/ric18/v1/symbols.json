@@ -755,6 +755,24 @@
           "y": 16
         },
         "direction": "Down"
+      },
+      {
+        "id": "N_IN",
+        "role": "Neutral",
+        "point": {
+          "x": 1.5,
+          "y": 3
+        },
+        "direction": "Left"
+      },
+      {
+        "id": "N_OUT",
+        "role": "Neutral",
+        "point": {
+          "x": 1.5,
+          "y": 13
+        },
+        "direction": "Left"
       }
     ],
     "primitives": [
@@ -919,6 +937,24 @@
           "y": 16
         },
         "direction": "Down"
+      },
+      {
+        "id": "N_IN",
+        "role": "Neutral",
+        "point": {
+          "x": 1.5,
+          "y": 3
+        },
+        "direction": "Left"
+      },
+      {
+        "id": "N_OUT",
+        "role": "Neutral",
+        "point": {
+          "x": 1.5,
+          "y": 13
+        },
+        "direction": "Left"
       }
     ],
     "primitives": [
@@ -1070,6 +1106,24 @@
           "y": 16
         },
         "direction": "Down"
+      },
+      {
+        "id": "N_IN",
+        "role": "Neutral",
+        "point": {
+          "x": 1.5,
+          "y": 3
+        },
+        "direction": "Left"
+      },
+      {
+        "id": "N_OUT",
+        "role": "Neutral",
+        "point": {
+          "x": 1.5,
+          "y": 13
+        },
+        "direction": "Left"
       }
     ],
     "primitives": [
@@ -1719,6 +1773,24 @@
           "y": 16
         },
         "direction": "Down"
+      },
+      {
+        "id": "N",
+        "role": "Neutral",
+        "point": {
+          "x": 3,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "PE",
+        "role": "Ground",
+        "point": {
+          "x": 19,
+          "y": 0
+        },
+        "direction": "Up"
       }
     ],
     "primitives": [
@@ -1767,6 +1839,24 @@
         "role": "PowerIn",
         "point": {
           "x": 8,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "N",
+        "role": "Neutral",
+        "point": {
+          "x": 3,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "PE",
+        "role": "Ground",
+        "point": {
+          "x": 13,
           "y": 0
         },
         "direction": "Up"
@@ -1832,6 +1922,24 @@
           "y": 0
         },
         "direction": "Up"
+      },
+      {
+        "id": "N",
+        "role": "Neutral",
+        "point": {
+          "x": 3,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "PE",
+        "role": "Ground",
+        "point": {
+          "x": 13,
+          "y": 0
+        },
+        "direction": "Up"
       }
     ],
     "primitives": [
@@ -1891,6 +1999,24 @@
         "role": "PowerIn",
         "point": {
           "x": 9,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "N",
+        "role": "Neutral",
+        "point": {
+          "x": 3,
+          "y": 0
+        },
+        "direction": "Up"
+      },
+      {
+        "id": "PE",
+        "role": "Ground",
+        "point": {
+          "x": 15,
           "y": 0
         },
         "direction": "Up"
