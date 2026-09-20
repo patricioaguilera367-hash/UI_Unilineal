@@ -239,12 +239,14 @@ public sealed class Ric18BoardDetailNormalizationTests
     }
 
     [Fact]
-    public void MinimalBoard_Ric18BusGrammar_RequiresDistinctPowerNodesAndCompactBus()
+    public void MinimalBoard_Ric18BusGrammar_SingleCircuitSharesIncomingCenterNode()
     {
         DiagramScene scene =
             BuildScene(
                 SemanticFixtureFactory.Minimal(),
                 new EntityUid("B1"));
+        GroupSceneElement frame =
+            Group(scene, "detail/B1");
         GroupSceneElement bus =
             Group(scene, "detail/B1/bus/BUS:B1:MAIN");
         SceneAnchor incoming =
@@ -257,16 +259,18 @@ public sealed class Ric18BoardDetailNormalizationTests
                     element.Id.Value ==
                     "detail/B1/bus/BUS:B1:MAIN/rail"));
 
-        const double StandardIncomingToBranchPitchMm = 17.0;
+        double boardCenterX =
+            frame.Bounds.X +
+            (frame.Bounds.Width / 2.0);
 
-        Assert.NotEqual(incoming.Point.X, branch.Point.X);
-        Assert.True(
-            Math.Abs(incoming.Point.X - branch.Point.X) >=
-            StandardIncomingToBranchPitchMm);
-        Assert.True(rail.Start.X <= Math.Min(incoming.Point.X, branch.Point.X));
-        Assert.True(rail.End.X >= Math.Max(incoming.Point.X, branch.Point.X));
-        Assert.True(rail.End.X - rail.Start.X <=
-                    Math.Abs(incoming.Point.X - branch.Point.X) + 2.4 + 0.000001);
+        Assert.Equal(
+            boardCenterX,
+            incoming.Point.X);
+        Assert.Equal(
+            incoming.Point.X,
+            branch.Point.X);
+        Assert.True(rail.Start.X <= incoming.Point.X);
+        Assert.True(rail.End.X >= incoming.Point.X);
 
         CircleSceneElement[] connectionNodes =
             scene.Elements
@@ -277,7 +281,11 @@ public sealed class Ric18BoardDetailNormalizationTests
                         StringComparison.Ordinal))
                 .ToArray();
 
-        Assert.Equal(2, connectionNodes.Length);
+        CircleSceneElement node =
+            Assert.Single(connectionNodes);
+        Assert.Equal(
+            incoming.Point,
+            node.Center);
     }
 
     [Fact]
