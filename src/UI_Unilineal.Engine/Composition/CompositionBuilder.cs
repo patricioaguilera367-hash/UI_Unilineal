@@ -298,7 +298,9 @@ public sealed class CompositionBuilder
                     ["DETAILS"] =
                         string.IsNullOrWhiteSpace(serviceEntrance.Details)
                             ? "Detalle: —"
-                            : serviceEntrance.Details
+                            : serviceEntrance.Details,
+                    ["AUTHORITY"] =
+                        serviceEntrance.ProtectionAuthority.ToString()
                 };
 
             var overrides =
