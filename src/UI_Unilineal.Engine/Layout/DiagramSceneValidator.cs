@@ -272,11 +272,6 @@ public sealed class DiagramSceneValidator
                 continue;
             }
 
-            if (connection.LineStyleId is "NEUTRAL_AUX" or "GROUND_AUX")
-            {
-                continue;
-            }
-
             foreach (GroupSceneElement group in groups)
             {
                 if (group.Id == connection.Source.ElementId ||
