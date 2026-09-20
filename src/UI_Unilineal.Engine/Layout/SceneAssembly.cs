@@ -170,7 +170,7 @@ public sealed class SceneAssembly
                     ? null
                     : measurement.GetBlock(block.Id);
 
-            if (block.SemanticRole is "NeutralBus" or "ProtectiveEarthBus")
+            if (block.SemanticRole is "MainBus" or "NeutralBus" or "ProtectiveEarthBus")
             {
                 AssembleStructuralRail(
                     block,
@@ -275,17 +275,27 @@ public sealed class SceneAssembly
         ICollection<SceneElement> output)
     {
         string lineStyleId =
-            block.SemanticRole == "NeutralBus"
-                ? "BUS"
-                : "GROUND";
+            block.SemanticRole switch
+            {
+                "MainBus" => "BUS",
+                "NeutralBus" => "BUS",
+                "ProtectiveEarthBus" => "GROUND",
+                _ => throw new InvalidOperationException(
+                    $"Unsupported structural rail role '{block.SemanticRole}'.")
+            };
         AnchorRole anchorRole =
-            block.SemanticRole == "NeutralBus"
-                ? AnchorRole.Neutral
-                : AnchorRole.Ground;
+            block.SemanticRole switch
+            {
+                "MainBus" => AnchorRole.BusTap,
+                "NeutralBus" => AnchorRole.Neutral,
+                "ProtectiveEarthBus" => AnchorRole.Ground,
+                _ => throw new InvalidOperationException(
+                    $"Unsupported structural rail role '{block.SemanticRole}'.")
+            };
         SceneLayer layer =
-            block.SemanticRole == "NeutralBus"
-                ? SceneLayer.Power
-                : SceneLayer.Grounding;
+            block.SemanticRole == "ProtectiveEarthBus"
+                ? SceneLayer.Grounding
+                : SceneLayer.Power;
 
         double left = positioned.Bounds.X + 4;
         double right = positioned.Bounds.Right - 4;
@@ -326,19 +336,40 @@ public sealed class SceneAssembly
                 : [];
 
         var anchors =
-            new List<SceneAnchor>
-            {
-                new(
+            new List<SceneAnchor>();
+
+        if (block.SemanticRole == "MainBus")
+        {
+            anchors.Add(
+                new SceneAnchor(
+                    "IN",
+                    AnchorRole.PowerIn,
+                    new MmPoint(
+                        left + ((right - left) / 2.0),
+                        y),
+                    AnchorDirection.Up));
+            anchors.Add(
+                new SceneAnchor(
+                    "OUT",
+                    AnchorRole.PowerOut,
+                    new MmPoint(right, y),
+                    AnchorDirection.Right));
+        }
+        else
+        {
+            anchors.Add(
+                new SceneAnchor(
                     "IN",
                     anchorRole,
                     new MmPoint(left, y),
-                    AnchorDirection.Left),
-                new(
+                    AnchorDirection.Left));
+            anchors.Add(
+                new SceneAnchor(
                     "OUT",
                     anchorRole,
                     new MmPoint(right, y),
-                    AnchorDirection.Right)
-            };
+                    AnchorDirection.Right));
+        }
 
         for (int index = 0; index < taps.Length; index++)
         {
@@ -352,7 +383,9 @@ public sealed class SceneAssembly
             anchors.Add(
                 new SceneAnchor(
                     $"TAP:{taps[index]}",
-                    anchorRole,
+                    block.SemanticRole == "MainBus"
+                        ? AnchorRole.BusTap
+                        : anchorRole,
                     new MmPoint(x, y),
                     AnchorDirection.Down));
         }
