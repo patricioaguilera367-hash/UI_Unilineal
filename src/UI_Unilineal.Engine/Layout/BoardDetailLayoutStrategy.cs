@@ -113,7 +113,10 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 tokens,
                 columns.Length,
                 columns
-                    .Select(column => column.RequiredWidthMm)
+                    .Select(column =>
+                        new Ric18CircuitExtent(
+                            column.LeftExtentMm,
+                            column.RightExtentMm))
                     .ToArray(),
                 measurement.GetBlock(bus.Id).Size,
                 measurement.GetBlock(peBus.Id).Size,
@@ -354,19 +357,39 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                     StringComparer.Ordinal)
                 .ToArray();
 
-        double requiredWidth =
-            children.Length == 0
-                ? tokens.MinimumCircuitPitchMm
-                : children
-                    .Select(block =>
-                        measurement.GetBlock(block.Id).Size.Width)
-                    .Max();
+        CompositionBlock[] internalChildren =
+            children
+                .Where(block =>
+                    !IsExternalDestination(block))
+                .ToArray();
+
+        double leftExtent =
+            SemanticBranchWidthMm / 2.0;
+        double rightExtent =
+            SemanticBranchWidthMm / 2.0;
+
+        foreach (CompositionBlock block in internalChildren)
+        {
+            MeasuredBlock measured =
+                measurement.GetBlock(block.Id);
+            double axisOffset =
+                measured.PowerAxisOffsetMm ??
+                (measured.Size.Width / 2.0);
+
+            leftExtent =
+                Math.Max(
+                    leftExtent,
+                    axisOffset);
+            rightExtent =
+                Math.Max(
+                    rightExtent,
+                    measured.Size.Width -
+                    axisOffset);
+        }
 
         double internalContentHeight =
             StackHeight(
-                children
-                    .Where(block =>
-                        !IsExternalDestination(block))
+                internalChildren
                     .Select(block =>
                         measurement.GetBlock(block.Id).Size.Height)
                     .ToArray(),
@@ -375,7 +398,8 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         return new BranchColumn(
             branch,
             children,
-            requiredWidth,
+            leftExtent,
+            rightExtent,
             internalContentHeight);
     }
 
@@ -524,6 +548,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
     private sealed record BranchColumn(
         CompositionBlock Branch,
         IReadOnlyList<CompositionBlock> Children,
-        double RequiredWidthMm,
+        double LeftExtentMm,
+        double RightExtentMm,
         double InternalContentHeightMm);
 }
