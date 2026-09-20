@@ -346,7 +346,7 @@ public sealed class CompositionBuilder
         ProtectionInput protection)
     {
         (string definitionId, IReadOnlyDictionary<string, string> overrides) =
-            ProtectionPresentation(protection, "BREAKER");
+            ProtectionPresentation(protection, "PROTECTION");
 
         return new CompositionBlock(
             CompositionIdFactory.DetailMainProtection(
