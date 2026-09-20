@@ -154,6 +154,39 @@ public static class PlaygroundFixtureFactory
                 OperationalState.Active,
                 DataState.Complete);
 
+        var serviceProtection =
+            new ProtectionInput(
+                new EntityUid("PR-SERVICE"),
+                new EntityReference(
+                    source.Uid,
+                    EntityKind.Source),
+                new EntityReference(
+                    source.Uid,
+                    EntityKind.Source),
+                ProtectionKind.Breaker,
+                ProtectionRole.Main,
+                4,
+                40m,
+                10m,
+                "C",
+                null,
+                null,
+                null,
+                null,
+                OperationalState.Active,
+                DataState.Complete);
+        var serviceEntrance =
+            new ServiceEntranceInput(
+                new EntityUid("SE1"),
+                source.Uid,
+                MeterKind.ThreePhase,
+                "BT1",
+                "Medidor trifásico · datos editables",
+                serviceProtection.Uid,
+                InputValueAuthority.Manual,
+                OperationalState.Active,
+                DataState.Complete);
+
         var feederBreaker =
             new ProtectionInput(
                 new EntityUid("PR4"),
@@ -197,6 +230,28 @@ public static class PlaygroundFixtureFactory
                 OperationalState.Active,
                 DataState.Complete);
 
+        var finalRcd =
+            new ProtectionInput(
+                new EntityUid("PR2-RCD"),
+                new EntityReference(
+                    final.Uid,
+                    EntityKind.Circuit),
+                new EntityReference(
+                    final.Uid,
+                    EntityKind.Circuit),
+                ProtectionKind.Differential,
+                ProtectionRole.Adopted,
+                2,
+                25m,
+                null,
+                null,
+                30m,
+                "A",
+                null,
+                null,
+                OperationalState.Active,
+                DataState.Complete);
+
         return new SingleLineInput(
             project,
             [source],
@@ -204,13 +259,14 @@ public static class PlaygroundFixtureFactory
             [],
             [feeder, final],
             [sourceSupply, downstreamSupply],
-            [feederBreaker, finalBreaker],
+            [serviceProtection, feederBreaker, finalBreaker, finalRcd],
             [],
             [],
             new SingleLineInputMetadata(
                 "1",
                 "PLAYGROUND",
-                "nested"));
+                "nested"),
+            [serviceEntrance]);
     }
 
     private static string ResolveProfileDirectory()
