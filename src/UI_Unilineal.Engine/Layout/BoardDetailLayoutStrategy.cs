@@ -128,7 +128,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                             .Max();
                     })
                     .Sum() +
-                  (profile.BranchGapMm * Math.Max(0, branches.Length - 1));
+                (profile.BranchGapMm * Math.Max(0, branches.Length - 1));
 
         double railWidth =
             Math.Max(
