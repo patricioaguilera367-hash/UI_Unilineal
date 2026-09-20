@@ -81,6 +81,80 @@ public sealed class OrthogonalConnectionRouterTests
         Assert.Equal(first.Points, second.Points);
     }
 
+    [Theory]
+    [InlineData("NEUTRAL_AUX", "NeutralBus", 100, 55, true)]
+    [InlineData("GROUND_AUX", "ProtectiveEarthBus", 20, 65, false)]
+    public void Route_AuxiliaryRailUsesSemanticSideLaneBeforeGenericFallback(
+        string lineStyleId,
+        string sourceRole,
+        double sourceX,
+        double targetX,
+        bool approachesFromRight)
+    {
+        RIC18DrawingProfile profile = Profile();
+        AnchorRole role = lineStyleId == "NEUTRAL_AUX"
+            ? AnchorRole.Neutral
+            : AnchorRole.Ground;
+
+        GroupSceneElement source = GroupWithRole(
+            "scene/aux-source",
+            new MmRect(sourceX - 10, 0, 20, 20),
+            sourceRole,
+            new SceneAnchor(
+                "TAP:C1",
+                role,
+                new MmPoint(sourceX, 10),
+                AnchorDirection.Down));
+        GroupSceneElement target = Group(
+            "scene/aux-target",
+            new MmRect(40, 60, 40, 20),
+            new SceneAnchor(
+                lineStyleId == "NEUTRAL_AUX" ? "N" : "PE",
+                role,
+                new MmPoint(targetX, 70),
+                AnchorDirection.Up));
+        var connection = new SceneConnection(
+            new SceneId("scene/connection/aux"),
+            new SceneAnchorRef(source.Id, "TAP:C1"),
+            new SceneAnchorRef(
+                target.Id,
+                lineStyleId == "NEUTRAL_AUX" ? "N" : "PE"),
+            lineStyleId,
+            lineStyleId == "GROUND_AUX"
+                ? SceneLayer.Grounding
+                : SceneLayer.Power,
+            10,
+            SceneVisibility.Both,
+            null);
+        var scene = new DiagramScene(
+            new MmRect(0, 0, 140, 100),
+            [source, target],
+            Metadata(),
+            [connection]);
+
+        RoutedConnection routed =
+            new OrthogonalConnectionRouter().Route(
+                connection,
+                scene,
+                profile.Layout);
+
+        AssertOrthogonal(routed.Points);
+        Assert.True(routed.Points[1].Y > routed.Points[0].Y);
+
+        MmPoint approach = routed.Points[^2];
+
+        if (approachesFromRight)
+        {
+            Assert.True(approach.X > target.Bounds.Right);
+            Assert.True(approach.X > routed.Points[^1].X);
+        }
+        else
+        {
+            Assert.True(approach.X < target.Bounds.X);
+            Assert.True(approach.X < routed.Points[^1].X);
+        }
+    }
+
     [Fact]
     public void Route_IncompatibleAnchorRoles_Throws()
     {
@@ -184,6 +258,25 @@ public sealed class OrthogonalConnectionRouterTests
             SceneVisibility.Both,
             null,
             null,
+            [],
+            anchors);
+
+    private static GroupSceneElement GroupWithRole(
+        string id,
+        MmRect bounds,
+        string compositionRole,
+        params SceneAnchor[] anchors) =>
+        new(
+            new SceneId(id),
+            bounds,
+            SceneLayer.Symbol,
+            20,
+            SceneVisibility.Both,
+            null,
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["compositionRole"] = compositionRole
+            },
             [],
             anchors);
 
