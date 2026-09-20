@@ -35,6 +35,9 @@ public static class SingleLineInputFingerprint
             Grounding = input.Grounding
                 .OrderBy(x => x.Uid.Value, StringComparer.Ordinal)
                 .ToArray(),
+            ServiceEntrances = input.ServiceEntrances
+                .OrderBy(x => x.Uid.Value, StringComparer.Ordinal)
+                .ToArray(),
             Results = input.Results
                 .OrderBy(x => x.Entity.Kind)
                 .ThenBy(x => x.Entity.Uid.Value, StringComparer.Ordinal)
