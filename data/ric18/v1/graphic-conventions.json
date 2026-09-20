@@ -31,6 +31,51 @@
       "anchorPolicy": "VerticalCenterline"
     },
     {
+      "id": "SERVICE_ENTRANCE_FRAME",
+      "members": [
+        "EMPALME_FRAME"
+      ],
+      "nominalCell": {
+        "widthMm": 50,
+        "heightMm": 62
+      },
+      "anchorPolicy": "AssemblyFrame"
+    },
+    {
+      "id": "METER_DETAIL",
+      "members": [
+        "METER"
+      ],
+      "nominalCell": {
+        "widthMm": 10,
+        "heightMm": 16
+      },
+      "anchorPolicy": "AssemblyInternal"
+    },
+    {
+      "id": "SERVICE_TEXT_PROTECTION",
+      "members": [
+        "SERVICE_PROTECTION_TEXT"
+      ],
+      "nominalCell": {
+        "widthMm": 28,
+        "heightMm": 8
+      },
+      "anchorPolicy": "None"
+    },
+    {
+      "id": "SERVICE_TEXT_SHORT",
+      "members": [
+        "SERVICE_TARIFF_TEXT",
+        "SERVICE_DETAILS_TEXT"
+      ],
+      "nominalCell": {
+        "widthMm": 28,
+        "heightMm": 6
+      },
+      "anchorPolicy": "None"
+    },
+    {
       "id": "PROTECTION_INLINE",
       "members": [
         "BREAKER",
@@ -137,6 +182,7 @@
     "Labels and annotations must not move electrical anchors.",
     "Circuit markers carry the circuit identifier; load/use text is composed separately below or adjacent to the marker.",
     "RCD variants share one base P/D device geometry; pole count is expressed by the associated Nx rating notation, not by changing the P/D glyph.",
-    "Protective ground (TP) and service ground (TS) are distinct canonical symbols; the legacy GROUND symbol remains compatibility-only until host migration."
+    "Protective ground (TP) and service ground (TS) are distinct canonical symbols; the legacy GROUND symbol remains compatibility-only until host migration.",
+    "Empalme data is semantic/editable; meter and protection values may be Manual, Suggested or Computed without changing drawing primitives."
   ]
 }
