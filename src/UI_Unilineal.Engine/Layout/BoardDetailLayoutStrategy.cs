@@ -54,6 +54,8 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
         var positioned = new List<PositionedCompositionBlock>();
         var assigned = new HashSet<string>(StringComparer.Ordinal);
+        var externalDestinations =
+            new List<(CompositionBlock Block, double PowerAxisX)>();
         double maxRight = 0;
         double maxBottom = 0;
 
@@ -242,6 +244,16 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
             foreach (CompositionBlock block in column.Children)
             {
+                if (string.Equals(
+                        block.SemanticRole,
+                        "DownstreamBoard",
+                        StringComparison.Ordinal))
+                {
+                    externalDestinations.Add(
+                        (block, slotCenterX));
+                    continue;
+                }
+
                 MeasuredBlock measured =
                     measurement.GetBlock(block.Id);
 
@@ -287,6 +299,30 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
             assigned,
             ref maxRight,
             ref maxBottom);
+
+        double externalDestinationY =
+            boardBottom +
+            InternalVerticalGapMm;
+
+        foreach ((CompositionBlock block, double powerAxisX) in
+                 externalDestinations
+                     .OrderBy(
+                         item => item.Block.Id,
+                         StringComparer.Ordinal))
+        {
+            MeasuredBlock measured =
+                measurement.GetBlock(block.Id);
+
+            AddOnPowerAxis(
+                block.Id,
+                powerAxisX,
+                externalDestinationY,
+                measured,
+                positioned,
+                assigned,
+                ref maxRight,
+                ref maxBottom);
+        }
 
         // Preserve explicit visibility of any future non-template extension
         // without allowing it to deform the deterministic RIC18 core.
