@@ -5,6 +5,7 @@ public enum AnchorRole
     PowerIn,
     PowerOut,
     BusTap,
+    Neutral,
     Ground,
     Reference,
     Annotation
