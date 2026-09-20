@@ -75,6 +75,7 @@ public sealed class SummaryLayoutStrategy : ISingleLineLayoutStrategy
 
         var rowWidths = new Dictionary<int, double>();
         double maximumRowWidth = 0;
+        double primaryAxisWidth = 0;
 
         for (int depth = 0; depth <= maxDepth; depth++)
         {
@@ -98,11 +99,30 @@ public sealed class SummaryLayoutStrategy : ISingleLineLayoutStrategy
                 Math.Max(
                     maximumRowWidth,
                     width);
+
+            if (ids.Length == 1)
+            {
+                primaryAxisWidth =
+                    Math.Max(
+                        primaryAxisWidth,
+                        measurement.GetBlock(ids[0]).Size.Width);
+            }
+        }
+
+        if (primaryAxisWidth <= 0)
+        {
+            primaryAxisWidth =
+                blocksByDepth.Values
+                    .SelectMany(ids => ids)
+                    .Select(id =>
+                        measurement.GetBlock(id).Size.Width)
+                    .DefaultIfEmpty(maximumRowWidth)
+                    .Max();
         }
 
         double summaryCenterX =
             profile.GridMm +
-            (maximumRowWidth / 2.0);
+            (primaryAxisWidth / 2.0);
         var positioned = new List<PositionedCompositionBlock>();
         double maxRight = 0;
         double maxBottom = 0;
@@ -117,8 +137,13 @@ public sealed class SummaryLayoutStrategy : ISingleLineLayoutStrategy
             }
 
             double x =
-                summaryCenterX -
-                (rowWidths[depth] / 2.0);
+                ids.Length == 1
+                    ? summaryCenterX -
+                      (measurement.GetBlock(ids[0]).Size.Width / 2.0)
+                    : Math.Max(
+                        profile.GridMm,
+                        summaryCenterX -
+                        (rowWidths[depth] / 2.0));
 
             foreach (string id in ids)
             {

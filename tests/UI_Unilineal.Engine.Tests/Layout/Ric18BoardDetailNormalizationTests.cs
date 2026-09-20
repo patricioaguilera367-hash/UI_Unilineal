@@ -87,7 +87,9 @@ public sealed class Ric18BoardDetailNormalizationTests
             axis,
             Anchor(destination, "IN").Point.X);
 
-        Assert.Empty(branch.ChildIds);
+        Assert.Equal(
+            [new SceneId("detail/B1/branch/C1/axis")],
+            branch.ChildIds);
     }
 
     [Fact]

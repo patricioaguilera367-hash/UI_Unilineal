@@ -136,12 +136,18 @@ public sealed class GeneratedLayoutInvariantTests
                 branch.Anchors.Single(anchor =>
                     anchor.Id == "OUT");
 
-            Assert.Equal(
-                tap.Point.X,
-                branchIn.Point.X);
-            Assert.Equal(
-                branchIn.Point.X,
-                branchOut.Point.X);
+            Assert.InRange(
+                Math.Abs(
+                    tap.Point.X -
+                    branchIn.Point.X),
+                0,
+                1e-9);
+            Assert.InRange(
+                Math.Abs(
+                    branchIn.Point.X -
+                    branchOut.Point.X),
+                0,
+                1e-9);
         }
     }
 

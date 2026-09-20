@@ -31,8 +31,14 @@ public sealed class SummaryLayoutStrategyTests
 
         Assert.True(main.Y > source.Y);
         Assert.True(downstream.Y > main.Y);
-        Assert.Equal(source.X, main.X);
-        Assert.Equal(main.X, downstream.X);
+        Assert.Equal(
+            source.X + (source.Width / 2.0),
+            main.X + (main.Width / 2.0),
+            precision: 8);
+        Assert.Equal(
+            main.X + (main.Width / 2.0),
+            downstream.X + (downstream.Width / 2.0),
+            precision: 8);
         AssertNoOverlaps(layout.Blocks);
     }
 
