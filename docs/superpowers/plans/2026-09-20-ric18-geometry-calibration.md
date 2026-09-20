@@ -26,6 +26,7 @@ Reference DXF SHA-256:
 Existing persistent references:
 
 - `docs/reference/ric18-visual-contract.md`
+- `docs/reference/ric18-diagram-layout-principles.md`
 - `data/ric18/reference/visual-contract-v1.json`
 
 ## Core problem in the current implementation
