@@ -91,11 +91,6 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
             boardLeft + BoardSideMarginMm;
         double centerX =
             boardLeft + (boardWidth / 2.0);
-        double incomingAxisX =
-            columns.Length > 0 &&
-            columns.Length % 2 == 1
-                ? centerX - MainBusIncomingNodePitchMm
-                : centerX;
 
         // Incoming supply/EMPALME is external to the board and its electrical
         // power axis is kept collinear with the board incoming path.
@@ -106,7 +101,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 measurement.GetBlock(block.Id);
             AddOnPowerAxis(
                 block.Id,
-                incomingAxisX,
+                centerX,
                 y,
                 measured,
                 positioned,
@@ -163,7 +158,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
             AddOnPowerAxis(
                 block.Id,
-                incomingAxisX,
+                centerX,
                 mainProtectionBottom,
                 measured,
                 positioned,
@@ -214,6 +209,20 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 (actualBranchAreaWidth *
                  (index + 0.5) /
                  columns.Length);
+
+            if (columns.Length == 1)
+            {
+                slotCenterX -=
+                    MainBusIncomingNodePitchMm;
+            }
+            else if (columns.Length % 2 == 1 &&
+                     index == columns.Length / 2)
+            {
+                slotCenterX +=
+                    Math.Max(
+                        2.4,
+                        profile.GridMm);
+            }
 
             Add(
                 column.Branch.Id,
