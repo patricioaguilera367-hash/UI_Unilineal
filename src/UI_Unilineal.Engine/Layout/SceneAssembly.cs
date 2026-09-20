@@ -542,15 +542,39 @@ public sealed class SceneAssembly
 
         for (int index = 0; index < taps.Length; index++)
         {
-            double fraction =
-                block.SemanticRole == "MainBus"
-                    ? (index + 0.5) /
-                      Math.Max(1, taps.Length)
-                    : (index + 1.0) /
-                      (taps.Length + 1.0);
-            double x =
-                left +
-                ((right - left) * fraction);
+            double x;
+
+            if (block.SemanticRole == "MainBus")
+            {
+                // Layout owns branch-column geometry. The bus tap must be
+                // collinear with the corresponding branch, while the incoming
+                // feeder retains the centre node.
+                double centerX =
+                    left + ((right - left) / 2.0);
+                double slotWidth =
+                    (right - left) /
+                    Math.Max(1, taps.Length);
+                double relativeSlot =
+                    index - ((taps.Length - 1) / 2.0);
+
+                if (relativeSlot >= 0)
+                {
+                    relativeSlot += 1.0;
+                }
+
+                x =
+                    centerX +
+                    (relativeSlot * slotWidth);
+            }
+            else
+            {
+                double fraction =
+                    (index + 1.0) /
+                    (taps.Length + 1.0);
+                x =
+                    left +
+                    ((right - left) * fraction);
+            }
 
             anchors.Add(
                 new SceneAnchor(
