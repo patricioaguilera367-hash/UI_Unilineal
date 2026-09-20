@@ -1,5 +1,17 @@
 [
   {
+    "id": "BOARD_DETAIL_FRAME_BLOCK",
+    "semanticRole": "BoardFrame",
+    "minimumSize": {
+      "width": 40,
+      "height": 40
+    },
+    "parts": [],
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
+  },
+  {
     "id": "SOURCE_BLOCK",
     "semanticRole": "Source",
     "minimumSize": {
