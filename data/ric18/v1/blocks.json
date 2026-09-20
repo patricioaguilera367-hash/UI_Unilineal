@@ -149,7 +149,7 @@
     "semanticRole": "MainProtection",
     "minimumSize": {
       "width": 20,
-      "height": 24
+      "height": 20
     },
     "parts": [
       {
@@ -157,7 +157,7 @@
         "symbolId": "BREAKER",
         "offset": {
           "x": 4,
-          "y": 4
+          "y": 2
         },
         "labelSlotId": "RATING"
       }
@@ -239,7 +239,7 @@
     "semanticRole": "ProtectionChain",
     "minimumSize": {
       "width": 20,
-      "height": 24
+      "height": 20
     },
     "parts": [
       {
@@ -247,7 +247,7 @@
         "symbolId": "BREAKER",
         "offset": {
           "x": 4,
-          "y": 4
+          "y": 2
         },
         "labelSlotId": "RATING"
       }
