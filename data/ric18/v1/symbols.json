@@ -2172,7 +2172,37 @@
     ]
   },
   {
-    "id": "TEXT_VALUE",
+    "id": "SERVICE_PROTECTION_TEXT",
+    "semanticRole": "ServiceEntranceText",
+    "nominalBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 28,
+      "height": 8
+    },
+    "anchors": [],
+    "primitives": [],
+    "labelSlots": [
+      {
+        "id": "PROTECTION_TEXT",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 28,
+          "height": 8
+        },
+        "priority": 0,
+        "required": false,
+        "textStyleId": "LABEL_SMALL"
+      }
+    ],
+    "provenanceIds": [
+      "APP:SYMBOLS",
+      "APP:GRAPHIC_CONVENTIONS"
+    ]
+  },
+  {
+    "id": "SERVICE_TARIFF_TEXT",
     "semanticRole": "ServiceEntranceText",
     "nominalBounds": {
       "x": 0,
@@ -2184,7 +2214,37 @@
     "primitives": [],
     "labelSlots": [
       {
-        "id": "VALUE",
+        "id": "TARIFF",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 28,
+          "height": 6
+        },
+        "priority": 0,
+        "required": false,
+        "textStyleId": "LABEL_SMALL"
+      }
+    ],
+    "provenanceIds": [
+      "APP:SYMBOLS",
+      "APP:GRAPHIC_CONVENTIONS"
+    ]
+  },
+  {
+    "id": "SERVICE_DETAILS_TEXT",
+    "semanticRole": "ServiceEntranceText",
+    "nominalBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 28,
+      "height": 6
+    },
+    "anchors": [],
+    "primitives": [],
+    "labelSlots": [
+      {
+        "id": "DETAILS",
         "bounds": {
           "x": 0,
           "y": 0,
