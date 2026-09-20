@@ -14,7 +14,6 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
     private const double SemanticBranchWidthMm = 4;
     private const double SemanticBranchHeightMm = 2;
     private const double MainBusVisualHeightMm = 6;
-    private const double MainBusIncomingNodePitchMm = 17;
 
     public PositionedLayout Layout(
         DrawingComposition composition,
@@ -209,20 +208,6 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 (actualBranchAreaWidth *
                  (index + 0.5) /
                  columns.Length);
-
-            if (columns.Length == 1)
-            {
-                slotCenterX -=
-                    MainBusIncomingNodePitchMm;
-            }
-            else if (columns.Length % 2 == 1 &&
-                     index == columns.Length / 2)
-            {
-                slotCenterX +=
-                    Math.Max(
-                        2.4,
-                        profile.GridMm);
-            }
 
             Add(
                 column.Branch.Id,
