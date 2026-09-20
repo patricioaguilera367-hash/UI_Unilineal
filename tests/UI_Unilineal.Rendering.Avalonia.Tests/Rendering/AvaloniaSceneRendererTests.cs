@@ -175,28 +175,36 @@ public sealed class AvaloniaSceneRendererTests
         DiagramScene scene =
             Assert.IsType<DiagramScene>(
                 detail.Scene);
-        GroupSceneElement rcd =
-            Assert.IsType<GroupSceneElement>(
-                scene.Elements.Single(element =>
+        GroupSceneElement[] rcds =
+            scene.Elements
+                .Where(element =>
                     element.Metadata.TryGetValue(
                         "compositionRole",
                         out string? role) &&
-                    role == "DifferentialProtection"));
+                    role == "DifferentialProtection")
+                .Select(element =>
+                    Assert.IsType<GroupSceneElement>(element))
+                .ToArray();
 
-        SceneAnchor power =
-            rcd.Anchors.Single(anchor =>
-                anchor.Id == "IN");
-        SceneAnchor neutralIn =
-            rcd.Anchors.Single(anchor =>
-                anchor.Id == "N_IN");
-        SceneAnchor neutralOut =
-            rcd.Anchors.Single(anchor =>
-                anchor.Id == "N_OUT");
+        Assert.NotEmpty(rcds);
 
-        Assert.True(
-            neutralIn.Point.X > power.Point.X);
-        Assert.True(
-            neutralOut.Point.X > power.Point.X);
+        foreach (GroupSceneElement rcd in rcds)
+        {
+            SceneAnchor power =
+                rcd.Anchors.Single(anchor =>
+                    anchor.Id == "IN");
+            SceneAnchor neutralIn =
+                rcd.Anchors.Single(anchor =>
+                    anchor.Id == "N_IN");
+            SceneAnchor neutralOut =
+                rcd.Anchors.Single(anchor =>
+                    anchor.Id == "N_OUT");
+
+            Assert.True(
+                neutralIn.Point.X > power.Point.X);
+            Assert.True(
+                neutralOut.Point.X > power.Point.X);
+        }
     }
 
     [AvaloniaFact]
