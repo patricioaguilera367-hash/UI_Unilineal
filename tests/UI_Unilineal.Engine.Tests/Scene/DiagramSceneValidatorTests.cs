@@ -174,6 +174,95 @@ public sealed class DiagramSceneValidatorTests
     }
 
     [Fact]
+    public void StrictValidation_BoardFrameAndStructuralRails_AreNotObstacles()
+    {
+        var frame = new GroupSceneElement(
+            new SceneId("detail/B1"),
+            new MmRect(0, 0, 100, 100),
+            SceneLayer.Symbol,
+            0,
+            SceneVisibility.Both,
+            null,
+            new Dictionary<string, string>
+            {
+                ["compositionRole"] = "BoardFrame"
+            },
+            []);
+        GroupSceneElement source = Group(
+            "detail/B1/source",
+            new MmRect(10, 10, 10, 10),
+            new SceneAnchor(
+                "OUT",
+                AnchorRole.PowerOut,
+                new MmPoint(20, 15),
+                AnchorDirection.Right));
+        var mainBus = new GroupSceneElement(
+            new SceneId("detail/B1/bus/main"),
+            new MmRect(25, 40, 50, 10),
+            SceneLayer.Symbol,
+            5,
+            SceneVisibility.Both,
+            null,
+            new Dictionary<string, string>
+            {
+                ["compositionRole"] = "MainBus"
+            },
+            []);
+        GroupSceneElement target = Group(
+            "detail/B1/target",
+            new MmRect(80, 75, 10, 10),
+            new SceneAnchor(
+                "IN",
+                AnchorRole.PowerIn,
+                new MmPoint(80, 80),
+                AnchorDirection.Left));
+        var connection = new SceneConnection(
+            new SceneId("detail/B1/connection"),
+            new SceneAnchorRef(source.Id, "OUT"),
+            new SceneAnchorRef(target.Id, "IN"),
+            "POWER",
+            SceneLayer.Power,
+            10,
+            SceneVisibility.Both,
+            null);
+        var route = new PolylineSceneElement(
+            new SceneId("detail/B1/connection/route"),
+            new MmRect(20, 15, 60, 65),
+            SceneLayer.Power,
+            10,
+            SceneVisibility.Both,
+            null,
+            new Dictionary<string, string>
+            {
+                ["connectionId"] = connection.Id.Value
+            },
+            [
+                new MmPoint(20, 15),
+                new MmPoint(50, 15),
+                new MmPoint(50, 80),
+                new MmPoint(80, 80)
+            ],
+            "POWER");
+        var scene = new DiagramScene(
+            new MmRect(0, 0, 100, 100),
+            [frame, source, mainBus, target, route],
+            Metadata(),
+            [connection]);
+
+        DiagramSceneValidationResult result =
+            new DiagramSceneValidator().Validate(
+                scene,
+                SceneValidationMode.Strict);
+
+        Assert.DoesNotContain(
+            result.Issues,
+            issue =>
+                issue.Code == SceneValidationCodes.StructuralBlockOverlap ||
+                issue.Code == SceneValidationCodes.RouteIntersectsStructuralBlock);
+        Assert.False(result.HasErrors);
+    }
+
+    [Fact]
     public void GeometryContracts_RejectNonFinitePointsBeforeSceneValidation()
     {
         Assert.Throws<ArgumentOutOfRangeException>(
