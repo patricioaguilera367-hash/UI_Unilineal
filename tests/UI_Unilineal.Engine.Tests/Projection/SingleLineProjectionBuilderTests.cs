@@ -64,7 +64,13 @@ public sealed class SingleLineProjectionBuilderTests
             [new EntityReference(source.Uid, EntityKind.Source)], [issue]);
 
         var incoming = new IncomingSupplyProjection(
-            supply, source, null, null, ProjectionStatus.Ok);
+            supply,
+            source,
+            null,
+            null,
+            null,
+            null,
+            ProjectionStatus.Ok);
         var bus = new BusProjection(
             busInput, [], ProjectionStatus.Ok, 0);
         var destination = new BranchDestination(
@@ -129,7 +135,8 @@ public sealed class SingleLineProjectionBuilderTests
             source.Protections,
             source.Grounding,
             source.Results,
-            source.Metadata);
+            source.Metadata,
+            source.ServiceEntrances);
 
         ProjectionBuildResult result = new SingleLineProjectionBuilder().Build(invalid);
 
@@ -209,7 +216,8 @@ public sealed class SingleLineProjectionBuilderTests
             input.Protections.Reverse(),
             input.Grounding.Reverse(),
             input.Results.Reverse(),
-            input.Metadata);
+            input.Metadata,
+            input.ServiceEntrances.Reverse());
 
     private static string BranchSignature(BranchProjection branch) =>
         string.Join(
