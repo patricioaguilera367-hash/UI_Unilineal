@@ -66,27 +66,39 @@ public sealed class SingleLineWorkspaceViewModelTests
     }
 
     [Fact]
-    public void ShowSummary_IsExplicitRouteAndKeepsHistoryInShell()
+    public void ShowSummary_AlwaysReturnsToCanonicalRoot()
     {
         var viewModel =
             new SingleLineWorkspaceViewModel(
                 PlaygroundFixtureFactory.Create());
 
         viewModel.OpenBoard(new EntityUid("B1"));
+        viewModel.OpenBoard(new EntityUid("B2"));
         viewModel.ShowSummary();
 
         Assert.Equal(
             PlaygroundRouteKind.ProjectSummary,
             viewModel.CurrentRoute.Kind);
-        Assert.True(viewModel.CanGoBack);
+        Assert.Null(viewModel.CurrentRoute.BoardUid);
+        Assert.Equal(
+            DiagramSceneKind.ProjectSummary,
+            viewModel.Scene.Kind);
+        Assert.False(viewModel.CanGoBack);
 
+        viewModel.OpenBoard(new EntityUid("B1"));
         viewModel.Back();
 
         Assert.Equal(
-            PlaygroundRouteKind.BoardDetail,
+            PlaygroundRouteKind.ProjectSummary,
             viewModel.CurrentRoute.Kind);
+        Assert.False(viewModel.CanGoBack);
+
+        viewModel.OpenBoard(new EntityUid("B2"));
+        viewModel.ShowSummary();
+
         Assert.Equal(
-            new EntityUid("B1"),
-            viewModel.CurrentRoute.BoardUid);
+            PlaygroundRouteKind.ProjectSummary,
+            viewModel.CurrentRoute.Kind);
+        Assert.False(viewModel.CanGoBack);
     }
 }

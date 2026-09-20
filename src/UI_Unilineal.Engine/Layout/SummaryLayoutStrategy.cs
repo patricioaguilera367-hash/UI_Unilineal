@@ -47,7 +47,7 @@ public sealed class SummaryLayoutStrategy : ISingleLineLayoutStrategy
 
         int maxDepth = blocksByDepth.Keys.Max();
 
-        var columnWidths = new Dictionary<int, double>();
+        var rowHeights = new Dictionary<int, double>();
         for (int depth = 0; depth <= maxDepth; depth++)
         {
             if (!blocksByDepth.TryGetValue(
@@ -55,22 +55,22 @@ public sealed class SummaryLayoutStrategy : ISingleLineLayoutStrategy
                     out string[]? ids) ||
                 ids.Length == 0)
             {
-                columnWidths[depth] = 0;
+                rowHeights[depth] = 0;
                 continue;
             }
 
-            columnWidths[depth] = ids
-                .Select(id => measurement.GetBlock(id).Size.Width)
+            rowHeights[depth] = ids
+                .Select(id => measurement.GetBlock(id).Size.Height)
                 .Max();
         }
 
-        var xByDepth = new Dictionary<int, double>();
-        double x = profile.GridMm;
+        var yByDepth = new Dictionary<int, double>();
+        double y = profile.GridMm;
 
         for (int depth = 0; depth <= maxDepth; depth++)
         {
-            xByDepth[depth] = x;
-            x += columnWidths[depth] + profile.HorizontalGapMm;
+            yByDepth[depth] = y;
+            y += rowHeights[depth] + profile.VerticalGapMm;
         }
 
         var positioned = new List<PositionedCompositionBlock>();
@@ -86,14 +86,14 @@ public sealed class SummaryLayoutStrategy : ISingleLineLayoutStrategy
                 continue;
             }
 
-            double y = profile.GridMm;
+            double x = profile.GridMm;
 
             foreach (string id in ids)
             {
                 MmSize size = measurement.GetBlock(id).Size;
                 var bounds = new MmRect(
-                    xByDepth[depth],
-                    y,
+                    x,
+                    yByDepth[depth],
                     size.Width,
                     size.Height);
 
@@ -102,7 +102,7 @@ public sealed class SummaryLayoutStrategy : ISingleLineLayoutStrategy
 
                 maxRight = Math.Max(maxRight, bounds.Right);
                 maxBottom = Math.Max(maxBottom, bounds.Bottom);
-                y = bounds.Bottom + profile.VerticalGapMm;
+                x = bounds.Right + profile.HorizontalGapMm;
             }
         }
 

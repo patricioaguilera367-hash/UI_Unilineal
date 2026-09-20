@@ -29,8 +29,10 @@ public sealed class SummaryLayoutStrategyTests
         MmRect main = layout.GetBlock("summary/board/B1").Bounds;
         MmRect downstream = layout.GetBlock("summary/board/B2").Bounds;
 
-        Assert.True(main.X > source.X);
-        Assert.True(downstream.X > main.X);
+        Assert.True(main.Y > source.Y);
+        Assert.True(downstream.Y > main.Y);
+        Assert.Equal(source.X, main.X);
+        Assert.Equal(main.X, downstream.X);
         AssertNoOverlaps(layout.Blocks);
     }
 
@@ -94,7 +96,7 @@ public sealed class SummaryLayoutStrategyTests
     }
 
     [Fact]
-    public void Layout_SameDepthBlocks_ArePlacedInStableRows()
+    public void Layout_SameDepthBlocks_ArePlacedInStableColumns()
     {
         RIC18DrawingProfile profile = Profile();
         SingleLineInput input = AddEmergencySupply(
@@ -109,8 +111,8 @@ public sealed class SummaryLayoutStrategyTests
         MmRect utility = layout.GetBlock("summary/source/S1").Bounds;
         MmRect emergency = layout.GetBlock("summary/source/S2").Bounds;
 
-        Assert.Equal(utility.X, emergency.X);
-        Assert.NotEqual(utility.Y, emergency.Y);
+        Assert.Equal(utility.Y, emergency.Y);
+        Assert.NotEqual(utility.X, emergency.X);
         AssertNoOverlaps(layout.Blocks);
     }
 

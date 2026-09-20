@@ -146,10 +146,19 @@ public sealed class SingleLineWorkspaceViewModel
         SelectedEntity = intent.Entity;
     }
 
-    public void ShowSummary() =>
-        Navigate(
+    public void ShowSummary()
+    {
+        var summary =
             new PlaygroundRoute(
-                PlaygroundRouteKind.ProjectSummary));
+                PlaygroundRouteKind.ProjectSummary);
+        DiagramScene scene =
+            BuildScene(summary);
+
+        _history.Clear();
+        _history.Add(summary);
+        Scene = scene;
+        ResetRouteTransientState();
+    }
 
     public void OpenBoard(
         EntityUid boardUid)
