@@ -21,6 +21,8 @@ public sealed record Ric18BoardLayoutTokens
         double boardBottomPaddingMm,
         double externalDestinationGapMm,
         double annotationClearanceMm,
+        double auxiliaryRailDepartureMm,
+        double auxiliaryLaneOffsetMm,
         double connectionNodeRadiusMm)
     {
         ValidatePositive(boardOuterPaddingMm, nameof(boardOuterPaddingMm));
@@ -33,6 +35,8 @@ public sealed record Ric18BoardLayoutTokens
         ValidatePositive(boardBottomPaddingMm, nameof(boardBottomPaddingMm));
         ValidatePositive(externalDestinationGapMm, nameof(externalDestinationGapMm));
         ValidatePositive(annotationClearanceMm, nameof(annotationClearanceMm));
+        ValidatePositive(auxiliaryRailDepartureMm, nameof(auxiliaryRailDepartureMm));
+        ValidatePositive(auxiliaryLaneOffsetMm, nameof(auxiliaryLaneOffsetMm));
         ValidatePositive(connectionNodeRadiusMm, nameof(connectionNodeRadiusMm));
 
         BoardOuterPaddingMm = boardOuterPaddingMm;
@@ -45,6 +49,8 @@ public sealed record Ric18BoardLayoutTokens
         BoardBottomPaddingMm = boardBottomPaddingMm;
         ExternalDestinationGapMm = externalDestinationGapMm;
         AnnotationClearanceMm = annotationClearanceMm;
+        AuxiliaryRailDepartureMm = auxiliaryRailDepartureMm;
+        AuxiliaryLaneOffsetMm = auxiliaryLaneOffsetMm;
         ConnectionNodeRadiusMm = connectionNodeRadiusMm;
     }
 
@@ -68,6 +74,10 @@ public sealed record Ric18BoardLayoutTokens
 
     public double AnnotationClearanceMm { get; }
 
+    public double AuxiliaryRailDepartureMm { get; }
+
+    public double AuxiliaryLaneOffsetMm { get; }
+
     public double ConnectionNodeRadiusMm { get; }
 
     public static Ric18BoardLayoutTokens From(LayoutProfile profile)
@@ -87,6 +97,10 @@ public sealed record Ric18BoardLayoutTokens
             boardBottomPaddingMm: Math.Max(5.0, grid * 2.0),
             externalDestinationGapMm: Math.Max(4.0, grid * 1.5),
             annotationClearanceMm: Math.Max(2.0, profile.TextPaddingMm * 2.0),
+            auxiliaryRailDepartureMm: Math.Max(profile.RouteClearanceMm, grid),
+            auxiliaryLaneOffsetMm: Math.Max(
+                profile.RouteClearanceMm + profile.TextPaddingMm,
+                grid * 1.5),
             connectionNodeRadiusMm: Math.Max(0.75, grid * 0.3));
     }
 
