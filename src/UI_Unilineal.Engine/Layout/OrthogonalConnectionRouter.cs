@@ -71,6 +71,34 @@ public sealed class OrthogonalConnectionRouter
                 $"'{sourceAnchor.Role}' -> '{targetAnchor.Role}'.");
         }
 
+        if (sourceAnchor.Role == AnchorRole.BusTap &&
+            targetAnchor.Role == AnchorRole.PowerIn)
+        {
+            double outsideX =
+                scene.Bounds.X -
+                profile.HorizontalGapMm;
+            double rowChannelY =
+                targetElement.Bounds.Y -
+                profile.RouteClearanceMm;
+
+            return new RoutedConnection(
+                connection.Id,
+                NormalizeRoute(
+                    [
+                        sourceAnchor.Point,
+                        new MmPoint(
+                            outsideX,
+                            sourceAnchor.Point.Y),
+                        new MmPoint(
+                            outsideX,
+                            rowChannelY),
+                        new MmPoint(
+                            targetAnchor.Point.X,
+                            rowChannelY),
+                        targetAnchor.Point
+                    ]));
+        }
+
         if (IsAuxiliaryConductor(connection.LineStyleId))
         {
             double channelX =
