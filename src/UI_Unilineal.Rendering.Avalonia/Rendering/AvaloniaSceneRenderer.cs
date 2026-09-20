@@ -133,6 +133,17 @@ public sealed class AvaloniaSceneRenderer
                 break;
 
             case CircleSceneElement circle:
+                if (ShouldFillCircle(circle))
+                {
+                    context.DrawEllipse(
+                        Brushes.Black,
+                        null,
+                        Point(circle.Center),
+                        circle.RadiusMm,
+                        circle.RadiusMm);
+                    break;
+                }
+
                 context.DrawEllipse(
                     null,
                     resources.ResolvePen(circle.LineStyleId),
@@ -172,6 +183,36 @@ public sealed class AvaloniaSceneRenderer
                 throw new InvalidOperationException(
                     $"Unsupported scene element '{element.GetType().FullName}'.");
         }
+    }
+
+    public static bool ShouldFillCircle(CircleSceneElement circle)
+    {
+        if (circle.Metadata.TryGetValue(
+                "compositionRole",
+                out string? compositionRole) &&
+            string.Equals(
+                compositionRole,
+                "MainBus",
+                StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (circle.Metadata.TryGetValue(
+                "symbolId",
+                out string? symbolId) &&
+            string.Equals(
+                symbolId,
+                "CONNECTION_NODE",
+                StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return string.Equals(
+            circle.LineStyleId,
+            "BUS",
+            StringComparison.Ordinal);
     }
 
     private static void DrawPolyline(

@@ -60,6 +60,27 @@ public sealed class AvaloniaSceneRendererTests
             result.Select(element => element.Id.Value));
     }
 
+    [Fact]
+    public void ShouldFillCircle_MainBusJunctionNode_ReturnsTrue()
+    {
+        var circle = new CircleSceneElement(
+            new SceneId("board/bus/node/TAP-1"),
+            new MmRect(10, 10, 4, 4),
+            SceneLayer.Power,
+            20,
+            SceneVisibility.Both,
+            null,
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["compositionRole"] = "MainBus"
+            },
+            new MmPoint(12, 12),
+            2,
+            "BUS");
+
+        Assert.True(AvaloniaSceneRenderer.ShouldFillCircle(circle));
+    }
+
     [AvaloniaFact]
     public void Render_AllSceneElementKinds_DoesNotMutateFingerprint()
     {
