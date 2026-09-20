@@ -140,7 +140,7 @@ public sealed class Ric18BoardDetailNormalizationTests
     }
 
     [Fact]
-    public void MinimalBoard_FrameEndsCloseToItsLastCircuitContent()
+    public void MinimalBoard_FinalLoadIsExternalDestinationOfItsCircuit()
     {
         DiagramScene scene =
             BuildScene(
@@ -150,16 +150,28 @@ public sealed class Ric18BoardDetailNormalizationTests
             Group(
                 scene,
                 "detail/B1");
+        GroupSceneElement branch =
+            Group(
+                scene,
+                "detail/B1/branch/C1");
+        GroupSceneElement protection =
+            Group(
+                scene,
+                "detail/B1/branch/C1/protection/PR1");
         GroupSceneElement destination =
             Group(
                 scene,
                 "detail/B1/branch/C1/destination");
 
-        Assert.InRange(
-            frame.Bounds.Bottom -
-            destination.Bounds.Bottom,
-            0,
-            10);
+        Assert.True(
+            protection.Bounds.Bottom <=
+            frame.Bounds.Bottom);
+        Assert.True(
+            destination.Bounds.Y >=
+            frame.Bounds.Bottom);
+        Assert.Equal(
+            Anchor(branch, "IN").Point.X,
+            Anchor(destination, "IN").Point.X);
     }
 
     [Fact]
@@ -245,12 +257,27 @@ public sealed class Ric18BoardDetailNormalizationTests
                     element.Id.Value ==
                     "detail/B1/bus/BUS:B1:MAIN/rail"));
 
+        const double StandardIncomingToBranchPitchMm = 17.0;
+
         Assert.NotEqual(incoming.Point.X, branch.Point.X);
-        Assert.True(Math.Abs(incoming.Point.X - branch.Point.X) >= 2.4);
+        Assert.True(
+            Math.Abs(incoming.Point.X - branch.Point.X) >=
+            StandardIncomingToBranchPitchMm);
         Assert.True(rail.Start.X <= Math.Min(incoming.Point.X, branch.Point.X));
         Assert.True(rail.End.X >= Math.Max(incoming.Point.X, branch.Point.X));
         Assert.True(rail.End.X - rail.Start.X <=
                     Math.Abs(incoming.Point.X - branch.Point.X) + 2.4 + 0.000001);
+
+        CircleSceneElement[] connectionNodes =
+            scene.Elements
+                .OfType<CircleSceneElement>()
+                .Where(element =>
+                    element.Id.Value.StartsWith(
+                        "detail/B1/bus/BUS:B1:MAIN/node/",
+                        StringComparison.Ordinal))
+                .ToArray();
+
+        Assert.Equal(2, connectionNodes.Length);
     }
 
     [Fact]
