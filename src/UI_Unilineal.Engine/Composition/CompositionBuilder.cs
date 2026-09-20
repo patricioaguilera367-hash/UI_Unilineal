@@ -396,7 +396,11 @@ public sealed class CompositionBuilder
             new EntityReference(boardUid, EntityKind.Board),
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                ["TAPS"] = tapList
+                ["TAPS"] = tapList,
+                ["LABEL"] =
+                    semanticRole == "NeutralBus"
+                        ? "N"
+                        : "TP"
             },
             ProjectionStatus.Ok,
             CompositionIdFactory.DetailBoard(boardUid));
