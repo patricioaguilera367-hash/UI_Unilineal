@@ -80,7 +80,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         double branchAreaWidth =
             Math.Max(
                 measurement.GetBlock(bus.Id).Size.Width,
-                Math.Max(1, columns.Length) * slotWidth);
+                Math.Max(2, columns.Length + 1) * slotWidth);
         double boardWidth =
             Math.Max(
                 MinimumBoardWidthMm,
@@ -203,27 +203,22 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         for (int index = 0; index < columns.Length; index++)
         {
             BranchColumn column = columns[index];
-            double slotCenterX =
-                branchAreaLeft +
-                (actualBranchAreaWidth *
-                 (index + 0.5) /
-                 columns.Length);
+            // The incoming feeder owns the centre bus node. Branch columns
+            // keep their full slot spacing and, for odd counts, the complete
+            // lattice shifts by half a slot so no circuit can occupy the
+            // incoming axis.
+            double relativeSlot =
+                index -
+                ((columns.Length - 1) / 2.0);
 
-            // An odd branch count puts one circuit exactly on the incoming
-            // feeder axis. Move only that colliding branch by the minimum
-            // reviewed connection-node separation, preserving all other
-            // established column geometry and board bounds.
-            double minimumNodeSeparationMm =
-                Math.Max(
-                    2.4,
-                    profile.GridMm);
-
-            if (Math.Abs(slotCenterX - centerX) <
-                0.000001)
+            if (columns.Length % 2 == 1)
             {
-                slotCenterX +=
-                    minimumNodeSeparationMm;
+                relativeSlot += 0.5;
             }
+
+            double slotCenterX =
+                centerX +
+                (relativeSlot * slotWidth);
 
             Add(
                 column.Branch.Id,
@@ -244,10 +239,10 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
             foreach (CompositionBlock block in column.Children)
             {
-                if (string.Equals(
-                        block.SemanticRole,
-                        "DownstreamBoard",
-                        StringComparison.Ordinal))
+                if (block.SemanticRole is
+                        "DownstreamBoard" or
+                        "FinalLoad" or
+                        "Unknown")
                 {
                     externalDestinations.Add(
                         (block, slotCenterX));
