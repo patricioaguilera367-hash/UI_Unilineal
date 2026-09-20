@@ -635,30 +635,57 @@ public sealed class SceneAssembly
 
         if (block.SemanticRole == "MainBus")
         {
-            foreach (SceneAnchor anchor in anchors.Where(candidate =>
-                         candidate.Id == "IN" ||
-                         candidate.Id.StartsWith(
-                             "TAP:",
-                             StringComparison.Ordinal)))
+            IEnumerable<IGrouping<MmPoint, SceneAnchor>> physicalNodes =
+                anchors
+                    .Where(candidate =>
+                        candidate.Id == "IN" ||
+                        candidate.Id.StartsWith(
+                            "TAP:",
+                            StringComparison.Ordinal))
+                    .GroupBy(anchor => anchor.Point);
+
+            foreach (IGrouping<MmPoint, SceneAnchor> physicalNode in
+                     physicalNodes)
             {
+                SceneAnchor canonicalAnchor =
+                    physicalNode
+                        .OrderBy(anchor =>
+                            anchor.Id == "IN"
+                                ? 0
+                                : 1)
+                        .ThenBy(
+                            anchor => anchor.Id,
+                            StringComparer.Ordinal)
+                        .First();
+                string anchorIds =
+                    string.Join(
+                        "|",
+                        physicalNode
+                            .Select(anchor => anchor.Id)
+                            .OrderBy(
+                                id => id,
+                                StringComparer.Ordinal));
                 SceneId nodeId =
                     new(
-                        $"{block.Id}/node/{anchor.Id.Replace(':', '-')}");
+                        $"{block.Id}/node/{canonicalAnchor.Id.Replace(':', '-')}");
 
                 output.Add(
                     new CircleSceneElement(
                         nodeId,
                         new MmRect(
-                            anchor.Point.X - ConnectionNodeRadiusMm,
-                            anchor.Point.Y - ConnectionNodeRadiusMm,
+                            canonicalAnchor.Point.X - ConnectionNodeRadiusMm,
+                            canonicalAnchor.Point.Y - ConnectionNodeRadiusMm,
                             ConnectionNodeRadiusMm * 2.0,
                             ConnectionNodeRadiusMm * 2.0),
                         layer,
                         20,
                         SceneVisibility.Both,
                         block.Entity,
-                        GroupMetadata(block, definition.Id),
-                        anchor.Point,
+                        SyntheticNodeMetadata(
+                            block,
+                            definition.Id,
+                            anchorIds),
+                        canonicalAnchor.Point,
                         ConnectionNodeRadiusMm,
                         lineStyleId));
 
@@ -1170,7 +1197,10 @@ public sealed class SceneAssembly
                         20,
                         SceneVisibility.Both,
                         block.Entity,
-                        GroupMetadata(block, definition.Id),
+                        SyntheticNodeMetadata(
+                            block,
+                            definition.Id,
+                            terminalAnchor.Id),
                         terminalAnchor.Point,
                         ConnectionNodeRadiusMm,
                         terminalStyleId));
@@ -1681,6 +1711,26 @@ public sealed class SceneAssembly
             ["status"] = block.Status.ToString(),
             ["symbolId"] = symbolId
         };
+
+    private static IReadOnlyDictionary<string, string> SyntheticNodeMetadata(
+        CompositionBlock block,
+        string blockDefinitionId,
+        string anchorIds)
+    {
+        Dictionary<string, string> metadata =
+            GroupMetadata(
+                    block,
+                    blockDefinitionId)
+                .ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value,
+                    StringComparer.Ordinal);
+
+        metadata["fillMode"] = "Solid";
+        metadata["anchorIds"] = anchorIds;
+
+        return metadata;
+    }
 
     private static IReadOnlyDictionary<string, string> GroupMetadata(
         CompositionBlock block,
