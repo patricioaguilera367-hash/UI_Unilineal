@@ -59,7 +59,7 @@ public sealed class BoardDetailLayoutStrategyTests
                 profile.Layout);
 
         Assert.Equal(
-            3 + (branchCount * 3),
+            6 + (branchCount * 3),
             layout.Blocks.Count);
         AssertNoOverlaps(layout.Blocks);
 
@@ -76,7 +76,7 @@ public sealed class BoardDetailLayoutStrategyTests
     }
 
     [Fact]
-    public void Layout_LargeBoard_WrapsBranchesWithinConfiguredWidth()
+    public void Layout_LargeBoard_KeepsBranchesOnOneRic18RowAndStretchesBus()
     {
         RIC18DrawingProfile profile = Profile();
         DrawingComposition composition = Composition(profile, 24);
@@ -92,14 +92,15 @@ public sealed class BoardDetailLayoutStrategyTests
                 .GetBlock($"detail/B1/branch/C{index:D3}")
                 .Bounds)
             .ToArray();
+        MmRect bus =
+            layout.GetBlock("detail/B1/bus/BUS:B1:MAIN").Bounds;
 
-        Assert.True(branches.Select(x => x.Y).Distinct().Count() > 1);
-        Assert.All(
-            branches,
-            branch => Assert.True(
-                branch.Right <=
-                profile.Layout.MaxBoardDetailWidthMm +
-                profile.Layout.GridMm));
+        Assert.Single(
+            branches.Select(x => x.Y).Distinct());
+        Assert.True(
+            bus.Width >=
+            branches.Max(branch => branch.Right) -
+            branches.Min(branch => branch.X));
     }
 
     [Fact]
@@ -137,6 +138,16 @@ public sealed class BoardDetailLayoutStrategyTests
         var blocks = new List<CompositionBlock>
         {
             Block(
+                "detail/B1",
+                "BOARD_DETAIL_FRAME_BLOCK",
+                "BoardFrame",
+                null,
+                new Dictionary<string, string>
+                {
+                    ["CODE"] = "TGBT",
+                    ["NAME"] = "Tablero general"
+                }),
+            Block(
                 "detail/B1/incoming/SC1",
                 "INCOMING_SUPPLY_BLOCK",
                 "IncomingSupply",
@@ -162,6 +173,24 @@ public sealed class BoardDetailLayoutStrategyTests
                 new Dictionary<string, string>
                 {
                     ["CODE"] = "MAIN"
+                }),
+            Block(
+                "detail/B1/bus/NEUTRAL",
+                "NEUTRAL_BUS_BLOCK",
+                "NeutralBus",
+                null,
+                new Dictionary<string, string>
+                {
+                    ["LABEL"] = "N"
+                }),
+            Block(
+                "detail/B1/bus/PE",
+                "PE_BUS_BLOCK",
+                "ProtectiveEarthBus",
+                null,
+                new Dictionary<string, string>
+                {
+                    ["LABEL"] = "TP"
                 })
         };
 
@@ -238,13 +267,24 @@ public sealed class BoardDetailLayoutStrategyTests
     private static void AssertNoOverlaps(
         IReadOnlyList<PositionedCompositionBlock> blocks)
     {
-        for (int left = 0; left < blocks.Count; left++)
+        PositionedCompositionBlock[] structural =
+            blocks
+                .Where(block =>
+                    !string.Equals(
+                        block.BlockId,
+                        "detail/B1",
+                        StringComparison.Ordinal))
+                .ToArray();
+
+        for (int left = 0; left < structural.Length; left++)
         {
-            for (int right = left + 1; right < blocks.Count; right++)
+            for (int right = left + 1; right < structural.Length; right++)
             {
                 Assert.False(
-                    Overlaps(blocks[left].Bounds, blocks[right].Bounds),
-                    $"Overlap: {blocks[left].BlockId} / {blocks[right].BlockId}");
+                    Overlaps(
+                        structural[left].Bounds,
+                        structural[right].Bounds),
+                    $"Overlap: {structural[left].BlockId} / {structural[right].BlockId}");
             }
         }
     }
