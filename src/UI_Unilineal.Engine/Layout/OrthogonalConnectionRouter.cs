@@ -154,32 +154,10 @@ public sealed class OrthogonalConnectionRouter
     {
         string? sourceRole =
             CompositionRole(sourceElement);
-
-        if (sourceRole is not ("NeutralBus" or "ProtectiveEarthBus"))
-        {
-            MmRect[] directObstacles =
-                BuildObstacles(
-                    scene,
-                    sourceElement,
-                    targetElement,
-                    profile);
-
-            return FindRoute(
-                start,
-                end,
-                directObstacles,
-                profile);
-        }
-
-        double departureY =
-            start.Y +
-            Math.Max(
-                profile.GridMm,
-                profile.RouteClearanceMm);
-        var departure =
-            new MmPoint(
-                start.X,
-                departureY);
+        bool leavesStructuralRail =
+            sourceRole is "NeutralBus" or "ProtectiveEarthBus";
+        Ric18BoardLayoutTokens tokens =
+            Ric18BoardLayoutTokens.From(profile);
 
         MmRect[] obstacles =
             BuildObstacles(
@@ -187,6 +165,41 @@ public sealed class OrthogonalConnectionRouter
                 sourceElement,
                 targetElement,
                 profile);
+
+        IReadOnlyList<MmPoint>? semanticLane =
+            TryRouteAuxiliaryLane(
+                lineStyleId,
+                targetElement,
+                start,
+                end,
+                obstacles,
+                tokens,
+                leavesStructuralRail);
+
+        if (semanticLane is not null)
+        {
+            return semanticLane;
+        }
+
+        if (!leavesStructuralRail)
+        {
+            return FindRoute(
+                start,
+                end,
+                obstacles,
+                profile);
+        }
+
+        double departureY =
+            end.Y >= start.Y
+                ? Math.Min(
+                    end.Y,
+                    start.Y + tokens.AuxiliaryRailDepartureMm)
+                : start.Y;
+        var departure =
+            new MmPoint(
+                start.X,
+                departureY);
 
         IReadOnlyList<MmPoint> continuation =
             FindRoute(
@@ -203,6 +216,81 @@ public sealed class OrthogonalConnectionRouter
         points.AddRange(continuation);
 
         return NormalizeRoute(points);
+    }
+
+    private static IReadOnlyList<MmPoint>? TryRouteAuxiliaryLane(
+        string lineStyleId,
+        SceneElement targetElement,
+        MmPoint start,
+        MmPoint end,
+        IReadOnlyList<MmRect> obstacles,
+        Ric18BoardLayoutTokens tokens,
+        bool leavesStructuralRail)
+    {
+        if (end.Y < start.Y)
+        {
+            return null;
+        }
+
+        bool neutral =
+            lineStyleId == "NEUTRAL_AUX";
+
+        double laneX =
+            neutral
+                ? Math.Max(
+                    start.X,
+                    Math.Max(
+                        end.X,
+                        targetElement.Bounds.Right) +
+                    tokens.AuxiliaryLaneOffsetMm)
+                : Math.Min(
+                    start.X,
+                    Math.Min(
+                        end.X,
+                        targetElement.Bounds.X) -
+                    tokens.AuxiliaryLaneOffsetMm);
+
+        var candidate =
+            new List<MmPoint>
+            {
+                start
+            };
+
+        if (leavesStructuralRail)
+        {
+            double departureY =
+                Math.Min(
+                    end.Y,
+                    start.Y + tokens.AuxiliaryRailDepartureMm);
+
+            candidate.Add(
+                new MmPoint(
+                    start.X,
+                    departureY));
+        }
+
+        MmPoint current =
+            candidate[^1];
+
+        candidate.Add(
+            new MmPoint(
+                laneX,
+                current.Y));
+        candidate.Add(
+            new MmPoint(
+                laneX,
+                end.Y));
+        candidate.Add(end);
+
+        IReadOnlyList<MmPoint> normalized =
+            Simplify(candidate);
+
+        return
+            normalized.Count >= 2 &&
+            IsOrthogonal(normalized) &&
+            IsClear(normalized, obstacles)
+                ? normalized
+                : null;
     }
 
     private static MmRect[] BuildObstacles(
