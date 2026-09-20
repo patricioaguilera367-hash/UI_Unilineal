@@ -54,8 +54,6 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
         var positioned = new List<PositionedCompositionBlock>();
         var assigned = new HashSet<string>(StringComparer.Ordinal);
-        var externalDestinations =
-            new List<(CompositionBlock Block, double PowerAxisX)>();
         double maxRight = 0;
         double maxBottom = 0;
 
@@ -80,7 +78,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         double branchAreaWidth =
             Math.Max(
                 measurement.GetBlock(bus.Id).Size.Width,
-                Math.Max(2, columns.Length + 1) * slotWidth);
+                Math.Max(1, columns.Length) * slotWidth);
         double boardWidth =
             Math.Max(
                 MinimumBoardWidthMm,
@@ -203,22 +201,11 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         for (int index = 0; index < columns.Length; index++)
         {
             BranchColumn column = columns[index];
-            // The incoming feeder owns the centre bus node. Branch columns
-            // keep their full slot spacing and, for odd counts, the complete
-            // lattice shifts by half a slot so no circuit can occupy the
-            // incoming axis.
-            double relativeSlot =
-                index -
-                ((columns.Length - 1) / 2.0);
-
-            if (columns.Length % 2 == 1)
-            {
-                relativeSlot += 0.5;
-            }
-
             double slotCenterX =
-                centerX +
-                (relativeSlot * slotWidth);
+                branchAreaLeft +
+                (actualBranchAreaWidth *
+                 (index + 0.5) /
+                 columns.Length);
 
             Add(
                 column.Branch.Id,
@@ -239,16 +226,6 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
             foreach (CompositionBlock block in column.Children)
             {
-                if (block.SemanticRole is
-                        "DownstreamBoard" or
-                        "FinalLoad" or
-                        "Unknown")
-                {
-                    externalDestinations.Add(
-                        (block, slotCenterX));
-                    continue;
-                }
-
                 MeasuredBlock measured =
                     measurement.GetBlock(block.Id);
 
@@ -294,30 +271,6 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
             assigned,
             ref maxRight,
             ref maxBottom);
-
-        double externalDestinationY =
-            boardBottom +
-            InternalVerticalGapMm;
-
-        foreach ((CompositionBlock block, double powerAxisX) in
-                 externalDestinations
-                     .OrderBy(
-                         item => item.Block.Id,
-                         StringComparer.Ordinal))
-        {
-            MeasuredBlock measured =
-                measurement.GetBlock(block.Id);
-
-            AddOnPowerAxis(
-                block.Id,
-                powerAxisX,
-                externalDestinationY,
-                measured,
-                positioned,
-                assigned,
-                ref maxRight,
-                ref maxBottom);
-        }
 
         // Preserve explicit visibility of any future non-template extension
         // without allowing it to deform the deterministic RIC18 core.
