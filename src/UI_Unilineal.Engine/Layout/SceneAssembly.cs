@@ -488,6 +488,39 @@ public sealed class SceneAssembly
                     AnchorDirection.Down));
         }
 
+        var children =
+            new List<SceneId>
+            {
+                railId
+            };
+
+        if (block.Labels.TryGetValue("LABEL", out string? label) &&
+            !string.IsNullOrWhiteSpace(label))
+        {
+            SceneId labelId =
+                new($"{block.Id}/label");
+
+            output.Add(
+                new TextSceneElement(
+                    labelId,
+                    new MmRect(
+                        positioned.Bounds.X,
+                        Math.Max(
+                            0,
+                            positioned.Bounds.Y - 4),
+                        positioned.Bounds.Width,
+                        4),
+                    SceneLayer.Text,
+                    30,
+                    SceneVisibility.Both,
+                    block.Entity,
+                    GroupMetadata(block, definition.Id),
+                    label,
+                    "TECH"));
+
+            children.Add(labelId);
+        }
+
         output.Add(
             new GroupSceneElement(
                 new SceneId(block.Id),
@@ -497,7 +530,7 @@ public sealed class SceneAssembly
                 SceneVisibility.Both,
                 block.Entity,
                 GroupMetadata(block, definition.Id),
-                [railId],
+                children,
                 anchors));
     }
 
