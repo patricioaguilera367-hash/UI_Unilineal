@@ -75,6 +75,32 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                     .ToArray(),
                 tokens.ElementGapMm);
 
+        double centeredHeaderLeftExtentMm =
+            mainProtections
+                .Select(block =>
+                {
+                    MeasuredBlock measured =
+                        measurement.GetBlock(block.Id);
+                    return measured.PowerAxisOffsetMm ??
+                        (measured.Size.Width / 2.0);
+                })
+                .DefaultIfEmpty(0)
+                .Max();
+        double centeredHeaderRightExtentMm =
+            mainProtections
+                .Select(block =>
+                {
+                    MeasuredBlock measured =
+                        measurement.GetBlock(block.Id);
+                    double axisOffset =
+                        measured.PowerAxisOffsetMm ??
+                        (measured.Size.Width / 2.0);
+                    return measured.Size.Width -
+                        axisOffset;
+                })
+                .DefaultIfEmpty(0)
+                .Max();
+
         double maximumBranchContentHeight =
             columns.Length == 0
                 ? 0
@@ -94,6 +120,8 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 measurement.GetBlock(neutralBus.Id).Size,
                 incomingStackBottom,
                 mainProtectionStackHeight,
+                centeredHeaderLeftExtentMm,
+                centeredHeaderRightExtentMm,
                 maximumBranchContentHeight);
 
         var positioned =
