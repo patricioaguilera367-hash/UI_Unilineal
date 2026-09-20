@@ -152,6 +152,17 @@
       "anchorPolicy": "VerticalCenterline"
     },
     {
+      "id": "CIRCUIT_USE_TEXT",
+      "members": [
+        "CIRCUIT_USE_TEXT"
+      ],
+      "nominalCell": {
+        "widthMm": 24,
+        "heightMm": 6
+      },
+      "anchorPolicy": "None"
+    },
+    {
       "id": "LEGACY_FINAL_LOAD",
       "members": [
         "FINAL_LOAD"
