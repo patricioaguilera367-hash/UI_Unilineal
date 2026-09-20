@@ -73,6 +73,8 @@ public sealed class CompositionBuilder
             "INCOMING_SUPPLY_BLOCK",
             "MAIN_PROTECTION_BLOCK",
             "MAIN_BUS_BLOCK",
+            "NEUTRAL_BUS_BLOCK",
+            "PE_BUS_BLOCK",
             "CIRCUIT_BRANCH_BLOCK",
             "PROTECTION_CHAIN_BLOCK",
             "DOWNSTREAM_BOARD_BLOCK",
@@ -104,6 +106,27 @@ public sealed class CompositionBuilder
         CompositionBlock bus = CreateBusBlock(boardUid, detail.MainBus);
         blocks.Add(bus);
 
+        string tapList = string.Join(
+            "|",
+            detail.Branches
+                .Select(branch => branch.Circuit.Uid.Value));
+
+        CompositionBlock neutralBus = CreateStructuralRail(
+            CompositionIdFactory.DetailNeutralBus(boardUid),
+            "NEUTRAL_BUS_BLOCK",
+            "NeutralBus",
+            boardUid,
+            tapList);
+        CompositionBlock protectiveEarthBus = CreateStructuralRail(
+            CompositionIdFactory.DetailProtectiveEarthBus(boardUid),
+            "PE_BUS_BLOCK",
+            "ProtectiveEarthBus",
+            boardUid,
+            tapList);
+
+        blocks.Add(neutralBus);
+        blocks.Add(protectiveEarthBus);
+
         ConnectIncomingPath(
             boardUid,
             incomingBlocks,
@@ -116,6 +139,8 @@ public sealed class CompositionBuilder
             AddBranch(
                 boardUid,
                 bus,
+                neutralBus,
+                protectiveEarthBus,
                 branch,
                 blocks,
                 connections);
@@ -286,6 +311,24 @@ public sealed class CompositionBuilder
             bus.Status,
             CompositionIdFactory.DetailBoard(boardUid));
 
+    private static CompositionBlock CreateStructuralRail(
+        string id,
+        string blockDefinitionId,
+        string semanticRole,
+        EntityUid boardUid,
+        string tapList) =>
+        new(
+            id,
+            blockDefinitionId,
+            semanticRole,
+            new EntityReference(boardUid, EntityKind.Board),
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["TAPS"] = tapList
+            },
+            ProjectionStatus.Complete,
+            CompositionIdFactory.DetailBoard(boardUid));
+
     private static void ConnectIncomingPath(
         EntityUid boardUid,
         IReadOnlyList<CompositionBlock> incoming,
@@ -344,6 +387,8 @@ public sealed class CompositionBuilder
     private static void AddBranch(
         EntityUid boardUid,
         CompositionBlock bus,
+        CompositionBlock neutralBus,
+        CompositionBlock protectiveEarthBus,
         BranchProjection branch,
         ICollection<CompositionBlock> blocks,
         ICollection<CompositionConnection> connections)
@@ -398,7 +443,9 @@ public sealed class CompositionBuilder
                     branch.Circuit.Uid,
                     protection.Uid),
                 definitionId,
-                "Protection",
+                protection.Kind == ProtectionKind.Differential
+                    ? "DifferentialProtection"
+                    : "Protection",
                 new EntityReference(
                     protection.Uid,
                     EntityKind.Protection),
@@ -458,6 +505,87 @@ public sealed class CompositionBuilder
                 "IN"),
             "POWER",
             previousEntity));
+
+        ProtectionInput? differential = branch.ProtectionChain
+            .FirstOrDefault(protection =>
+                protection.Kind == ProtectionKind.Differential);
+
+        string neutralTapId = $"TAP:{branch.Circuit.Uid.Value}";
+        string peTapId = $"TAP:{branch.Circuit.Uid.Value}";
+
+        if (differential is not null)
+        {
+            string rcdId = CompositionIdFactory.DetailProtection(
+                boardUid,
+                branch.Circuit.Uid,
+                differential.Uid);
+
+            connections.Add(new CompositionConnection(
+                CompositionIdFactory.DetailConnection(
+                    boardUid,
+                    "neutral-in",
+                    branch.Circuit.Uid.ToString()),
+                new CompositionAnchorRef(
+                    neutralBus.Id,
+                    AnchorRole.Neutral,
+                    neutralTapId),
+                new CompositionAnchorRef(
+                    rcdId,
+                    AnchorRole.Neutral,
+                    "N_IN"),
+                "NEUTRAL_AUX",
+                branchBlock.Entity));
+
+            connections.Add(new CompositionConnection(
+                CompositionIdFactory.DetailConnection(
+                    boardUid,
+                    "neutral-out",
+                    branch.Circuit.Uid.ToString()),
+                new CompositionAnchorRef(
+                    rcdId,
+                    AnchorRole.Neutral,
+                    "N_OUT"),
+                new CompositionAnchorRef(
+                    destination.Id,
+                    AnchorRole.Neutral,
+                    "N"),
+                "NEUTRAL_AUX",
+                branchBlock.Entity));
+        }
+        else
+        {
+            connections.Add(new CompositionConnection(
+                CompositionIdFactory.DetailConnection(
+                    boardUid,
+                    "neutral",
+                    branch.Circuit.Uid.ToString()),
+                new CompositionAnchorRef(
+                    neutralBus.Id,
+                    AnchorRole.Neutral,
+                    neutralTapId),
+                new CompositionAnchorRef(
+                    destination.Id,
+                    AnchorRole.Neutral,
+                    "N"),
+                "NEUTRAL_AUX",
+                branchBlock.Entity));
+        }
+
+        connections.Add(new CompositionConnection(
+            CompositionIdFactory.DetailConnection(
+                boardUid,
+                "protective-earth",
+                branch.Circuit.Uid.ToString()),
+            new CompositionAnchorRef(
+                protectiveEarthBus.Id,
+                AnchorRole.Ground,
+                peTapId),
+            new CompositionAnchorRef(
+                destination.Id,
+                AnchorRole.Ground,
+                "PE"),
+            "GROUND_AUX",
+            branchBlock.Entity));
     }
 
     private static CompositionBlock CreateDestinationBlock(
@@ -553,7 +681,13 @@ public sealed class CompositionBuilder
     {
         string? symbolId = protection.Kind switch
         {
+            ProtectionKind.Breaker when protection.Poles is >= 1 and <= 4 =>
+                $"BREAKER_{protection.Poles}X",
             ProtectionKind.Breaker => "BREAKER",
+            ProtectionKind.Differential when protection.Poles == 2 =>
+                "RCD_2X",
+            ProtectionKind.Differential when protection.Poles == 4 =>
+                "RCD_4X",
             ProtectionKind.Differential => "RCD",
             ProtectionKind.Fuse => "FUSE",
             _ => null
@@ -595,15 +729,59 @@ public sealed class CompositionBuilder
     {
         var labels = new Dictionary<string, string>(StringComparer.Ordinal);
 
-        if (protection.RatedCurrentA is decimal rated)
+        string poles =
+            protection.Poles is int poleCount
+                ? $"{poleCount}x"
+                : string.Empty;
+
+        if (protection.Kind == ProtectionKind.Differential)
         {
-            labels["RATING"] =
-                $"{rated.ToString("0.##", CultureInfo.InvariantCulture)} A";
+            var lines = new List<string>();
+
+            if (protection.RatedCurrentA is decimal rated)
+            {
+                lines.Add(
+                    $"{poles}{rated.ToString("0.##", CultureInfo.InvariantCulture)} A");
+            }
+
+            if (protection.DifferentialCurrentMa is decimal differential)
+            {
+                lines.Add(
+                    $"{differential.ToString("0.##", CultureInfo.InvariantCulture)} mA");
+            }
+
+            if (!string.IsNullOrWhiteSpace(protection.DifferentialType))
+            {
+                lines.Add($"Tipo {protection.DifferentialType}");
+            }
+
+            if (lines.Count > 0)
+            {
+                labels["RATING"] = string.Join(" / ", lines);
+            }
+
+            return labels;
         }
-        else if (protection.DifferentialCurrentMa is decimal differential)
+
+        if (protection.RatedCurrentA is decimal ratedCurrent)
         {
-            labels["RATING"] =
-                $"{differential.ToString("0.##", CultureInfo.InvariantCulture)} mA";
+            var lines = new List<string>
+            {
+                $"{poles}{ratedCurrent.ToString("0.##", CultureInfo.InvariantCulture)} A"
+            };
+
+            if (protection.BreakingCapacityKa is decimal breaking)
+            {
+                lines.Add(
+                    $"{breaking.ToString("0.##", CultureInfo.InvariantCulture)} kA");
+            }
+
+            if (!string.IsNullOrWhiteSpace(protection.Curve))
+            {
+                lines.Add($"Curva {protection.Curve}");
+            }
+
+            labels["RATING"] = string.Join(" / ", lines);
         }
 
         return labels;
