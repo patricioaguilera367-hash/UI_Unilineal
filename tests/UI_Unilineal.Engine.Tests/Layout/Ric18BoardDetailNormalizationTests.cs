@@ -304,6 +304,35 @@ public sealed class Ric18BoardDetailNormalizationTests
     }
 
     [Fact]
+    public void DestinationAuxiliaryAnchors_AreBackedByVisibleTerminalNodes()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+        GroupSceneElement destination =
+            Group(
+                scene,
+                "detail/B1/branch/C1/destination");
+
+        foreach (string anchorId in new[] { "N", "PE" })
+        {
+            SceneAnchor anchor =
+                Anchor(
+                    destination,
+                    anchorId);
+
+            Assert.Contains(
+                scene.Elements.OfType<CircleSceneElement>(),
+                circle =>
+                    circle.Id.Value.StartsWith(
+                        $"{destination.Id.Value}/terminal/",
+                        StringComparison.Ordinal) &&
+                    circle.Center == anchor.Point);
+        }
+    }
+
+    [Fact]
     public void DownstreamBoard_IsExternalDestinationOfItsCircuit()
     {
         DiagramScene scene =
