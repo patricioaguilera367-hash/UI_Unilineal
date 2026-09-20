@@ -1028,10 +1028,12 @@ public sealed class SceneAssembly
         }
 
         SceneAnchor[] groupAnchors =
-            AddSemanticDestinationAnchors(
+            NormalizeDifferentialNeutralAnchors(
                 block,
-                positioned.Bounds,
-                ResolveGroupAnchorIds(anchorCandidates));
+                AddSemanticDestinationAnchors(
+                    block,
+                    positioned.Bounds,
+                    ResolveGroupAnchorIds(anchorCandidates)));
         groupAnchors =
             NormalizeSummaryPowerAnchors(
                 block,
@@ -1325,6 +1327,44 @@ public sealed class SceneAssembly
                 measurement.WidthMm,
                 MinimumPrimitiveExtentMm),
             measurement.HeightMm);
+    }
+
+    private static SceneAnchor[] NormalizeDifferentialNeutralAnchors(
+        CompositionBlock block,
+        IReadOnlyList<SceneAnchor> anchors)
+    {
+        if (block.SemanticRole != "DifferentialProtection")
+        {
+            return anchors.ToArray();
+        }
+
+        SceneAnchor? powerAxis = anchors
+            .FirstOrDefault(anchor =>
+                anchor.Role is
+                    AnchorRole.PowerIn or
+                    AnchorRole.PowerOut);
+
+        if (powerAxis is null)
+        {
+            return anchors.ToArray();
+        }
+
+        return anchors
+            .Select(anchor =>
+                anchor.Role == AnchorRole.Neutral
+                    ? new SceneAnchor(
+                        anchor.Id,
+                        anchor.Role,
+                        new MmPoint(
+                            powerAxis.Point.X +
+                            Math.Abs(
+                                powerAxis.Point.X -
+                                anchor.Point.X),
+                            anchor.Point.Y),
+                        AnchorDirection.Right)
+                    : anchor)
+            .OrderBy(anchor => anchor.Id, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static SceneAnchor[] AddSemanticDestinationAnchors(
