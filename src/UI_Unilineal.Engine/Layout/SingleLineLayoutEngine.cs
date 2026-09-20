@@ -232,7 +232,7 @@ public sealed class SingleLineLayoutEngine
                     layoutState,
                     profile.Layout);
             }
-            else
+            else if (expectedSceneKind == DiagramSceneKind.ProjectSummary)
             {
                 positioned = new CollisionResolver().Resolve(
                     positioned,
