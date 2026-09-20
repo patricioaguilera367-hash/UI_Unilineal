@@ -44,7 +44,13 @@ public sealed class ExportParityGoldenTests
         string expected = Normalize(
             File.ReadAllText(path));
 
-        Assert.Equal(expected, actual);
+        Assert.True(
+            string.Equals(
+                expected,
+                actual,
+                StringComparison.Ordinal),
+            $"Export golden mismatch: {fileName}{Environment.NewLine}" +
+            $"ACTUAL:{Environment.NewLine}{actual}");
     }
 
     [Fact]
