@@ -6,6 +6,9 @@ namespace UI_Unilineal.Engine.Layout;
 
 public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 {
+    private const double BoardSideMarginMm = 8;
+    private const double BoardTopMarginMm = 6;
+
     public PositionedLayout Layout(
         DrawingComposition composition,
         CompositionMeasurement measurement,
@@ -22,270 +25,235 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 nameof(composition));
         }
 
-        if (composition.Blocks.Count == 0)
-        {
-            throw new InvalidOperationException(
-                "Board-detail composition does not contain any blocks.");
-        }
-
-        Dictionary<string, CompositionBlock> blocksById =
-            composition.Blocks.ToDictionary(
-                block => block.Id,
-                StringComparer.Ordinal);
-
-        CompositionBlock[] incoming = ByRole(composition, "IncomingSupply");
+        CompositionBlock[] incoming =
+            composition.Blocks
+                .Where(block =>
+                    block.SemanticRole is
+                        "IncomingSupply" or
+                        "ServiceEntranceAssembly")
+                .OrderBy(block => block.Id, StringComparer.Ordinal)
+                .ToArray();
         CompositionBlock[] mainProtections =
             ByRole(composition, "MainProtection");
-        CompositionBlock[] buses = ByRole(composition, "MainBus");
+        CompositionBlock bus =
+            SingleByRole(composition, "MainBus");
+        CompositionBlock neutralBus =
+            SingleByRole(composition, "NeutralBus");
+        CompositionBlock peBus =
+            SingleByRole(composition, "ProtectiveEarthBus");
+        CompositionBlock[] branches =
+            ByRole(composition, "CircuitBranch");
 
-        if (buses.Length != 1)
-        {
-            throw new InvalidOperationException(
-                $"Board-detail composition must contain exactly one main bus; found {buses.Length}.");
-        }
-
-        CompositionBlock bus = buses[0];
         var positioned = new List<PositionedCompositionBlock>();
         var assigned = new HashSet<string>(StringComparer.Ordinal);
 
         double maxRight = 0;
         double maxBottom = 0;
 
-        double mainX = profile.GridMm;
-        double y = profile.GridMm;
+        BranchColumn[] columns =
+            branches
+                .Select(branch =>
+                    MeasureColumn(
+                        composition,
+                        measurement,
+                        profile,
+                        branch))
+                .ToArray();
 
+        double branchSpan =
+            columns.Length == 0
+                ? measurement.GetBlock(bus.Id).Size.Width
+                : columns.Sum(column => column.Width) +
+                  (profile.BranchGapMm *
+                   Math.Max(0, columns.Length - 1));
+
+        double boardWidth =
+            Math.Max(
+                80,
+                branchSpan + (BoardSideMarginMm * 2));
+
+        double boardLeft = profile.GridMm;
+        double centerX =
+            boardLeft + (boardWidth / 2.0);
+
+        // Incoming supply / EMPALME is always outside and above the board.
+        double y = profile.GridMm;
         foreach (CompositionBlock block in incoming)
         {
-            PlaceVertical(
-                block,
-                mainX,
-                ref y,
-                profile.VerticalGapMm,
-                measurement,
+            MmSize size =
+                measurement.GetBlock(block.Id).Size;
+            Add(
+                block.Id,
+                new MmRect(
+                    centerX - (size.Width / 2.0),
+                    y,
+                    size.Width,
+                    size.Height),
                 positioned,
                 assigned,
                 ref maxRight,
                 ref maxBottom);
+            y += size.Height + profile.VerticalGapMm;
         }
 
-        foreach (CompositionBlock block in mainProtections)
-        {
-            PlaceVertical(
-                block,
-                mainX,
-                ref y,
-                profile.VerticalGapMm,
-                measurement,
-                positioned,
-                assigned,
-                ref maxRight,
-                ref maxBottom);
-        }
+        // Everything below this point belongs to the board visual template.
+        double boardTop =
+            y + BoardTopMarginMm;
 
-        PlaceVertical(
-            bus,
-            mainX,
-            ref y,
-            profile.VerticalGapMm,
-            measurement,
+        MmSize peSize =
+            measurement.GetBlock(peBus.Id).Size;
+        MmSize neutralSize =
+            measurement.GetBlock(neutralBus.Id).Size;
+
+        double accessoryY = boardTop;
+
+        Add(
+            peBus.Id,
+            new MmRect(
+                boardLeft + BoardSideMarginMm,
+                accessoryY,
+                peSize.Width,
+                peSize.Height),
             positioned,
             assigned,
             ref maxRight,
             ref maxBottom);
 
-        PositionedCompositionBlock busPosition =
-            positioned.Single(item => item.BlockId == bus.Id);
+        Add(
+            neutralBus.Id,
+            new MmRect(
+                boardLeft +
+                boardWidth -
+                BoardSideMarginMm -
+                neutralSize.Width,
+                accessoryY,
+                neutralSize.Width,
+                neutralSize.Height),
+            positioned,
+            assigned,
+            ref maxRight,
+            ref maxBottom);
 
-        CompositionBlock[] branches = ByRole(composition, "CircuitBranch");
-        CompositionBlock[] neutralBuses = ByRole(composition, "NeutralBus");
-        CompositionBlock[] peBuses = ByRole(composition, "ProtectiveEarthBus");
+        double protectionY = accessoryY;
 
-        bool hasStructuralRails =
-            neutralBuses.Length > 0 ||
-            peBuses.Length > 0;
-
-        if (hasStructuralRails &&
-            (neutralBuses.Length != 1 || peBuses.Length != 1))
+        foreach (CompositionBlock block in mainProtections)
         {
-            throw new InvalidOperationException(
-                "Board-detail composition must contain both neutral and protective-earth buses when structural rails are present.");
-        }
-
-        double branchSpan =
-            branches.Length == 0
-                ? busPosition.Bounds.Width
-                : branches
-                    .Select(branch =>
-                    {
-                        CompositionBlock[] children = composition.Blocks
-                            .Where(block =>
-                                string.Equals(
-                                    block.ParentId,
-                                    branch.Id,
-                                    StringComparison.Ordinal))
-                            .OrderBy(ChildOrder)
-                            .ThenBy(block => block.Id, StringComparer.Ordinal)
-                            .ToArray();
-
-                        CompositionBlock[] column =
-                            [branch, .. children];
-
-                        return column
-                            .Select(block =>
-                                measurement.GetBlock(block.Id).Size.Width)
-                            .Max();
-                    })
-                    .Sum() +
-                (profile.BranchGapMm * Math.Max(0, branches.Length - 1));
-
-        double railWidth =
-            Math.Max(
-                busPosition.Bounds.Width,
-                Math.Min(
-                    profile.MaxBoardDetailWidthMm,
-                    branchSpan));
-
-        double railY =
-            busPosition.Bounds.Bottom +
-            profile.VerticalGapMm;
-
-        if (hasStructuralRails)
-        {
-            foreach (CompositionBlock rail in neutralBuses.Concat(peBuses))
-            {
-                MmSize measured =
-                    measurement.GetBlock(rail.Id).Size;
-                var bounds =
-                    new MmRect(
-                        profile.GridMm,
-                        railY,
-                        railWidth,
-                        measured.Height);
-
-                Add(
-                    rail.Id,
-                    bounds,
-                    positioned,
-                    assigned,
-                    ref maxRight,
-                    ref maxBottom);
-
-                railY =
-                    bounds.Bottom +
-                    profile.VerticalGapMm;
-            }
-        }
-
-        double rowY = railY;
-        double currentX = profile.GridMm;
-        double rowMaxHeight = 0;
-        bool rowHasBranch = false;
-
-        foreach (CompositionBlock branch in branches)
-        {
-            CompositionBlock[] children = composition.Blocks
-                .Where(block =>
-                    string.Equals(
-                        block.ParentId,
-                        branch.Id,
-                        StringComparison.Ordinal))
-                .OrderBy(ChildOrder)
-                .ThenBy(block => block.Id, StringComparer.Ordinal)
-                .ToArray();
-
-            CompositionBlock[] column =
-                [branch, .. children];
-
-            double columnWidth = column
-                .Select(block => measurement.GetBlock(block.Id).Size.Width)
-                .Max();
-            double columnHeight = column
-                .Select(block => measurement.GetBlock(block.Id).Size.Height)
-                .Sum() +
-                (profile.VerticalGapMm * Math.Max(0, column.Length - 1));
-
-            double maxAllowedRight =
-                profile.MaxBoardDetailWidthMm + profile.GridMm;
-
-            if (rowHasBranch &&
-                currentX + columnWidth > maxAllowedRight)
-            {
-                rowY += rowMaxHeight + profile.ContinuationRowGapMm;
-                currentX = profile.GridMm;
-                rowMaxHeight = 0;
-                rowHasBranch = false;
-            }
-
-            double itemY = rowY;
-
-            foreach (CompositionBlock block in column)
-            {
-                MmSize size = measurement.GetBlock(block.Id).Size;
-                var bounds = new MmRect(
-                    currentX,
-                    itemY,
-                    size.Width,
-                    size.Height);
-
-                Add(
-                    block.Id,
-                    bounds,
-                    positioned,
-                    assigned,
-                    ref maxRight,
-                    ref maxBottom);
-
-                itemY = bounds.Bottom + profile.VerticalGapMm;
-            }
-
-            rowMaxHeight = Math.Max(rowMaxHeight, columnHeight);
-            currentX += columnWidth + profile.BranchGapMm;
-            rowHasBranch = true;
-        }
-
-        double auxiliaryY = branches.Length > 0
-            ? rowY + rowMaxHeight + profile.ContinuationRowGapMm
-            : busPosition.Bounds.Bottom + profile.VerticalGapMm;
-
-        CompositionBlock[] auxiliary = composition.Blocks
-            .Where(block => !assigned.Contains(block.Id))
-            .OrderBy(block => block.Id, StringComparer.Ordinal)
-            .ToArray();
-
-        double auxiliaryX = profile.GridMm;
-
-        foreach (CompositionBlock block in auxiliary)
-        {
-            MmSize size = measurement.GetBlock(block.Id).Size;
-
-            if (auxiliaryX > profile.GridMm &&
-                auxiliaryX + size.Width >
-                profile.MaxBoardDetailWidthMm + profile.GridMm)
-            {
-                auxiliaryX = profile.GridMm;
-                auxiliaryY =
-                    maxBottom + profile.ContinuationRowGapMm;
-            }
-
-            var bounds = new MmRect(
-                auxiliaryX,
-                auxiliaryY,
-                size.Width,
-                size.Height);
+            MmSize size =
+                measurement.GetBlock(block.Id).Size;
 
             Add(
                 block.Id,
-                bounds,
+                new MmRect(
+                    centerX - (size.Width / 2.0),
+                    protectionY,
+                    size.Width,
+                    size.Height),
                 positioned,
                 assigned,
                 ref maxRight,
                 ref maxBottom);
 
-            auxiliaryX =
-                bounds.Right + profile.BranchGapMm;
+            protectionY +=
+                size.Height +
+                profile.VerticalGapMm;
         }
 
-        if (assigned.Count != blocksById.Count)
+        double accessoryBottom =
+            Math.Max(
+                accessoryY + Math.Max(peSize.Height, neutralSize.Height),
+                protectionY);
+
+        MmSize busSize =
+            measurement.GetBlock(bus.Id).Size;
+        double busY =
+            accessoryBottom +
+            profile.VerticalGapMm;
+
+        Add(
+            bus.Id,
+            new MmRect(
+                boardLeft + BoardSideMarginMm,
+                busY,
+                boardWidth - (BoardSideMarginMm * 2),
+                busSize.Height),
+            positioned,
+            assigned,
+            ref maxRight,
+            ref maxBottom);
+
+        double branchY =
+            busY +
+            busSize.Height +
+            profile.VerticalGapMm;
+        double branchX =
+            boardLeft + BoardSideMarginMm;
+
+        foreach (BranchColumn column in columns)
+        {
+            double itemY = branchY;
+
+            foreach (CompositionBlock block in column.Blocks)
+            {
+                MmSize size =
+                    measurement.GetBlock(block.Id).Size;
+
+                double x =
+                    branchX +
+                    ((column.Width - size.Width) / 2.0);
+
+                Add(
+                    block.Id,
+                    new MmRect(
+                        x,
+                        itemY,
+                        size.Width,
+                        size.Height),
+                    positioned,
+                    assigned,
+                    ref maxRight,
+                    ref maxBottom);
+
+                itemY +=
+                    size.Height +
+                    profile.VerticalGapMm;
+            }
+
+            branchX +=
+                column.Width +
+                profile.BranchGapMm;
+        }
+
+        double auxiliaryY =
+            Math.Max(
+                maxBottom + profile.ContinuationRowGapMm,
+                branchY + profile.ContinuationRowGapMm);
+        double auxiliaryX = boardLeft;
+
+        foreach (CompositionBlock block in composition.Blocks
+                     .Where(block => !assigned.Contains(block.Id))
+                     .OrderBy(block => block.Id, StringComparer.Ordinal))
+        {
+            MmSize size =
+                measurement.GetBlock(block.Id).Size;
+
+            Add(
+                block.Id,
+                new MmRect(
+                    auxiliaryX,
+                    auxiliaryY,
+                    size.Width,
+                    size.Height),
+                positioned,
+                assigned,
+                ref maxRight,
+                ref maxBottom);
+
+            auxiliaryX +=
+                size.Width +
+                profile.BranchGapMm;
+        }
+
+        if (assigned.Count != composition.Blocks.Count)
         {
             throw new InvalidOperationException(
                 "Board-detail layout did not position every composition block.");
@@ -300,6 +268,46 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 maxBottom + profile.GridMm));
     }
 
+    private static BranchColumn MeasureColumn(
+        DrawingComposition composition,
+        CompositionMeasurement measurement,
+        LayoutProfile profile,
+        CompositionBlock branch)
+    {
+        CompositionBlock[] children =
+            composition.Blocks
+                .Where(block =>
+                    string.Equals(
+                        block.ParentId,
+                        branch.Id,
+                        StringComparison.Ordinal))
+                .OrderBy(ChildOrder)
+                .ThenBy(block => block.Id, StringComparer.Ordinal)
+                .ToArray();
+
+        CompositionBlock[] column =
+            [branch, .. children];
+
+        double width =
+            column
+                .Select(block =>
+                    measurement.GetBlock(block.Id).Size.Width)
+                .Max();
+        double height =
+            column
+                .Select(block =>
+                    measurement.GetBlock(block.Id).Size.Height)
+                .Sum() +
+            (profile.VerticalGapMm *
+             Math.Max(0, column.Length - 1));
+
+        return new BranchColumn(
+            branch.Id,
+            column,
+            width,
+            height);
+    }
+
     private static CompositionBlock[] ByRole(
         DrawingComposition composition,
         string role) =>
@@ -312,45 +320,33 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
             .OrderBy(block => block.Id, StringComparer.Ordinal)
             .ToArray();
 
-    private static int ChildOrder(CompositionBlock block) =>
+    private static CompositionBlock SingleByRole(
+        DrawingComposition composition,
+        string role)
+    {
+        CompositionBlock[] blocks =
+            ByRole(composition, role);
+
+        if (blocks.Length != 1)
+        {
+            throw new InvalidOperationException(
+                $"Board-detail composition must contain exactly one '{role}' block; found {blocks.Length}.");
+        }
+
+        return blocks[0];
+    }
+
+    private static int ChildOrder(
+        CompositionBlock block) =>
         block.SemanticRole switch
         {
-            "DifferentialProtection" => 0,
             "Protection" => 0,
-            "DownstreamBoard" => 1,
-            "FinalLoad" => 1,
-            "Unknown" => 1,
-            _ => 2
+            "DifferentialProtection" => 1,
+            "DownstreamBoard" => 2,
+            "FinalLoad" => 2,
+            "Unknown" => 2,
+            _ => 3
         };
-
-    private static void PlaceVertical(
-        CompositionBlock block,
-        double x,
-        ref double y,
-        double gap,
-        CompositionMeasurement measurement,
-        ICollection<PositionedCompositionBlock> positioned,
-        ISet<string> assigned,
-        ref double maxRight,
-        ref double maxBottom)
-    {
-        MmSize size = measurement.GetBlock(block.Id).Size;
-        var bounds = new MmRect(
-            x,
-            y,
-            size.Width,
-            size.Height);
-
-        Add(
-            block.Id,
-            bounds,
-            positioned,
-            assigned,
-            ref maxRight,
-            ref maxBottom);
-
-        y = bounds.Bottom + gap;
-    }
 
     private static void Add(
         string blockId,
@@ -367,8 +363,23 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         }
 
         positioned.Add(
-            new PositionedCompositionBlock(blockId, bounds));
-        maxRight = Math.Max(maxRight, bounds.Right);
-        maxBottom = Math.Max(maxBottom, bounds.Bottom);
+            new PositionedCompositionBlock(
+                blockId,
+                bounds));
+
+        maxRight =
+            Math.Max(
+                maxRight,
+                bounds.Right);
+        maxBottom =
+            Math.Max(
+                maxBottom,
+                bounds.Bottom);
     }
+
+    private sealed record BranchColumn(
+        string BranchId,
+        IReadOnlyList<CompositionBlock> Blocks,
+        double Width,
+        double Height);
 }
