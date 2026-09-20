@@ -26,18 +26,20 @@ public sealed class BoardDetailCompositionBuilderTests
             boardUid,
             new EntityUid("C2"));
         CompositionBlock[] protections = composition.Blocks
-            .Where(x => x.ParentId == branchId && x.SemanticRole == "Protection")
+            .Where(x =>
+                x.ParentId == branchId &&
+                x.SemanticRole is "Protection" or "DifferentialProtection")
             .ToArray();
 
         Assert.Equal(2, protections.Length);
         Assert.Contains(
             protections,
             x => x.SymbolOverrides.TryGetValue("PROTECTION", out string? symbol) &&
-                 symbol == "BREAKER");
+                 symbol == "BREAKER_2X");
         Assert.Contains(
             protections,
             x => x.SymbolOverrides.TryGetValue("PROTECTION", out string? symbol) &&
-                 symbol == "RCD");
+                 symbol == "RCD_2X");
     }
 
     [Fact]
@@ -131,7 +133,24 @@ public sealed class BoardDetailCompositionBuilderTests
             x => x.BlockDefinitionId == "MAIN_BUS_BLOCK");
         Assert.Contains(
             composition.Blocks,
+            x => x.BlockDefinitionId == "NEUTRAL_BUS_BLOCK");
+        Assert.Contains(
+            composition.Blocks,
+            x => x.BlockDefinitionId == "PE_BUS_BLOCK");
+        Assert.Contains(
+            composition.Blocks,
             x => x.BlockDefinitionId == "CIRCUIT_BRANCH_BLOCK");
+
+        Assert.Contains(
+            composition.Connections,
+            x =>
+                x.LineStyleId == "NEUTRAL_AUX" &&
+                x.Source.Role == AnchorRole.Neutral);
+        Assert.Contains(
+            composition.Connections,
+            x =>
+                x.LineStyleId == "GROUND_AUX" &&
+                x.Source.Role == AnchorRole.Ground);
         Assert.Contains(
             composition.Blocks,
             x => x.BlockDefinitionId == "FINAL_LOAD_BLOCK");
@@ -195,7 +214,8 @@ public sealed class BoardDetailCompositionBuilderTests
             protections ?? source.Protections,
             grounding ?? source.Grounding,
             source.Results,
-            source.Metadata);
+            source.Metadata,
+            source.ServiceEntrances);
 
     private static SingleLineProjection Project(SingleLineInput input)
     {
