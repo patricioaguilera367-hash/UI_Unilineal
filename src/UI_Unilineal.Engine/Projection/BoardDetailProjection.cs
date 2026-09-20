@@ -7,6 +7,8 @@ public sealed record IncomingSupplyProjection(
     SourceInput? Source,
     BoardInput? OriginBoard,
     CircuitInput? ThroughCircuit,
+    ServiceEntranceInput? ServiceEntrance,
+    ProtectionInput? ServiceProtection,
     ProjectionStatus Status);
 
 public sealed record BusProjection(
