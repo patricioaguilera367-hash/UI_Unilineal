@@ -1,14 +1,15 @@
 {
-  "contractVersion": 1,
+  "contractVersion": 2,
   "capturedOn": "2026-09-20",
-  "status": "reference-not-regulatory-dimensions",
+  "status": "visual-grammar-reference-no-ric18-metrics",
   "sources": {
     "ric18ReferenceImage": {
-      "role": "semantic-visual-authority",
-      "sha256": "10a1adfbca0399197cc82f47480218d9ec0e05b97f7294cc5e9417b851a521ba"
+      "role": "visual-semantic-reference-only-no-metric-specification",
+      "sha256": "10a1adfbca0399197cc82f47480218d9ec0e05b97f7294cc5e9417b851a521ba",
+      "metricSpecification": "none"
     },
     "handCopyDxf": {
-      "role": "measurable-geometric-example",
+      "role": "user-hand-traced-inspection-aid",
       "format": "AutoCAD ASCII DXF AC1032",
       "declaredUnits": "mm",
       "sha256": "1591ce0774012e009cbe2ab116fac8af7d89a70af28804c97bcfe937d48665a9",
@@ -20,7 +21,8 @@
         "SPLINE": 12,
         "HATCH": 9,
         "LWPOLYLINE": 7
-      }
+      },
+      "authority": "non-normative"
     }
   },
   "measuredExample": {
@@ -44,7 +46,10 @@
       0.187534199890976,
       0.5,
       0.7875166922599302
-    ]
+    ],
+    "usage": "diagnostic-only",
+    "mustNotDriveLayout": true,
+    "mustNotBeUsedAsAcceptanceTolerance": true
   },
   "invariants": {
     "readingDirection": "top-to-bottom",
@@ -64,11 +69,23 @@
     "protectiveEarthBypassesRcd": true
   },
   "nonNormativeMeasurements": [
+    "all absolute DXF coordinates",
     "board dimensions",
+    "board aspect ratio",
     "exact bus height ratio",
-    "exact text-box dimensions",
-    "leader lengths",
+    "exact normalized x/y positions",
     "exact circuit normalized positions",
+    "exact symbol size ratios from the hand trace",
+    "text-box dimensions",
+    "leader lengths",
     "manual drawing offsets"
-  ]
+  ],
+  "measurementPolicy": {
+    "ric18DefinesDimensionsForThisFigure": false,
+    "ric18DefinesProportionsForThisFigure": false,
+    "dxfDimensionsAreNormative": false,
+    "dxfNormalizedRatiosAreNormative": false,
+    "promoteOnlyCategoricalVisualRelationsToContract": true,
+    "layoutDimensionsSource": "UI_UNILINEAL_DESIGN_TOKENS"
+  }
 }
