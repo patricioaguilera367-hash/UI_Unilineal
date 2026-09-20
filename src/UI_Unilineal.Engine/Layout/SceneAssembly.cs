@@ -105,7 +105,6 @@ public sealed class SceneAssembly
 {
     private const double MinimumPrimitiveExtentMm = 0.001;
     private const double ConnectionNodeRadiusMm = 1.2;
-    private const double MainBusIncomingNodePitchMm = 17;
 
     public DiagramScene Assemble(
         SceneAssemblyInput input,
@@ -194,6 +193,7 @@ public sealed class SceneAssembly
                     block,
                     positioned,
                     definition,
+                    positions,
                     elements);
             }
             else
@@ -437,6 +437,7 @@ public sealed class SceneAssembly
         CompositionBlock block,
         PositionedCompositionBlock positioned,
         BlockDefinition definition,
+        IReadOnlyDictionary<string, PositionedCompositionBlock> positions,
         ICollection<SceneElement> output)
     {
         string lineStyleId =
@@ -494,13 +495,6 @@ public sealed class SceneAssembly
                 nominalLeft +
                 ((nominalRight - nominalLeft) / 2.0);
 
-            if (taps.Length > 0 &&
-                taps.Length % 2 == 1)
-            {
-                incomingX -=
-                    MainBusIncomingNodePitchMm;
-            }
-
             anchors.Add(
                 new SceneAnchor(
                     "IN",
@@ -512,14 +506,34 @@ public sealed class SceneAssembly
             mainBusAttachmentXs.Add(
                 incomingX);
 
+            string boardPrefix =
+                block.Id[..block.Id.IndexOf(
+                    "/bus/",
+                    StringComparison.Ordinal)];
+
             for (int index = 0; index < taps.Length; index++)
             {
-                double fraction =
-                    (index + 0.5) /
-                    Math.Max(1, taps.Length);
-                double x =
-                    nominalLeft +
-                    ((nominalRight - nominalLeft) * fraction);
+                string branchId =
+                    $"{boardPrefix}/branch/{taps[index]}";
+                double x;
+
+                if (positions.TryGetValue(
+                        branchId,
+                        out PositionedCompositionBlock? branch))
+                {
+                    x =
+                        branch.Bounds.X +
+                        (branch.Bounds.Width / 2.0);
+                }
+                else
+                {
+                    double fraction =
+                        (index + 0.5) /
+                        Math.Max(1, taps.Length);
+                    x =
+                        nominalLeft +
+                        ((nominalRight - nominalLeft) * fraction);
+                }
 
                 anchors.Add(
                     new SceneAnchor(
