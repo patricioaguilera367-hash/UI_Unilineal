@@ -82,8 +82,8 @@ public sealed class OrthogonalConnectionRouterTests
     }
 
     [Theory]
-    [InlineData("NEUTRAL_AUX", "NeutralBus", 100, 55, true)]
-    [InlineData("GROUND_AUX", "ProtectiveEarthBus", 20, 65, false)]
+    [InlineData("NEUTRAL_AUX", "NeutralBus", 65, 55, true)]
+    [InlineData("GROUND_AUX", "ProtectiveEarthBus", 55, 65, false)]
     public void Route_AuxiliaryRailUsesSemanticSideLaneBeforeGenericFallback(
         string lineStyleId,
         string sourceRole,
