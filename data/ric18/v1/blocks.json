@@ -66,6 +66,73 @@
     ]
   },
   {
+    "id": "SERVICE_ENTRANCE_ASSEMBLY_BLOCK",
+    "semanticRole": "ServiceEntranceAssembly",
+    "minimumSize": {
+      "width": 54,
+      "height": 66
+    },
+    "parts": [
+      {
+        "id": "FRAME",
+        "symbolId": "EMPALME_FRAME",
+        "offset": {
+          "x": 2,
+          "y": 2
+        },
+        "labelSlotId": "TITLE"
+      },
+      {
+        "id": "METER",
+        "symbolId": "METER",
+        "offset": {
+          "x": 10,
+          "y": 14
+        },
+        "labelSlotId": "METER_CODE"
+      },
+      {
+        "id": "PROTECTION",
+        "symbolId": "BREAKER",
+        "offset": {
+          "x": 9,
+          "y": 34
+        },
+        "labelSlotId": null
+      },
+      {
+        "id": "PROTECTION_TEXT",
+        "symbolId": "TEXT_VALUE",
+        "offset": {
+          "x": 23,
+          "y": 35
+        },
+        "labelSlotId": "VALUE"
+      },
+      {
+        "id": "TARIFF",
+        "symbolId": "TEXT_VALUE",
+        "offset": {
+          "x": 23,
+          "y": 46
+        },
+        "labelSlotId": "VALUE"
+      },
+      {
+        "id": "DETAILS",
+        "symbolId": "TEXT_VALUE",
+        "offset": {
+          "x": 23,
+          "y": 54
+        },
+        "labelSlotId": "VALUE"
+      }
+    ],
+    "provenanceIds": [
+      "APP:BLOCKS"
+    ]
+  },
+  {
     "id": "MAIN_PROTECTION_BLOCK",
     "semanticRole": "MainProtection",
     "minimumSize": {
