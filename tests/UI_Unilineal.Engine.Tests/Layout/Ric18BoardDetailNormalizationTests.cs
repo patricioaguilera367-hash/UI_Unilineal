@@ -276,6 +276,30 @@ public sealed class Ric18BoardDetailNormalizationTests
         }
     }
 
+    [Fact]
+    public void DownstreamBoard_IsExternalDestinationOfItsCircuit()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Nested(),
+                new EntityUid("B1"));
+
+        GroupSceneElement board =
+            Group(scene, "detail/B1");
+        GroupSceneElement protection =
+            Group(scene, "detail/B1/branch/C4/protection/PR4");
+        GroupSceneElement destination =
+            Group(scene, "detail/B1/branch/C4/destination");
+        GroupSceneElement branch =
+            Group(scene, "detail/B1/branch/C4");
+
+        Assert.True(protection.Bounds.Bottom <= board.Bounds.Bottom);
+        Assert.True(destination.Bounds.Y >= board.Bounds.Bottom);
+        Assert.Equal(
+            Anchor(branch, "IN").Point.X,
+            Anchor(destination, "IN").Point.X);
+    }
+
     private static DiagramScene BuildScene(
         SingleLineInput input,
         EntityUid boardUid)
