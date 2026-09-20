@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using UI_Unilineal.Domain.Connections;
 using UI_Unilineal.Domain.Profiles;
 using UI_Unilineal.Domain.Scene;
 
