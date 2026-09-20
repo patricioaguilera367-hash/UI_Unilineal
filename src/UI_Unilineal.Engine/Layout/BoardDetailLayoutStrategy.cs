@@ -201,11 +201,21 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         for (int index = 0; index < columns.Length; index++)
         {
             BranchColumn column = columns[index];
+
+            // RIC18 board grammar keeps the incoming feeder on its own bus
+            // node. Branches therefore occupy deterministic slots around the
+            // incoming power axis instead of sharing the centre node.
+            double relativeSlot =
+                index - ((columns.Length - 1) / 2.0);
+
+            if (relativeSlot >= 0)
+            {
+                relativeSlot += 1.0;
+            }
+
             double slotCenterX =
-                branchAreaLeft +
-                (actualBranchAreaWidth *
-                 (index + 0.5) /
-                 columns.Length);
+                centerX +
+                (relativeSlot * slotWidth);
 
             Add(
                 column.Branch.Id,
