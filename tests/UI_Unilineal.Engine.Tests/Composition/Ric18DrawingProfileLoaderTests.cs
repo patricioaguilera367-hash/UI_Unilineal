@@ -76,6 +76,7 @@ public sealed class Ric18DrawingProfileLoaderTests
         [
             "SOURCE_BLOCK",
             "BOARD_SUMMARY_BLOCK",
+            "BOARD_DETAIL_FRAME_BLOCK",
             "INCOMING_SUPPLY_BLOCK",
             "SERVICE_ENTRANCE_ASSEMBLY_BLOCK",
             "MAIN_PROTECTION_BLOCK",
