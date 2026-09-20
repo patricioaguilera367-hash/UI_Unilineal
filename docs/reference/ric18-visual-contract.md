@@ -2,7 +2,7 @@
 
 Fecha de captura: 2026-09-20  
 Ámbito: `feature/ric18-graphic-grounding`  
-Estado: referencia de diseño y pruebas; **no reemplaza el texto normativo del RIC 18**.
+Estado: contrato de lectura visual. **RIC 18 no entrega medidas, proporciones ni cotas para esta lámina; la única referencia disponible aquí es la propia imagen.**
 
 ## 1. Propósito
 
@@ -15,10 +15,13 @@ Las fuentes usadas son complementarias:
 
 ### Regla de autoridad
 
-- La lámina RIC 18 aporta la **intención gráfica y semántica**.
-- El DXF aporta **evidencia geométrica medible del ejemplo**.
-- Las dimensiones absolutas, offsets y proporciones del DXF **NO se consideran requisitos normativos**.
-- El renderer debe convertir las relaciones estables observadas en una geometría propia, parametrizada y reproducible.
+- La lámina RIC 18 aporta la **referencia visual y semántica disponible**.
+- Para esta lámina, **RIC 18 no define medidas, escalas, proporciones, tolerancias ni coordenadas**.
+- El DXF fue **calcado manualmente por el usuario a partir de esa imagen** para volver medibles elementos que en la imagen sólo podían observarse.
+- Por lo tanto, el DXF **NO es una segunda fuente normativa** y tampoco es una plantilla dimensional.
+- Ni las medidas absolutas ni las proporciones normalizadas del DXF deben gobernar el layout.
+- Lo reutilizable del DXF es principalmente la **gramática gráfica** que ayuda a hacer explícita la imagen: jerarquías, alineaciones intencionales, conexiones, barras, nodos, pertenencia dentro/fuera del tablero, continuidad de conductores y relación entre símbolos.
+- El renderer debe implementar esa gramática con una geometría propia, consistente y parametrizada.
 
 ## 2. Proveniencia del ejemplo medido
 
@@ -79,7 +82,7 @@ SupplyAxis.X
   = MainBus.IN.X
 ```
 
-La coincidencia es una relación estructural; el valor `40.8958` pertenece solamente al ejemplo.
+La coincidencia es una relación estructural observada en el calco y coherente con la imagen. El valor `40.8958` es sólo una coordenada accidental del dibujo manual y no debe utilizarse para dimensionar el layout.
 
 ### 3.3 TP/TS y neutro
 
@@ -121,13 +124,9 @@ En el DXF de tres circuitos, los ejes medidos son:
 - `40.8958195809 mm`;
 - `48.1087872612 mm`.
 
-Normalizados respecto del marco del tablero (`left = 28.3500972784`, `width = 25.0914446051`):
+Si esas coordenadas se normalizan respecto del marco del tablero se obtienen aproximadamente `0.1875 / 0.5000 / 0.7875`. **Esos porcentajes tampoco son un objetivo de diseño ni una proporción RIC 18**: sólo describen cómo quedó el calco manual.
 
-- circuito 1: ~`0.1875`;
-- circuito 2: `0.5000`;
-- circuito 3: ~`0.7875`.
-
-La observación importante no es copiar esos porcentajes: **el circuito central de un conjunto impar puede coincidir exactamente con el eje de entrada**.
+La observación reutilizable es categórica: **el circuito central de un conjunto impar puede coincidir con el eje de entrada y las ramas deben distribuirse de forma ordenada y simétrica según la cantidad de circuitos**.
 
 Por ello, no es válido introducir un desplazamiento artificial únicamente para evitar que `MainBus.IN` y un `TAP` compartan coordenada.
 
@@ -158,18 +157,23 @@ Marco principal detectado:
 
 Nivel principal de barra observado: aproximadamente `Y = 53.1118017161 mm`.
 
-Estas cifras sirven para contrastar geometría y descubrir relaciones. **No deben convertirse en constantes “RIC 18” ni en límites regulatorios.**
+Estas cifras sirven únicamente como evidencia de inspección del calco y para descubrir relaciones. **No deben convertirse en constantes “RIC 18”, objetivos de proporción, tolerancias visuales, límites regulatorios ni criterios de aceptación del layout.**
 
 ## 5. Anti-invariantes: cosas que no debemos preservar
 
 No se debe tratar como requisito RIC 18:
 
 - el ancho/alto exacto del tablero del DXF;
-- un pitch fijo de 17 mm entre entrada y primer circuito;
+- **la relación ancho/alto del tablero del DXF**;
+- un pitch fijo entre entrada y circuitos;
 - el porcentaje exacto de altura donde quedó la barra;
+- **las posiciones X/Y normalizadas obtenidas del calco**;
 - anchos de cajas de texto del calco;
 - longitudes exactas de líderes o anotaciones;
-- cualquier pequeño offset introducido por el trazado manual.
+- tamaños relativos que dependan del trazado manual;
+- cualquier pequeño offset introducido por el calco.
+
+En general: **medir el DXF no convierte una medida en una regla**. Sólo se promueve a contrato aquello que describe una relación visual/semántica claramente observable y necesaria para reproducir la gramática de la lámina.
 
 Un test que obligue a separar el `MainBus.IN` del circuito central sólo porque antes evitaba una superposición visual es un test de una solución accidental, no de la gramática gráfica.
 
@@ -204,3 +208,12 @@ Antes de aplicar un hotfix visual:
 5. verificar Avalonia, SVG y PDF cuando el cambio afecte una primitiva visual.
 
 Si una observación nueva contradice este documento, debe conservarse la evidencia nueva y actualizarse explícitamente el contrato; no se debe “arreglar a ojo” el renderer en paralelo.
+
+## 8. Regla terminológica obligatoria
+
+En código, tests y documentación:
+
+- usar **"RIC18 visual grammar" / "gramática visual RIC18"** para las relaciones derivadas de la lámina;
+- usar **"hand-traced DXF reference" / "DXF calcado de referencia"** para las mediciones del archivo;
+- usar **"layout token" / "decisión de layout"** para medidas elegidas por UI_Unilineal;
+- no usar expresiones como **"medida RIC18"**, **"proporción RIC18"**, **"tolerancia RIC18"** o equivalentes salvo que exista otra fuente explícita que realmente las defina.
