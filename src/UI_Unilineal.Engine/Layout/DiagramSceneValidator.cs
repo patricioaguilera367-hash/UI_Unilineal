@@ -273,7 +273,8 @@ public sealed class DiagramSceneValidator
             foreach (GroupSceneElement group in groups)
             {
                 if (group.Id == connection.Source.ElementId ||
-                    group.Id == connection.Target.ElementId)
+                    group.Id == connection.Target.ElementId ||
+                    IsStructuralRail(group))
                 {
                     continue;
                 }
@@ -292,6 +293,19 @@ public sealed class DiagramSceneValidator
                     nameof(PolylineSceneElement.Points)));
             }
         }
+    }
+
+    private static bool IsStructuralRail(
+        GroupSceneElement group)
+    {
+        if (!group.Metadata.TryGetValue(
+                "compositionRole",
+                out string? role))
+        {
+            return false;
+        }
+
+        return role is "NeutralBus" or "ProtectiveEarthBus";
     }
 
     private static bool RouteCrossesInterior(
