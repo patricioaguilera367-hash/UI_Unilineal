@@ -133,9 +133,14 @@ public sealed class AvaloniaSceneRenderer
                 break;
 
             case CircleSceneElement circle:
+                Pen circlePen =
+                    resources.ResolvePen(
+                        circle.LineStyleId);
                 context.DrawEllipse(
-                    null,
-                    resources.ResolvePen(circle.LineStyleId),
+                    HasSolidFill(circle)
+                        ? circlePen.Brush
+                        : null,
+                    circlePen,
                     Point(circle.Center),
                     circle.RadiusMm,
                     circle.RadiusMm);
@@ -326,6 +331,16 @@ public sealed class AvaloniaSceneRenderer
                 geometry);
         }
     }
+
+    private static bool HasSolidFill(
+        SceneElement element) =>
+        element.Metadata.TryGetValue(
+            "fillMode",
+            out string? fillMode) &&
+        string.Equals(
+            fillMode,
+            "Solid",
+            StringComparison.Ordinal);
 
     private static bool HasExpandedPrimitives(
         DiagramScene scene,
