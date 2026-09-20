@@ -289,6 +289,76 @@ public sealed class Ric18BoardDetailNormalizationTests
     }
 
     [Fact]
+    public void MinimalBoard_MainBusRemainsAVisibleDistributionRail()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+        GroupSceneElement bus =
+            Group(
+                scene,
+                "detail/B1/bus/BUS:B1:MAIN");
+        LineSceneElement rail =
+            Assert.IsType<LineSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "detail/B1/bus/BUS:B1:MAIN/rail"));
+        double incomingX =
+            Anchor(
+                bus,
+                "IN").Point.X;
+
+        Assert.True(rail.Start.X < incomingX);
+        Assert.True(rail.End.X > incomingX);
+        Assert.True(
+            rail.End.X - rail.Start.X >=
+            20);
+    }
+
+    [Fact]
+    public void MinimalBoard_PrimaryPowerRoutesNeverBacktrackUpstream()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+
+        PolylineSceneElement[] routes =
+            scene.Elements
+                .OfType<PolylineSceneElement>()
+                .Where(route =>
+                    route.LineStyleId == "POWER" &&
+                    route.Metadata.ContainsKey(
+                        "connectionId"))
+                .ToArray();
+
+        Assert.NotEmpty(routes);
+
+        Assert.All(
+            routes,
+            route =>
+            {
+                Assert.True(
+                    route.Points.Count <= 3,
+                    $"Unexpected detour in {route.Id}: " +
+                    string.Join(
+                        " -> ",
+                        route.Points));
+
+                for (int index = 0;
+                     index < route.Points.Count - 1;
+                     index++)
+                {
+                    Assert.True(
+                        route.Points[index + 1].Y >=
+                        route.Points[index].Y,
+                        $"Power route backtracks upstream: {route.Id}");
+                }
+            });
+    }
+
+    [Fact]
     public void MinimalBoard_Ric18AuxiliaryRoutes_LeaveHeaderRailsDownward()
     {
         DiagramScene scene =
