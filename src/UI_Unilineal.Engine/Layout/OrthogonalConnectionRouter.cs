@@ -243,14 +243,10 @@ public sealed class OrthogonalConnectionRouter
 
         double laneX =
             neutral
-                ? Math.Max(
-                    start.X,
-                    routingEnvelope.Right +
-                    tokens.AuxiliaryLaneOffsetMm)
-                : Math.Min(
-                    start.X,
-                    routingEnvelope.X -
-                    tokens.AuxiliaryLaneOffsetMm);
+                ? routingEnvelope.Right +
+                  tokens.AuxiliaryLaneOffsetMm
+                : routingEnvelope.X -
+                  tokens.AuxiliaryLaneOffsetMm;
 
         var candidate =
             new List<MmPoint>
