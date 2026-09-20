@@ -23,6 +23,12 @@ public static class CompositionIdFactory
         EntityUid busUid) =>
         $"detail/{boardUid}/bus/{busUid}";
 
+    public static string DetailNeutralBus(EntityUid boardUid) =>
+        $"detail/{boardUid}/bus/NEUTRAL";
+
+    public static string DetailProtectiveEarthBus(EntityUid boardUid) =>
+        $"detail/{boardUid}/bus/PE";
+
     public static string DetailMainProtection(
         EntityUid boardUid,
         EntityUid protectionUid) =>
