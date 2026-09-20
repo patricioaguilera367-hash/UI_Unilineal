@@ -130,6 +130,8 @@ public sealed class Ric18BoardGeometryPlanner
         MmSize neutralSize,
         double incomingStackBottom,
         double mainProtectionStackHeight,
+        double centeredHeaderLeftExtentMm,
+        double centeredHeaderRightExtentMm,
         double maximumBranchContentHeight)
     {
         ArgumentNullException.ThrowIfNull(profile);
@@ -147,6 +149,13 @@ public sealed class Ric18BoardGeometryPlanner
                 "Circuit width count must match circuit count.",
                 nameof(requiredCircuitWidthsMm));
         }
+
+        ValidateNonNegative(
+            centeredHeaderLeftExtentMm,
+            nameof(centeredHeaderLeftExtentMm));
+        ValidateNonNegative(
+            centeredHeaderRightExtentMm,
+            nameof(centeredHeaderRightExtentMm));
 
         double widestCircuit =
             requiredCircuitWidthsMm.Count == 0
@@ -169,11 +178,29 @@ public sealed class Ric18BoardGeometryPlanner
                 mainBusMeasuredSize.Width,
                 minimumBranchAreaWidth);
 
+        double leftHeaderHalfWidth =
+            tokens.BoardOuterPaddingMm +
+            protectiveEarthSize.Width +
+            tokens.AnnotationClearanceMm +
+            centeredHeaderLeftExtentMm;
+        double rightHeaderHalfWidth =
+            tokens.BoardOuterPaddingMm +
+            neutralSize.Width +
+            tokens.AnnotationClearanceMm +
+            centeredHeaderRightExtentMm;
+        double headerRequiredWidth =
+            2.0 *
+            Math.Max(
+                leftHeaderHalfWidth,
+                rightHeaderHalfWidth);
+
         double boardWidth =
             Math.Max(
                 tokens.MinimumBoardWidthMm,
-                branchAreaWidth +
-                (tokens.BoardOuterPaddingMm * 2.0));
+                Math.Max(
+                    branchAreaWidth +
+                    (tokens.BoardOuterPaddingMm * 2.0),
+                    headerRequiredWidth));
 
         double boardLeft = profile.GridMm;
         double boardTop =
@@ -273,5 +300,15 @@ public sealed class Ric18BoardGeometryPlanner
             peBounds,
             neutralBounds,
             circuitAxes.AsReadOnly());
+    }
+
+    private static void ValidateNonNegative(
+        double value,
+        string parameterName)
+    {
+        if (!double.IsFinite(value) || value < 0)
+        {
+            throw new ArgumentOutOfRangeException(parameterName);
+        }
     }
 }
