@@ -169,14 +169,25 @@ public sealed class SceneAssembly
                     ? null
                     : measurement.GetBlock(block.Id);
 
-            AssembleBlock(
-                block,
-                positioned,
-                definition,
-                symbols,
-                lineStyles,
-                measuredBlock,
-                elements);
+            if (block.SemanticRole is "NeutralBus" or "ProtectiveEarthBus")
+            {
+                AssembleStructuralRail(
+                    block,
+                    positioned,
+                    definition,
+                    elements);
+            }
+            else
+            {
+                AssembleBlock(
+                    block,
+                    positioned,
+                    definition,
+                    symbols,
+                    lineStyles,
+                    measuredBlock,
+                    elements);
+            }
         }
 
         Dictionary<string, GroupSceneElement> groups = elements
@@ -254,6 +265,108 @@ public sealed class SceneAssembly
                     $"Position was supplied for unknown composition block '{positionedId}'.");
             }
         }
+    }
+
+    private static void AssembleStructuralRail(
+        CompositionBlock block,
+        PositionedCompositionBlock positioned,
+        BlockDefinition definition,
+        ICollection<SceneElement> output)
+    {
+        string lineStyleId =
+            block.SemanticRole == "NeutralBus"
+                ? "BUS"
+                : "GROUND";
+        AnchorRole anchorRole =
+            block.SemanticRole == "NeutralBus"
+                ? AnchorRole.Neutral
+                : AnchorRole.Ground;
+        SceneLayer layer =
+            block.SemanticRole == "NeutralBus"
+                ? SceneLayer.Power
+                : SceneLayer.Grounding;
+
+        double left = positioned.Bounds.X + 4;
+        double right = positioned.Bounds.Right - 4;
+        double y =
+            positioned.Bounds.Y +
+            (positioned.Bounds.Height / 2.0);
+
+        SceneId railId =
+            new($"{block.Id}/rail");
+
+        var rail = new LineSceneElement(
+            railId,
+            new MmRect(
+                left,
+                y,
+                Math.Max(
+                    right - left,
+                    MinimumPrimitiveExtentMm),
+                MinimumPrimitiveExtentMm),
+            layer,
+            15,
+            SceneVisibility.Both,
+            block.Entity,
+            GroupMetadata(block, definition.Id),
+            new MmPoint(left, y),
+            new MmPoint(right, y),
+            lineStyleId);
+
+        output.Add(rail);
+
+        string[] taps =
+            block.Labels.TryGetValue("TAPS", out string? raw) &&
+            !string.IsNullOrWhiteSpace(raw)
+                ? raw.Split(
+                    '|',
+                    StringSplitOptions.RemoveEmptyEntries |
+                    StringSplitOptions.TrimEntries)
+                : [];
+
+        var anchors =
+            new List<SceneAnchor>
+            {
+                new(
+                    "IN",
+                    anchorRole,
+                    new MmPoint(left, y),
+                    AnchorDirection.Left),
+                new(
+                    "OUT",
+                    anchorRole,
+                    new MmPoint(right, y),
+                    AnchorDirection.Right)
+            };
+
+        for (int index = 0; index < taps.Length; index++)
+        {
+            double fraction =
+                (index + 1.0) /
+                (taps.Length + 1.0);
+            double x =
+                left +
+                ((right - left) * fraction);
+
+            anchors.Add(
+                new SceneAnchor(
+                    $"TAP:{taps[index]}",
+                    anchorRole,
+                    new MmPoint(x, y),
+                    AnchorDirection.Down));
+        }
+
+        output.Add(
+            new GroupSceneElement(
+                new SceneId(block.Id),
+                positioned.Bounds,
+                SceneLayer.Symbol,
+                5,
+                SceneVisibility.Both,
+                block.Entity,
+                GroupMetadata(block, definition.Id),
+                [railId],
+                anchors));
     }
 
     private static void AssembleBlock(
