@@ -162,6 +162,12 @@ public sealed class Ric18BoardGeometryTests
         Assert.True(
             tokens.AnnotationClearanceMm >=
             profile.TextPaddingMm);
+        Assert.True(
+            tokens.AuxiliaryRailDepartureMm >=
+            profile.RouteClearanceMm);
+        Assert.True(
+            tokens.AuxiliaryLaneOffsetMm >=
+            profile.RouteClearanceMm);
     }
 
     private static Ric18BoardGeometry Plan(
