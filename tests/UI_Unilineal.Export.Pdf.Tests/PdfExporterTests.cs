@@ -53,6 +53,26 @@ public sealed class PdfExporterTests
     }
 
     [Fact]
+    public async Task Solid_junction_circle_uses_fill_and_stroke_operator()
+    {
+        (DrawingDocument document, ResolvedDrawingStyleSet styles) =
+            CreateDocument(
+                solidCircle: true);
+
+        string pdf =
+            Encoding.ASCII.GetString(
+                await Export(
+                    new PdfExporter(),
+                    document,
+                    styles));
+
+        Assert.Contains(
+            "0 g\nB\n",
+            pdf,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Pdf_text_escapes_delimiters_controls_and_non_ascii_deterministically()
     {
         const string text =
@@ -143,7 +163,8 @@ public sealed class PdfExporterTests
         DrawingDocument Document,
         ResolvedDrawingStyleSet Styles) CreateDocument(
             string lineStyleId = "POWER",
-            string text = "Demo (PDF) \\ test")
+            string text = "Demo (PDF) \\ test",
+            bool solidCircle = false)
     {
         var styles = new ResolvedDrawingStyleSet(
             "ric18",
@@ -203,7 +224,12 @@ public sealed class PdfExporterTests
                 4,
                 SceneVisibility.Both,
                 null,
-                null,
+                solidCircle
+                    ? new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["fillMode"] = "Solid"
+                    }
+                    : null,
                 new MmPoint(60, 15),
                 5,
                 "POWER"),
