@@ -155,6 +155,50 @@ public sealed class AvaloniaSceneRendererTests
             fixture.Profile);
     }
 
+    [Fact]
+    public void Playground_RcdNeutralAnchorsStayOnNeutralSideOfPowerAxis()
+    {
+        PlaygroundFixture fixture =
+            PlaygroundFixtureFactory.Create();
+        SingleLineLayoutResult detail =
+            new SingleLineLayoutEngine(
+                new DeterministicTextMetrics())
+                .LayoutBoardDetail(
+                    fixture.Projection,
+                    new EntityUid("B2"),
+                    fixture.Profile);
+
+        Assert.True(
+            detail.Success,
+            detail.Failure?.Message);
+
+        DiagramScene scene =
+            Assert.IsType<DiagramScene>(
+                detail.Scene);
+        GroupSceneElement rcd =
+            Assert.IsType<GroupSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Metadata.TryGetValue(
+                        "compositionRole",
+                        out string? role) &&
+                    role == "DifferentialProtection"));
+
+        SceneAnchor power =
+            rcd.Anchors.Single(anchor =>
+                anchor.Id == "IN");
+        SceneAnchor neutralIn =
+            rcd.Anchors.Single(anchor =>
+                anchor.Id == "N_IN");
+        SceneAnchor neutralOut =
+            rcd.Anchors.Single(anchor =>
+                anchor.Id == "N_OUT");
+
+        Assert.True(
+            neutralIn.Point.X > power.Point.X);
+        Assert.True(
+            neutralOut.Point.X > power.Point.X);
+    }
+
     [AvaloniaFact]
     public void InteractionOverlay_RenderingDoesNotEnterOrMutateScene()
     {
