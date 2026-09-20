@@ -16,6 +16,46 @@
     "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
   },
   {
+    "symbolId": "EMPALME_FRAME",
+    "annex18_5Analogue": "EMPALME enclosure and title surrounding the meter and service protection.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "METER",
+    "annex18_5Analogue": "Rectangular meter marked M inside the EMPALME enclosure.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "SERVICE_PROTECTION_TEXT",
+    "annex18_5Analogue": "Editable application text carrier for service-entrance data; not a RIC graphical symbol.",
+    "referenceStatus": "NOT_SHOWN",
+    "currentGeometryStatus": "APP_ONLY",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "SERVICE_TARIFF_TEXT",
+    "annex18_5Analogue": "Editable application text carrier for service-entrance data; not a RIC graphical symbol.",
+    "referenceStatus": "NOT_SHOWN",
+    "currentGeometryStatus": "APP_ONLY",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
+    "symbolId": "SERVICE_DETAILS_TEXT",
+    "annex18_5Analogue": "Editable application text carrier for service-entrance data; not a RIC graphical symbol.",
+    "referenceStatus": "NOT_SHOWN",
+    "currentGeometryStatus": "APP_ONLY",
+    "shapeSourceId": "APP:SYMBOLS",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
     "symbolId": "BREAKER",
     "annex18_5Analogue": "Curved/open contact protection symbol shown at main and branch protections.",
     "referenceStatus": "VERIFIED",
