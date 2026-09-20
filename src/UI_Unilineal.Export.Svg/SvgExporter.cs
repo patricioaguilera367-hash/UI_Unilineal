@@ -299,7 +299,7 @@ public sealed class SvgExporter
             .Append(Number(circle.RadiusMm))
             .Append('\"');
 
-        AppendLineStyle(output, style);
+        AppendLineStyle(output, style, HasSolidFill(circle));
         output.Append(" />\n");
     }
 
@@ -381,10 +381,13 @@ public sealed class SvgExporter
 
     private static void AppendLineStyle(
         StringBuilder output,
-        ResolvedLineStyle style)
+        ResolvedLineStyle style,
+        bool solidFill = false)
     {
         output
-            .Append(" fill=\"none\" stroke=\"black\" stroke-width=\"")
+            .Append(solidFill
+                ? " fill=\"black\" stroke=\"black\" stroke-width=\""
+                : " fill=\"none\" stroke=\"black\" stroke-width=\"")
             .Append(Number(style.WidthMm))
             .Append('\"');
 
@@ -406,6 +409,16 @@ public sealed class SvgExporter
                     $"Unsupported line pattern '{style.Pattern}'.");
         }
     }
+
+    private static bool HasSolidFill(
+        SceneElement element) =>
+        element.Metadata.TryGetValue(
+            "fillMode",
+            out string? fillMode) &&
+        string.Equals(
+            fillMode,
+            "Solid",
+            StringComparison.Ordinal);
 
     private static bool IsPrintable(SceneElement element) =>
         element.Visibility is
