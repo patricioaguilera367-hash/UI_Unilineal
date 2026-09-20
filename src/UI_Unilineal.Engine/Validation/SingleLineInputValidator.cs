@@ -135,6 +135,43 @@ public sealed class SingleLineInputValidator
                 issues);
         }
 
+        foreach (ServiceEntranceInput serviceEntrance in input.ServiceEntrances)
+        {
+            EntityReference source =
+                new(
+                    serviceEntrance.SourceUid,
+                    EntityKind.Source);
+
+            AddMissingReference(
+                index,
+                source,
+                source,
+                nameof(ServiceEntranceInput.SourceUid),
+                issues);
+
+            if (serviceEntrance.ProtectionUid is EntityUid protectionUid)
+            {
+                EntityReference? protection = input.Protections
+                    .Where(item => item.Uid == protectionUid)
+                    .Select(item =>
+                        (EntityReference?)new EntityReference(
+                            item.Uid,
+                            EntityKind.Protection))
+                    .FirstOrDefault();
+
+                if (protection is null)
+                {
+                    issues.Add(
+                        new ValidationIssue(
+                            ValidationCodes.MissingReference,
+                            ValidationSeverity.Error,
+                            $"Reference '{EntityKind.Protection}:{protectionUid}' does not exist.",
+                            source,
+                            nameof(ServiceEntranceInput.ProtectionUid)));
+                }
+            }
+        }
+
         foreach (ElectricalResultInput result in input.Results)
         {
             AddMissingReference(
