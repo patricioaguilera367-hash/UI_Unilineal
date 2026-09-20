@@ -20,7 +20,8 @@ public sealed record Ric18BoardLayoutTokens
         double branchStubHeightMm,
         double boardBottomPaddingMm,
         double externalDestinationGapMm,
-        double annotationClearanceMm)
+        double annotationClearanceMm,
+        double connectionNodeRadiusMm)
     {
         ValidatePositive(boardOuterPaddingMm, nameof(boardOuterPaddingMm));
         ValidatePositive(boardHeaderHeightMm, nameof(boardHeaderHeightMm));
@@ -32,6 +33,7 @@ public sealed record Ric18BoardLayoutTokens
         ValidatePositive(boardBottomPaddingMm, nameof(boardBottomPaddingMm));
         ValidatePositive(externalDestinationGapMm, nameof(externalDestinationGapMm));
         ValidatePositive(annotationClearanceMm, nameof(annotationClearanceMm));
+        ValidatePositive(connectionNodeRadiusMm, nameof(connectionNodeRadiusMm));
 
         BoardOuterPaddingMm = boardOuterPaddingMm;
         BoardHeaderHeightMm = boardHeaderHeightMm;
@@ -43,6 +45,7 @@ public sealed record Ric18BoardLayoutTokens
         BoardBottomPaddingMm = boardBottomPaddingMm;
         ExternalDestinationGapMm = externalDestinationGapMm;
         AnnotationClearanceMm = annotationClearanceMm;
+        ConnectionNodeRadiusMm = connectionNodeRadiusMm;
     }
 
     public double BoardOuterPaddingMm { get; }
@@ -65,6 +68,8 @@ public sealed record Ric18BoardLayoutTokens
 
     public double AnnotationClearanceMm { get; }
 
+    public double ConnectionNodeRadiusMm { get; }
+
     public static Ric18BoardLayoutTokens From(LayoutProfile profile)
     {
         ArgumentNullException.ThrowIfNull(profile);
@@ -81,7 +86,8 @@ public sealed record Ric18BoardLayoutTokens
             branchStubHeightMm: Math.Max(2.0, grid * 0.75),
             boardBottomPaddingMm: Math.Max(5.0, grid * 2.0),
             externalDestinationGapMm: Math.Max(4.0, grid * 1.5),
-            annotationClearanceMm: Math.Max(2.0, profile.TextPaddingMm * 2.0));
+            annotationClearanceMm: Math.Max(2.0, profile.TextPaddingMm * 2.0),
+            connectionNodeRadiusMm: Math.Max(0.75, grid * 0.3));
     }
 
     private static void ValidatePositive(
