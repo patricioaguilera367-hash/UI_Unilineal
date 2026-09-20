@@ -476,7 +476,10 @@ public sealed class SceneAssembly
         }
 
         SceneAnchor[] groupAnchors =
-            ResolveGroupAnchorIds(anchorCandidates);
+            AddSemanticDestinationAnchors(
+                block,
+                positioned.Bounds,
+                ResolveGroupAnchorIds(anchorCandidates));
 
         var group = new GroupSceneElement(
             new SceneId(block.Id),
@@ -765,6 +768,56 @@ public sealed class SceneAssembly
                 measurement.WidthMm,
                 MinimumPrimitiveExtentMm),
             measurement.HeightMm);
+    }
+
+    private static SceneAnchor[] AddSemanticDestinationAnchors(
+        CompositionBlock block,
+        MmRect bounds,
+        IReadOnlyList<SceneAnchor> anchors)
+    {
+        if (block.SemanticRole is not ("FinalLoad" or "DownstreamBoard" or "Unknown"))
+        {
+            return anchors.ToArray();
+        }
+
+        var result =
+            new List<SceneAnchor>(anchors);
+
+        if (!result.Any(anchor =>
+                string.Equals(
+                    anchor.Id,
+                    "N",
+                    StringComparison.Ordinal)))
+        {
+            result.Add(
+                new SceneAnchor(
+                    "N",
+                    AnchorRole.Neutral,
+                    new MmPoint(
+                        bounds.X + (bounds.Width * 0.32),
+                        bounds.Y + 2),
+                    AnchorDirection.Up));
+        }
+
+        if (!result.Any(anchor =>
+                string.Equals(
+                    anchor.Id,
+                    "PE",
+                    StringComparison.Ordinal)))
+        {
+            result.Add(
+                new SceneAnchor(
+                    "PE",
+                    AnchorRole.Ground,
+                    new MmPoint(
+                        bounds.X + (bounds.Width * 0.68),
+                        bounds.Y + 2),
+                    AnchorDirection.Up));
+        }
+
+        return result
+            .OrderBy(anchor => anchor.Id, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static SceneAnchor[] ResolveGroupAnchorIds(
