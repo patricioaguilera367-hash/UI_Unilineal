@@ -2338,5 +2338,35 @@
       "APP:SYMBOLS",
       "APP:GRAPHIC_CONVENTIONS"
     ]
+  },
+  {
+    "id": "CIRCUIT_USE_TEXT",
+    "semanticRole": "CircuitUseText",
+    "nominalBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 6
+    },
+    "anchors": [],
+    "primitives": [],
+    "labelSlots": [
+      {
+        "id": "NAME",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 24,
+          "height": 6
+        },
+        "priority": 0,
+        "required": false,
+        "textStyleId": "TECH"
+      }
+    ],
+    "provenanceIds": [
+      "APP:SYMBOLS",
+      "APP:GRAPHIC_CONVENTIONS"
+    ]
   }
 ]
