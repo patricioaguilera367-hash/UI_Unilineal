@@ -170,7 +170,15 @@ public sealed class SceneAssembly
                     ? null
                     : measurement.GetBlock(block.Id);
 
-            if (block.SemanticRole is "MainBus" or "NeutralBus" or "ProtectiveEarthBus")
+            if (block.SemanticRole == "BoardFrame")
+            {
+                AssembleBoardFrame(
+                    block,
+                    positioned,
+                    definition,
+                    elements);
+            }
+            else if (block.SemanticRole is "MainBus" or "NeutralBus" or "ProtectiveEarthBus")
             {
                 AssembleStructuralRail(
                     block,
@@ -266,6 +274,96 @@ public sealed class SceneAssembly
                     $"Position was supplied for unknown composition block '{positionedId}'.");
             }
         }
+    }
+
+    private static void AssembleBoardFrame(
+        CompositionBlock block,
+        PositionedCompositionBlock positioned,
+        BlockDefinition definition,
+        ICollection<SceneElement> output)
+    {
+        SceneId frameId =
+            new($"{block.Id}/frame");
+
+        output.Add(
+            new RectangleSceneElement(
+                frameId,
+                positioned.Bounds,
+                SceneLayer.Annotation,
+                1,
+                SceneVisibility.Both,
+                block.Entity,
+                GroupMetadata(block, definition.Id),
+                "ANNOTATION"));
+
+        var children =
+            new List<SceneId>
+            {
+                frameId
+            };
+
+        if (block.Labels.TryGetValue("CODE", out string? code) &&
+            !string.IsNullOrWhiteSpace(code))
+        {
+            SceneId id =
+                new($"{block.Id}/label/code");
+
+            output.Add(
+                new TextSceneElement(
+                    id,
+                    new MmRect(
+                        positioned.Bounds.X + 2,
+                        positioned.Bounds.Y + 1.5,
+                        28,
+                        4),
+                    SceneLayer.Text,
+                    30,
+                    SceneVisibility.Both,
+                    block.Entity,
+                    GroupMetadata(block, definition.Id),
+                    code,
+                    "TECH"));
+
+            children.Add(id);
+        }
+
+        if (block.Labels.TryGetValue("NAME", out string? name) &&
+            !string.IsNullOrWhiteSpace(name))
+        {
+            SceneId id =
+                new($"{block.Id}/label/name");
+
+            output.Add(
+                new TextSceneElement(
+                    id,
+                    new MmRect(
+                        positioned.Bounds.X + 2,
+                        positioned.Bounds.Y + 5.5,
+                        Math.Max(
+                            positioned.Bounds.Width - 4,
+                            MinimumPrimitiveExtentMm),
+                        4),
+                    SceneLayer.Text,
+                    30,
+                    SceneVisibility.Both,
+                    block.Entity,
+                    GroupMetadata(block, definition.Id),
+                    name,
+                    "LABEL_SMALL"));
+
+            children.Add(id);
+        }
+
+        output.Add(
+            new GroupSceneElement(
+                new SceneId(block.Id),
+                positioned.Bounds,
+                SceneLayer.Symbol,
+                0,
+                SceneVisibility.Both,
+                block.Entity,
+                GroupMetadata(block, definition.Id),
+                children));
     }
 
     private static void AssembleStructuralRail(
