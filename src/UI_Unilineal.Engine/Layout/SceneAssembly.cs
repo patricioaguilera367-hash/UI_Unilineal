@@ -151,7 +151,7 @@ public sealed class SceneAssembly
         double connectionNodeRadiusMm =
             Ric18BoardLayoutTokens
                 .From(profile.Layout)
-                .connectionNodeRadiusMm;
+                .ConnectionNodeRadiusMm;
 
         ValidatePositionCoverage(input.Composition, positions);
 
