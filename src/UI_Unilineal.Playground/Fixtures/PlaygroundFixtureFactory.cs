@@ -181,7 +181,7 @@ public static class PlaygroundFixtureFactory
                 source.Uid,
                 MeterKind.ThreePhase,
                 "BT1",
-                "Medidor trifásico · datos editables",
+                "Medidor 3F",
                 serviceProtection.Uid,
                 InputValueAuthority.Manual,
                 OperationalState.Active,

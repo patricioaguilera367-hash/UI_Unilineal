@@ -14,6 +14,21 @@ public sealed class MeasuredBlock
         MmSize size,
         IReadOnlyDictionary<string, TextMeasurement> labels,
         int partCount)
+        : this(
+            blockId,
+            size,
+            labels,
+            partCount,
+            powerAxisOffsetMm: null)
+    {
+    }
+
+    public MeasuredBlock(
+        string blockId,
+        MmSize size,
+        IReadOnlyDictionary<string, TextMeasurement> labels,
+        int partCount,
+        double? powerAxisOffsetMm)
     {
         if (string.IsNullOrWhiteSpace(blockId))
         {
@@ -34,6 +49,7 @@ public sealed class MeasuredBlock
                 labels,
                 StringComparer.Ordinal));
         PartCount = partCount;
+        PowerAxisOffsetMm = powerAxisOffsetMm;
     }
 
     public string BlockId { get; }
@@ -43,6 +59,8 @@ public sealed class MeasuredBlock
     public IReadOnlyDictionary<string, TextMeasurement> Labels { get; }
 
     public int PartCount { get; }
+
+    public double? PowerAxisOffsetMm { get; }
 }
 
 public sealed class CompositionMeasurement
@@ -149,6 +167,7 @@ public sealed class CompositionMeasurer
         double height = definition.MinimumSize.Height;
         var labelMeasurements =
             new Dictionary<string, TextMeasurement>(StringComparer.Ordinal);
+        var powerAxes = new List<double>();
 
         foreach (BlockPartDefinition part in definition.Parts)
         {
@@ -175,6 +194,17 @@ public sealed class CompositionMeasurer
                 symbol.NominalBounds.Y +
                 symbol.NominalBounds.Height);
 
+            foreach (AnchorDefinition anchor in symbol.Anchors
+                         .Where(anchor =>
+                             anchor.Role is
+                                 UI_Unilineal.Domain.Connections.AnchorRole.PowerIn or
+                                 UI_Unilineal.Domain.Connections.AnchorRole.PowerOut))
+            {
+                powerAxes.Add(
+                    part.Offset.X +
+                    anchor.Point.X);
+            }
+
             MeasurePartLabel(
                 block,
                 part,
@@ -186,11 +216,17 @@ public sealed class CompositionMeasurer
                 ref height);
         }
 
+        double? powerAxisOffsetMm =
+            powerAxes.Count == 0
+                ? null
+                : powerAxes.Average();
+
         return new MeasuredBlock(
             block.Id,
             new MmSize(width, height),
             labelMeasurements,
-            definition.Parts.Count);
+            definition.Parts.Count,
+            powerAxisOffsetMm);
     }
 
     private void MeasurePartLabel(

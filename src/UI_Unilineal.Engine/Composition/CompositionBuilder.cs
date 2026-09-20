@@ -323,13 +323,13 @@ public sealed class CompositionBuilder
                     protectionLabels.TryGetValue(
                         "RATING",
                         out string? rating)
-                        ? $"{rating} · {serviceEntrance.ProtectionAuthority}"
-                        : serviceEntrance.ProtectionAuthority.ToString();
+                        ? rating
+                        : "Protección: —";
             }
             else
             {
                 labels["PROTECTION_TEXT"] =
-                    $"Protección: — · {serviceEntrance.ProtectionAuthority}";
+                    "Protección: —";
             }
 
             return new CompositionBlock(

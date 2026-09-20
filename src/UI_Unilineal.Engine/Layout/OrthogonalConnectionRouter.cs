@@ -75,56 +75,37 @@ public sealed class OrthogonalConnectionRouter
         if (sourceAnchor.Role == AnchorRole.BusTap &&
             targetAnchor.Role == AnchorRole.PowerIn)
         {
-            double outsideX =
-                scene.Bounds.X -
-                profile.HorizontalGapMm;
-            double rowChannelY =
-                targetElement.Bounds.Y -
-                profile.RouteClearanceMm;
-
             return new RoutedConnection(
                 connection.Id,
-                NormalizeRoute(
-                    [
-                        sourceAnchor.Point,
-                        new MmPoint(
-                            outsideX,
-                            sourceAnchor.Point.Y),
-                        new MmPoint(
-                            outsideX,
-                            rowChannelY),
-                        new MmPoint(
-                            targetAnchor.Point.X,
-                            rowChannelY),
-                        targetAnchor.Point
-                    ]));
+                CompactVerticalRoute(
+                    sourceAnchor.Point,
+                    targetAnchor.Point));
+        }
+
+        if (IsSameBranchPath(
+                sourceElement,
+                targetElement) &&
+            sourceAnchor.Role == AnchorRole.PowerOut &&
+            targetAnchor.Role == AnchorRole.PowerIn)
+        {
+            return new RoutedConnection(
+                connection.Id,
+                CompactVerticalRoute(
+                    sourceAnchor.Point,
+                    targetAnchor.Point));
         }
 
         if (IsAuxiliaryConductor(connection.LineStyleId))
         {
-            double channelX =
-                string.Equals(
-                    connection.LineStyleId,
-                    "NEUTRAL_AUX",
-                    StringComparison.Ordinal)
-                    ? targetElement.Bounds.X -
-                      profile.RouteClearanceMm
-                    : targetElement.Bounds.Right +
-                      profile.RouteClearanceMm;
-
             return new RoutedConnection(
                 connection.Id,
-                NormalizeRoute(
-                    [
-                        sourceAnchor.Point,
-                        new MmPoint(
-                            channelX,
-                            sourceAnchor.Point.Y),
-                        new MmPoint(
-                            channelX,
-                            targetAnchor.Point.Y),
-                        targetAnchor.Point
-                    ]));
+                RouteAuxiliaryConductor(
+                    connection.LineStyleId,
+                    sourceElement,
+                    targetElement,
+                    sourceAnchor.Point,
+                    targetAnchor.Point,
+                    profile));
         }
 
         MmRect[] obstacles = scene.Elements
@@ -153,6 +134,102 @@ public sealed class OrthogonalConnectionRouter
     private static bool IsAuxiliaryConductor(
         string lineStyleId) =>
         lineStyleId is "NEUTRAL_AUX" or "GROUND_AUX";
+
+    private static IReadOnlyList<MmPoint> CompactVerticalRoute(
+        MmPoint start,
+        MmPoint end) =>
+        NormalizeRoute(
+            start.X == end.X
+                ? [start, end]
+                : [
+                    start,
+                    new MmPoint(start.X, end.Y),
+                    end
+                ]);
+
+    private static IReadOnlyList<MmPoint> RouteAuxiliaryConductor(
+        string lineStyleId,
+        SceneElement sourceElement,
+        SceneElement targetElement,
+        MmPoint start,
+        MmPoint end,
+        LayoutProfile profile)
+    {
+        string? sourceRole =
+            CompositionRole(sourceElement);
+
+        if (sourceRole is not ("NeutralBus" or "ProtectiveEarthBus"))
+        {
+            return CompactVerticalRoute(
+                start,
+                end);
+        }
+
+        double channelX =
+            string.Equals(
+                lineStyleId,
+                "NEUTRAL_AUX",
+                StringComparison.Ordinal)
+                ? Math.Max(
+                    start.X,
+                    targetElement.Bounds.Right +
+                    profile.RouteClearanceMm)
+                : Math.Min(
+                    start.X,
+                    targetElement.Bounds.X -
+                    profile.RouteClearanceMm);
+
+        return NormalizeRoute(
+            [
+                start,
+                new MmPoint(
+                    channelX,
+                    start.Y),
+                new MmPoint(
+                    channelX,
+                    end.Y),
+                end
+            ]);
+    }
+
+    private static bool IsSameBranchPath(
+        SceneElement source,
+        SceneElement target)
+    {
+        string? sourceParent = ParentId(source);
+        string? targetParent = ParentId(target);
+
+        return
+            (!string.IsNullOrWhiteSpace(sourceParent) &&
+             string.Equals(
+                 sourceParent,
+                 targetParent,
+                 StringComparison.Ordinal)) ||
+            string.Equals(
+                source.Id.Value,
+                targetParent,
+                StringComparison.Ordinal) ||
+            string.Equals(
+                target.Id.Value,
+                sourceParent,
+                StringComparison.Ordinal);
+    }
+
+    private static string? ParentId(
+        SceneElement element) =>
+        element.Metadata.TryGetValue(
+            "parentId",
+            out string? value)
+                ? value
+                : null;
+
+    private static string? CompositionRole(
+        SceneElement element) =>
+        element.Metadata.TryGetValue(
+            "compositionRole",
+            out string? value)
+                ? value
+                : null;
 
     private static IReadOnlyList<MmPoint> NormalizeRoute(
         IReadOnlyList<MmPoint> points)

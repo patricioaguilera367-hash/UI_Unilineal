@@ -170,7 +170,15 @@ public sealed class SceneAssembly
                     ? null
                     : measurement.GetBlock(block.Id);
 
-            if (block.SemanticRole == "BoardFrame")
+            if (block.SemanticRole == "CircuitBranch")
+            {
+                AssembleCircuitBranch(
+                    block,
+                    positioned,
+                    definition,
+                    elements);
+            }
+            else if (block.SemanticRole == "BoardFrame")
             {
                 AssembleBoardFrame(
                     block,
@@ -274,6 +282,44 @@ public sealed class SceneAssembly
                     $"Position was supplied for unknown composition block '{positionedId}'.");
             }
         }
+    }
+
+    private static void AssembleCircuitBranch(
+        CompositionBlock block,
+        PositionedCompositionBlock positioned,
+        BlockDefinition definition,
+        ICollection<SceneElement> output)
+    {
+        double centerX =
+            positioned.Bounds.X +
+            (positioned.Bounds.Width / 2.0);
+
+        output.Add(
+            new GroupSceneElement(
+                new SceneId(block.Id),
+                positioned.Bounds,
+                SceneLayer.Symbol,
+                5,
+                SceneVisibility.Both,
+                block.Entity,
+                GroupMetadata(block, definition.Id),
+                [],
+                [
+                    new SceneAnchor(
+                        "IN",
+                        AnchorRole.PowerIn,
+                        new MmPoint(
+                            centerX,
+                            positioned.Bounds.Y),
+                        AnchorDirection.Up),
+                    new SceneAnchor(
+                        "OUT",
+                        AnchorRole.PowerOut,
+                        new MmPoint(
+                            centerX,
+                            positioned.Bounds.Bottom),
+                        AnchorDirection.Down)
+                ]));
     }
 
     private static void AssembleBoardFrame(
@@ -395,8 +441,14 @@ public sealed class SceneAssembly
                 ? SceneLayer.Grounding
                 : SceneLayer.Power;
 
-        double left = positioned.Bounds.X + 4;
-        double right = positioned.Bounds.Right - 4;
+        double railInset =
+            block.SemanticRole == "MainBus"
+                ? 0
+                : 4;
+        double left =
+            positioned.Bounds.X + railInset;
+        double right =
+            positioned.Bounds.Right - railInset;
         double y =
             positioned.Bounds.Y +
             (positioned.Bounds.Height / 2.0);
@@ -472,8 +524,11 @@ public sealed class SceneAssembly
         for (int index = 0; index < taps.Length; index++)
         {
             double fraction =
-                (index + 1.0) /
-                (taps.Length + 1.0);
+                block.SemanticRole == "MainBus"
+                    ? (index + 0.5) /
+                      Math.Max(1, taps.Length)
+                    : (index + 1.0) /
+                      (taps.Length + 1.0);
             double x =
                 left +
                 ((right - left) * fraction);
@@ -958,7 +1013,7 @@ public sealed class SceneAssembly
                     "N",
                     AnchorRole.Neutral,
                     new MmPoint(
-                        bounds.X + (bounds.Width * 0.32),
+                        bounds.X + (bounds.Width * 0.68),
                         bounds.Y + 2),
                     AnchorDirection.Up));
         }
@@ -974,7 +1029,7 @@ public sealed class SceneAssembly
                     "PE",
                     AnchorRole.Ground,
                     new MmPoint(
-                        bounds.X + (bounds.Width * 0.68),
+                        bounds.X + (bounds.Width * 0.32),
                         bounds.Y + 2),
                     AnchorDirection.Up));
         }
