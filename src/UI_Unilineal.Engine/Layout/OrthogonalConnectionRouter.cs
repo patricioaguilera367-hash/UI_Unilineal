@@ -71,6 +71,33 @@ public sealed class OrthogonalConnectionRouter
                 $"'{sourceAnchor.Role}' -> '{targetAnchor.Role}'.");
         }
 
+        if (IsAuxiliaryConductor(connection.LineStyleId))
+        {
+            double channelX =
+                string.Equals(
+                    connection.LineStyleId,
+                    "NEUTRAL_AUX",
+                    StringComparison.Ordinal)
+                    ? targetElement.Bounds.X -
+                      profile.RouteClearanceMm
+                    : targetElement.Bounds.Right +
+                      profile.RouteClearanceMm;
+
+            return new RoutedConnection(
+                connection.Id,
+                NormalizeRoute(
+                    [
+                        sourceAnchor.Point,
+                        new MmPoint(
+                            channelX,
+                            sourceAnchor.Point.Y),
+                        new MmPoint(
+                            channelX,
+                            targetAnchor.Point.Y),
+                        targetAnchor.Point
+                    ]));
+        }
+
         MmRect[] obstacles = scene.Elements
             .OfType<GroupSceneElement>()
             .Where(group =>
@@ -92,6 +119,28 @@ public sealed class OrthogonalConnectionRouter
         return new RoutedConnection(
             connection.Id,
             points);
+    }
+
+    private static bool IsAuxiliaryConductor(
+        string lineStyleId) =>
+        lineStyleId is "NEUTRAL_AUX" or "GROUND_AUX";
+
+    private static IReadOnlyList<MmPoint> NormalizeRoute(
+        IReadOnlyList<MmPoint> points)
+    {
+        var normalized =
+            new List<MmPoint>();
+
+        foreach (MmPoint point in points)
+        {
+            if (normalized.Count == 0 ||
+                normalized[^1] != point)
+            {
+                normalized.Add(point);
+            }
+        }
+
+        return normalized;
     }
 
     private static bool IsStructuralRail(
