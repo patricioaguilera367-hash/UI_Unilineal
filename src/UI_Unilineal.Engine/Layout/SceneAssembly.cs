@@ -192,7 +192,7 @@ public sealed class SceneAssembly
                     block,
                     positioned,
                     definition,
-                    profile.Layout,
+                    positions,
                     elements);
             }
             else
@@ -436,7 +436,7 @@ public sealed class SceneAssembly
         CompositionBlock block,
         PositionedCompositionBlock positioned,
         BlockDefinition definition,
-        LayoutProfile layoutProfile,
+        IReadOnlyDictionary<string, PositionedCompositionBlock> positions,
         ICollection<SceneElement> output)
     {
         const double ConnectionNodeRadiusMm = 1.2;
@@ -498,10 +498,6 @@ public sealed class SceneAssembly
             double incomingX =
                 nominalLeft +
                 ((nominalRight - nominalLeft) / 2.0);
-            double minimumNodeSeparationMm =
-                Math.Max(
-                    ConnectionNodeRadiusMm * 2.0,
-                    layoutProfile.GridMm);
 
             anchors.Add(
                 new SceneAnchor(
@@ -512,20 +508,33 @@ public sealed class SceneAssembly
                         y),
                     AnchorDirection.Up));
 
+            string boardPrefix =
+                block.Id[..block.Id.IndexOf(
+                    "/bus/",
+                    StringComparison.Ordinal)];
+
             for (int index = 0; index < taps.Length; index++)
             {
-                double fraction =
-                    (index + 0.5) /
-                    Math.Max(1, taps.Length);
-                double x =
-                    nominalLeft +
-                    ((nominalRight - nominalLeft) * fraction);
+                string branchId =
+                    $"{boardPrefix}/branch/{taps[index]}";
+                double x;
 
-                if (Math.Abs(x - incomingX) <
-                    0.000001)
+                if (positions.TryGetValue(
+                        branchId,
+                        out PositionedCompositionBlock? branch))
                 {
-                    x +=
-                        minimumNodeSeparationMm;
+                    x =
+                        branch.Bounds.X +
+                        (branch.Bounds.Width / 2.0);
+                }
+                else
+                {
+                    double fraction =
+                        (index + 0.5) /
+                        Math.Max(1, taps.Length);
+                    x =
+                        nominalLeft +
+                        ((nominalRight - nominalLeft) * fraction);
                 }
 
                 anchors.Add(
@@ -633,6 +642,39 @@ public sealed class SceneAssembly
             {
                 railId
             };
+
+        if (block.SemanticRole == "MainBus")
+        {
+            foreach (SceneAnchor anchor in anchors.Where(candidate =>
+                         candidate.Id == "IN" ||
+                         candidate.Id.StartsWith(
+                             "TAP:",
+                             StringComparison.Ordinal)))
+            {
+                SceneId nodeId =
+                    new(
+                        $"{block.Id}/node/{anchor.Id.Replace(':', '-')}");
+
+                output.Add(
+                    new CircleSceneElement(
+                        nodeId,
+                        new MmRect(
+                            anchor.Point.X - ConnectionNodeRadiusMm,
+                            anchor.Point.Y - ConnectionNodeRadiusMm,
+                            ConnectionNodeRadiusMm * 2.0,
+                            ConnectionNodeRadiusMm * 2.0),
+                        layer,
+                        20,
+                        SceneVisibility.Both,
+                        block.Entity,
+                        GroupMetadata(block, definition.Id),
+                        anchor.Point,
+                        ConnectionNodeRadiusMm,
+                        lineStyleId));
+
+                children.Add(nodeId);
+            }
+        }
 
         if (block.Labels.TryGetValue("LABEL", out string? label) &&
             !string.IsNullOrWhiteSpace(label))
