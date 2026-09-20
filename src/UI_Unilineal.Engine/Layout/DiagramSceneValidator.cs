@@ -212,7 +212,9 @@ public sealed class DiagramSceneValidator
         {
             for (int right = left + 1; right < groups.Length; right++)
             {
-                if (!Overlaps(
+                if (IsBoardContainer(groups[left]) ||
+                    IsBoardContainer(groups[right]) ||
+                    !Overlaps(
                         groups[left].Bounds,
                         groups[right].Bounds))
                 {
@@ -310,7 +312,27 @@ public sealed class DiagramSceneValidator
             return false;
         }
 
-        return role is "NeutralBus" or "ProtectiveEarthBus";
+        return role is
+            "BoardFrame" or
+            "MainBus" or
+            "NeutralBus" or
+            "ProtectiveEarthBus";
+    }
+
+    private static bool IsBoardContainer(
+        GroupSceneElement group)
+    {
+        if (!group.Metadata.TryGetValue(
+                "compositionRole",
+                out string? role))
+        {
+            return false;
+        }
+
+        return string.Equals(
+            role,
+            "BoardFrame",
+            StringComparison.Ordinal);
     }
 
     private static bool RouteCrossesInterior(
