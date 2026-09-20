@@ -226,6 +226,56 @@ public sealed class Ric18BoardDetailNormalizationTests
             Anchor(destination, "N").Point.X);
     }
 
+    [Fact]
+    public void MinimalBoard_Ric18BusGrammar_RequiresDistinctPowerNodesAndCompactBus()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+        GroupSceneElement bus =
+            Group(scene, "detail/B1/bus/BUS:B1:MAIN");
+        SceneAnchor incoming =
+            Anchor(bus, "IN");
+        SceneAnchor branch =
+            Anchor(bus, "TAP:C1");
+        LineSceneElement rail =
+            Assert.IsType<LineSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "detail/B1/bus/BUS:B1:MAIN/rail"));
+
+        Assert.NotEqual(incoming.Point.X, branch.Point.X);
+        Assert.True(Math.Abs(incoming.Point.X - branch.Point.X) >= 2.4);
+        Assert.True(rail.Start.X <= Math.Min(incoming.Point.X, branch.Point.X));
+        Assert.True(rail.End.X >= Math.Max(incoming.Point.X, branch.Point.X));
+        Assert.True(rail.End.X - rail.Start.X <=
+                    Math.Abs(incoming.Point.X - branch.Point.X) + 2.4);
+    }
+
+    [Fact]
+    public void MinimalBoard_Ric18AuxiliaryRoutes_LeaveHeaderRailsDownward()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+
+        foreach (string id in new[]
+                 {
+                     "detail/B1/connection/neutral/C1",
+                     "detail/B1/connection/protective-earth/C1"
+                 })
+        {
+            PolylineSceneElement route =
+                Route(scene, id);
+
+            Assert.True(route.Points.Count >= 3);
+            Assert.Equal(route.Points[0].X, route.Points[1].X);
+            Assert.True(route.Points[1].Y > route.Points[0].Y);
+        }
+    }
+
     private static DiagramScene BuildScene(
         SingleLineInput input,
         EntityUid boardUid)
