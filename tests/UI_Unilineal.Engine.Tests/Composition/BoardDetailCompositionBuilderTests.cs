@@ -108,8 +108,11 @@ public sealed class BoardDetailCompositionBuilderTests
         Assert.Contains(
             "BT1",
             empalme.Labels["TARIFF"]);
-        Assert.Contains(
+        Assert.Equal(
             "Manual",
+            empalme.Labels["AUTHORITY"]);
+        Assert.Contains(
+            "25 A",
             empalme.Labels["PROTECTION_TEXT"]);
         Assert.Equal(
             "BREAKER_2X",
