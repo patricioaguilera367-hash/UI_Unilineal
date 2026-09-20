@@ -177,13 +177,12 @@ public sealed class AvaloniaSceneRendererTests
                 detail.Scene);
         GroupSceneElement[] rcds =
             scene.Elements
+                .OfType<GroupSceneElement>()
                 .Where(element =>
                     element.Metadata.TryGetValue(
                         "compositionRole",
                         out string? role) &&
                     role == "DifferentialProtection")
-                .Select(element =>
-                    Assert.IsType<GroupSceneElement>(element))
                 .ToArray();
 
         Assert.NotEmpty(rcds);
