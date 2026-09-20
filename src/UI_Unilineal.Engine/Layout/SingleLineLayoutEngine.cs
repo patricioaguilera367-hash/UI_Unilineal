@@ -351,10 +351,21 @@ public sealed class SingleLineLayoutEngine
                          value => value.Id.Value,
                          StringComparer.Ordinal))
         {
-            RoutedConnection route = router.Route(
-                connection,
-                scene,
-                profile);
+            RoutedConnection route;
+
+            try
+            {
+                route = router.Route(
+                    connection,
+                    scene,
+                    profile);
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new InvalidOperationException(
+                    $"Routing failed for connection '{connection.Id.Value}' ({connection.LineStyleId}): {exception.Message}",
+                    exception);
+            }
 
             MmRect bounds = BoundsFor(route.Points);
 
