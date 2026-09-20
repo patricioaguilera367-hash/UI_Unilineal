@@ -101,6 +101,7 @@ public sealed class OrthogonalConnectionRouter
                 connection.Id,
                 RouteAuxiliaryConductor(
                     connection.LineStyleId,
+                    scene,
                     sourceElement,
                     targetElement,
                     sourceAnchor.Point,
@@ -108,17 +109,12 @@ public sealed class OrthogonalConnectionRouter
                     profile));
         }
 
-        MmRect[] obstacles = scene.Elements
-            .OfType<GroupSceneElement>()
-            .Where(group =>
-                group.Id != sourceElement.Id &&
-                group.Id != targetElement.Id &&
-                !IsStructuralRail(group))
-            .OrderBy(group => group.Id.Value, StringComparer.Ordinal)
-            .Select(group => Inflate(
-                group.Bounds,
-                profile.RouteClearanceMm))
-            .ToArray();
+        MmRect[] obstacles =
+            BuildObstacles(
+                scene,
+                sourceElement,
+                targetElement,
+                profile);
 
         IReadOnlyList<MmPoint> points = FindRoute(
             sourceAnchor.Point,
@@ -149,6 +145,7 @@ public sealed class OrthogonalConnectionRouter
 
     private static IReadOnlyList<MmPoint> RouteAuxiliaryConductor(
         string lineStyleId,
+        DiagramScene scene,
         SceneElement sourceElement,
         SceneElement targetElement,
         MmPoint start,
@@ -160,46 +157,107 @@ public sealed class OrthogonalConnectionRouter
 
         if (sourceRole is not ("NeutralBus" or "ProtectiveEarthBus"))
         {
-            return CompactVerticalRoute(
-                start,
-                end);
-        }
+            MmRect[] directObstacles =
+                BuildObstacles(
+                    scene,
+                    sourceElement,
+                    targetElement,
+                    profile);
 
-        double channelX =
-            string.Equals(
-                lineStyleId,
-                "NEUTRAL_AUX",
-                StringComparison.Ordinal)
-                ? Math.Max(
-                    start.X,
-                    targetElement.Bounds.Right +
-                    profile.RouteClearanceMm)
-                : Math.Min(
-                    start.X,
-                    targetElement.Bounds.X -
-                    profile.RouteClearanceMm);
+            return FindRoute(
+                start,
+                end,
+                directObstacles,
+                profile);
+        }
 
         double departureY =
             start.Y +
             Math.Max(
                 profile.GridMm,
                 profile.RouteClearanceMm);
+        var departure =
+            new MmPoint(
+                start.X,
+                departureY);
 
-        return NormalizeRoute(
-            [
-                start,
-                new MmPoint(
-                    start.X,
-                    departureY),
-                new MmPoint(
-                    channelX,
-                    departureY),
-                new MmPoint(
-                    channelX,
-                    end.Y),
-                end
-            ]);
+        MmRect[] obstacles =
+            BuildObstacles(
+                scene,
+                sourceElement,
+                targetElement,
+                profile);
+
+        IReadOnlyList<MmPoint> continuation =
+            FindRoute(
+                departure,
+                end,
+                obstacles,
+                profile);
+
+        var points =
+            new List<MmPoint>
+            {
+                start
+            };
+        points.AddRange(continuation);
+
+        return NormalizeRoute(points);
     }
+
+    private static MmRect[] BuildObstacles(
+        DiagramScene scene,
+        SceneElement sourceElement,
+        SceneElement targetElement,
+        LayoutProfile profile)
+    {
+        IEnumerable<(string Id, MmRect Bounds)> structural =
+            scene.Elements
+                .OfType<GroupSceneElement>()
+                .Where(group =>
+                    group.Id != sourceElement.Id &&
+                    group.Id != targetElement.Id &&
+                    !IsStructuralRail(group))
+                .Select(group =>
+                    (
+                        group.Id.Value,
+                        group.Bounds
+                    ));
+
+        IEnumerable<(string Id, MmRect Bounds)> annotations =
+            scene.Elements
+                .OfType<TextSceneElement>()
+                .Where(text =>
+                    !IsOwnedBy(
+                        text.Id,
+                        sourceElement.Id) &&
+                    !IsOwnedBy(
+                        text.Id,
+                        targetElement.Id))
+                .Select(text =>
+                    (
+                        text.Id.Value,
+                        text.Bounds
+                    ));
+
+        return structural
+            .Concat(annotations)
+            .OrderBy(
+                item => item.Id,
+                StringComparer.Ordinal)
+            .Select(item =>
+                Inflate(
+                    item.Bounds,
+                    profile.RouteClearanceMm))
+            .ToArray();
+    }
+
+    private static bool IsOwnedBy(
+        SceneId childId,
+        SceneId ownerId) =>
+        childId.Value.StartsWith(
+            ownerId.Value + "/",
+            StringComparison.Ordinal);
 
     private static bool IsSameBranchPath(
         SceneElement source,
