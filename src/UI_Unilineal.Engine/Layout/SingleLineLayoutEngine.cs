@@ -316,7 +316,15 @@ public sealed class SingleLineLayoutEngine
                 new LayoutEngineFailure(
                     LayoutFailureStage.SceneValidation,
                     "SCENE_INVALID",
-                    "Generated scene contains structural validation errors."),
+                    "Generated scene contains structural validation errors: " +
+                    string.Join(
+                        " | ",
+                        sceneValidation.Issues
+                            .Where(issue =>
+                                issue.Severity ==
+                                SceneValidationSeverity.Error)
+                            .Select(issue =>
+                                $"{issue.Code}:{issue.SceneId}:{issue.Message}"))),
                 positioned,
                 sceneValidation);
         }
