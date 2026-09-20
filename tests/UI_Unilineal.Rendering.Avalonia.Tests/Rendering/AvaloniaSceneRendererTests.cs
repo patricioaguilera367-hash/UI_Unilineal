@@ -93,6 +93,39 @@ public sealed class AvaloniaSceneRendererTests
     }
 
     [AvaloniaFact]
+    public void Render_LabelOnlySymbol_DoesNotThrow()
+    {
+        RIC18DrawingProfile profile = Profile();
+        var symbol = new SymbolSceneElement(
+            new SceneId("fixture/label-only"),
+            new MmRect(10, 10, 28, 6),
+            SceneLayer.Symbol,
+            20,
+            SceneVisibility.Both,
+            null,
+            null,
+            "SERVICE_TARIFF_TEXT");
+        var text = new TextSceneElement(
+            new SceneId("fixture/label-only/text"),
+            new MmRect(10, 10, 28, 6),
+            SceneLayer.Text,
+            30,
+            SceneVisibility.Both,
+            null,
+            null,
+            "Tarifa: BT1",
+            "LABEL_SMALL");
+        DiagramScene scene =
+            RenderingSceneFixtures.Scene(
+                [symbol, text],
+                new MmRect(0, 0, 50, 30));
+
+        RenderGenerated(
+            scene,
+            profile);
+    }
+
+    [AvaloniaFact]
     public void InteractionOverlay_RenderingDoesNotEnterOrMutateScene()
     {
         RIC18DrawingProfile profile = Profile();
