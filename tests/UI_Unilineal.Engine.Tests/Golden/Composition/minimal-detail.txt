@@ -1,13 +1,14 @@
-COMPOSITION|BoardDetail|Board|B1|92EFF16D4423B0C4582215C128EF177B87921C696FC1849F7F5B5F45E8059B77|27791BA6D03E892F389AC2543EF4E9A6E6BB14534D1EE929C01615860A27A5C5
+COMPOSITION|BoardDetail|Board|B1|92EFF16D4423B0C4582215C128EF177B87921C696FC1849F7F5B5F45E8059B77|5D9DF38FD428F2270D920470A6562A0A9B0A630966948792CE5D6CB2D3C08B2B
+BLOCK|detail/B1|BOARD_DETAIL_FRAME_BLOCK|BoardFrame|Board|B1|Ok|-|CODE=TGBT,NAME=Tablero general|-
 BLOCK|detail/B1/incoming/SC1|INCOMING_SUPPLY_BLOCK|IncomingSupply|SupplyConnection|SC1|Ok|detail/B1|CODE=EMPALME — Empalme|-
-BLOCK|detail/B1/bus/BUS:B1:MAIN|MAIN_BUS_BLOCK|MainBus|Bus|BUS:B1:MAIN|Ok|detail/B1|CODE=MAIN|-
+BLOCK|detail/B1/bus/BUS:B1:MAIN|MAIN_BUS_BLOCK|MainBus|Bus|BUS:B1:MAIN|Ok|detail/B1|CODE=MAIN,TAPS=C1|-
 BLOCK|detail/B1/bus/NEUTRAL|NEUTRAL_BUS_BLOCK|NeutralBus|Board|B1|Ok|detail/B1|LABEL=N,TAPS=C1|-
 BLOCK|detail/B1/bus/PE|PE_BUS_BLOCK|ProtectiveEarthBus|Board|B1|Ok|detail/B1|LABEL=TP,TAPS=C1|-
 BLOCK|detail/B1/branch/C1|CIRCUIT_BRANCH_BLOCK|CircuitBranch|Circuit|C1|Ok|detail/B1/bus/BUS:B1:MAIN|NAME=C01 — Alumbrado|-
 BLOCK|detail/B1/branch/C1/protection/PR1|PROTECTION_CHAIN_BLOCK|Protection|Protection|PR1|Ok|detail/B1/branch/C1|RATING=2x10 A / 6 kA / Curva C|PROTECTION=BREAKER_2X
 BLOCK|detail/B1/branch/C1/destination|FINAL_LOAD_BLOCK|FinalLoad|Load|LOAD:C1|Ok|detail/B1/branch/C1|NAME=Alumbrado,NUMBER=1|-
 CONNECTION|detail/B1/connection/incoming/detail/B1/incoming/SC1|detail/B1/incoming/SC1@PowerOut:OUT|detail/B1/bus/BUS:B1:MAIN@PowerIn:IN|POWER|SupplyConnection|SC1
-CONNECTION|detail/B1/connection/branch/C1|detail/B1/bus/BUS:B1:MAIN@BusTap:TAP|detail/B1/branch/C1@PowerIn:IN|POWER|Circuit|C1
+CONNECTION|detail/B1/connection/branch/C1|detail/B1/bus/BUS:B1:MAIN@BusTap:TAP:C1|detail/B1/branch/C1@PowerIn:IN|POWER|Circuit|C1
 CONNECTION|detail/B1/connection/protection/detail/B1/branch/C1/protection/PR1|detail/B1/branch/C1@PowerOut:OUT|detail/B1/branch/C1/protection/PR1@PowerIn:IN|POWER|Protection|PR1
 CONNECTION|detail/B1/connection/destination/C1|detail/B1/branch/C1/protection/PR1@PowerOut:OUT|detail/B1/branch/C1/destination@PowerIn:IN|POWER|Protection|PR1
 CONNECTION|detail/B1/connection/neutral/C1|detail/B1/bus/NEUTRAL@Neutral:TAP:C1|detail/B1/branch/C1/destination@Neutral:N|NEUTRAL_AUX|Circuit|C1
