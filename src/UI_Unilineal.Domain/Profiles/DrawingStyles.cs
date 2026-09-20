@@ -15,6 +15,7 @@ public enum LinePattern
 {
     Solid,
     Dashed,
+    DashDot,
     Dotted
 }
 
