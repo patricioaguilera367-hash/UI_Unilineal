@@ -104,7 +104,6 @@ public sealed class SceneAssemblyInput
 public sealed class SceneAssembly
 {
     private const double MinimumPrimitiveExtentMm = 0.001;
-    private const double ConnectionNodeRadiusMm = 1.2;
 
     public DiagramScene Assemble(
         SceneAssemblyInput input,
@@ -148,6 +147,11 @@ public sealed class SceneAssembly
             profile.LineStyles.ToDictionary(
                 style => style.Id,
                 StringComparer.Ordinal);
+
+        double connectionNodeRadiusMm =
+            Ric18BoardLayoutTokens
+                .From(profile.Layout)
+                .connectionNodeRadiusMm;
 
         ValidatePositionCoverage(input.Composition, positions);
 
@@ -194,6 +198,7 @@ public sealed class SceneAssembly
                     positioned,
                     definition,
                     positions,
+                    connectionNodeRadiusMm,
                     elements);
             }
             else
@@ -205,6 +210,7 @@ public sealed class SceneAssembly
                     symbols,
                     lineStyles,
                     measuredBlock,
+                    connectionNodeRadiusMm,
                     elements);
             }
         }
@@ -438,6 +444,7 @@ public sealed class SceneAssembly
         PositionedCompositionBlock positioned,
         BlockDefinition definition,
         IReadOnlyDictionary<string, PositionedCompositionBlock> positions,
+        double connectionNodeRadiusMm,
         ICollection<SceneElement> output)
     {
         string lineStyleId =
@@ -665,10 +672,10 @@ public sealed class SceneAssembly
                     new CircleSceneElement(
                         nodeId,
                         new MmRect(
-                            canonicalAnchor.Point.X - ConnectionNodeRadiusMm,
-                            canonicalAnchor.Point.Y - ConnectionNodeRadiusMm,
-                            ConnectionNodeRadiusMm * 2.0,
-                            ConnectionNodeRadiusMm * 2.0),
+                            canonicalAnchor.Point.X - connectionNodeRadiusMm,
+                            canonicalAnchor.Point.Y - connectionNodeRadiusMm,
+                            connectionNodeRadiusMm * 2.0,
+                            connectionNodeRadiusMm * 2.0),
                         layer,
                         20,
                         SceneVisibility.Both,
@@ -678,7 +685,7 @@ public sealed class SceneAssembly
                             definition.Id,
                             anchorIds),
                         canonicalAnchor.Point,
-                        ConnectionNodeRadiusMm,
+                        connectionNodeRadiusMm,
                         lineStyleId));
 
                 children.Add(nodeId);
@@ -940,6 +947,7 @@ public sealed class SceneAssembly
         IReadOnlyDictionary<string, SymbolDefinition> symbols,
         IReadOnlyDictionary<string, LineStyleDefinition> lineStyles,
         MeasuredBlock? measuredBlock,
+        double connectionNodeRadiusMm,
         ICollection<SceneElement> output)
     {
         if (positioned.Bounds.Width < definition.MinimumSize.Width ||
@@ -1084,10 +1092,10 @@ public sealed class SceneAssembly
                     new CircleSceneElement(
                         terminalId,
                         new MmRect(
-                            terminalAnchor.Point.X - ConnectionNodeRadiusMm,
-                            terminalAnchor.Point.Y - ConnectionNodeRadiusMm,
-                            ConnectionNodeRadiusMm * 2.0,
-                            ConnectionNodeRadiusMm * 2.0),
+                            terminalAnchor.Point.X - connectionNodeRadiusMm,
+                            terminalAnchor.Point.Y - connectionNodeRadiusMm,
+                            connectionNodeRadiusMm * 2.0,
+                            connectionNodeRadiusMm * 2.0),
                         terminalAnchor.Id == "PE"
                             ? SceneLayer.Grounding
                             : SceneLayer.Power,
@@ -1099,7 +1107,7 @@ public sealed class SceneAssembly
                             definition.Id,
                             terminalAnchor.Id),
                         terminalAnchor.Point,
-                        ConnectionNodeRadiusMm,
+                        connectionNodeRadiusMm,
                         terminalStyleId));
 
                 children.Add(
