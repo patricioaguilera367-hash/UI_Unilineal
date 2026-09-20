@@ -1138,6 +1138,48 @@ public sealed class SceneAssembly
                 positioned.Bounds,
                 groupAnchors);
 
+        if (block.SemanticRole is
+                "FinalLoad" or
+                "DownstreamBoard" or
+                "Unknown")
+        {
+            foreach (SceneAnchor terminalAnchor in
+                     groupAnchors.Where(anchor =>
+                         anchor.Id is "N" or "PE"))
+            {
+                SceneId terminalId =
+                    new(
+                        $"{block.Id}/terminal/{terminalAnchor.Id}");
+
+                string terminalStyleId =
+                    terminalAnchor.Id == "PE"
+                        ? "GROUND"
+                        : "BUS";
+
+                output.Add(
+                    new CircleSceneElement(
+                        terminalId,
+                        new MmRect(
+                            terminalAnchor.Point.X - ConnectionNodeRadiusMm,
+                            terminalAnchor.Point.Y - ConnectionNodeRadiusMm,
+                            ConnectionNodeRadiusMm * 2.0,
+                            ConnectionNodeRadiusMm * 2.0),
+                        terminalAnchor.Id == "PE"
+                            ? SceneLayer.Grounding
+                            : SceneLayer.Power,
+                        20,
+                        SceneVisibility.Both,
+                        block.Entity,
+                        GroupMetadata(block, definition.Id),
+                        terminalAnchor.Point,
+                        ConnectionNodeRadiusMm,
+                        terminalStyleId));
+
+                children.Add(
+                    terminalId);
+            }
+        }
+
         var group = new GroupSceneElement(
             new SceneId(block.Id),
             positioned.Bounds,
