@@ -75,7 +75,8 @@ public sealed class OrthogonalConnectionRouter
             .OfType<GroupSceneElement>()
             .Where(group =>
                 group.Id != sourceElement.Id &&
-                group.Id != targetElement.Id)
+                group.Id != targetElement.Id &&
+                !IsStructuralRail(group))
             .OrderBy(group => group.Id.Value, StringComparer.Ordinal)
             .Select(group => Inflate(
                 group.Bounds,
@@ -91,6 +92,19 @@ public sealed class OrthogonalConnectionRouter
         return new RoutedConnection(
             connection.Id,
             points);
+    }
+
+    private static bool IsStructuralRail(
+        GroupSceneElement group)
+    {
+        if (!group.Metadata.TryGetValue(
+                "compositionRole",
+                out string? role))
+        {
+            return false;
+        }
+
+        return role is "NeutralBus" or "ProtectiveEarthBus";
     }
 
     private static SceneElement ResolveElement(
