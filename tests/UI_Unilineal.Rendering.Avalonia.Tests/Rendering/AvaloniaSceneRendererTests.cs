@@ -8,6 +8,7 @@ using UI_Unilineal.Domain.Semantics;
 using UI_Unilineal.Engine.Composition;
 using UI_Unilineal.Engine.Layout;
 using UI_Unilineal.Engine.Projection;
+using UI_Unilineal.Playground.Fixtures;
 using UI_Unilineal.Rendering.Avalonia.Rendering;
 using UI_Unilineal.Rendering.Avalonia.Tests.Fixtures;
 using UI_Unilineal.Rendering.Avalonia.Viewport;
@@ -123,6 +124,35 @@ public sealed class AvaloniaSceneRendererTests
         RenderGenerated(
             scene,
             profile);
+    }
+
+    [AvaloniaFact]
+    public void Playground_CurrentBoardDetailAndSymbolGallery_RenderWithoutException()
+    {
+        PlaygroundFixture fixture =
+            PlaygroundFixtureFactory.Create();
+        var engine =
+            new SingleLineLayoutEngine(
+                new DeterministicTextMetrics());
+
+        SingleLineLayoutResult detail =
+            engine.LayoutBoardDetail(
+                fixture.Projection,
+                new EntityUid("B1"),
+                fixture.Profile);
+
+        Assert.True(detail.Success);
+        RenderGenerated(
+            Assert.IsType<DiagramScene>(detail.Scene),
+            fixture.Profile);
+
+        DiagramScene gallery =
+            SymbolGallerySceneBuilder.Build(
+                fixture.Profile);
+
+        RenderGenerated(
+            gallery,
+            fixture.Profile);
     }
 
     [AvaloniaFact]
