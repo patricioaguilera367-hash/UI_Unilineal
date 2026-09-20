@@ -1855,6 +1855,18 @@
     ],
     "primitives": [
       {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 11,
+          "y": 0
+        },
+        "end": {
+          "x": 11,
+          "y": 3
+        }
+      },
+      {
         "kind": "rectangle",
         "styleId": "POWER",
         "rectangle": {
@@ -1862,6 +1874,18 @@
           "y": 3,
           "width": 20,
           "height": 12
+        }
+      },
+      {
+        "kind": "line",
+        "styleId": "POWER",
+        "start": {
+          "x": 11,
+          "y": 15
+        },
+        "end": {
+          "x": 11,
+          "y": 16
         }
       }
     ],
