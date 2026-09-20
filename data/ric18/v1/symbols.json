@@ -2113,8 +2113,8 @@
     "nominalBounds": {
       "x": 0,
       "y": 0,
-      "width": 50,
-      "height": 62
+      "width": 28,
+      "height": 46
     },
     "anchors": [],
     "primitives": [
@@ -2124,8 +2124,8 @@
         "rectangle": {
           "x": 0.5,
           "y": 0.5,
-          "width": 49,
-          "height": 61
+          "width": 27,
+          "height": 45
         }
       },
       {
@@ -2133,11 +2133,11 @@
         "styleId": "POWER",
         "start": {
           "x": 0.5,
-          "y": 10
+          "y": 8
         },
         "end": {
-          "x": 49.5,
-          "y": 10
+          "x": 27.5,
+          "y": 8
         }
       }
     ],
@@ -2147,8 +2147,8 @@
         "bounds": {
           "x": 2,
           "y": 2,
-          "width": 46,
-          "height": 6
+          "width": 24,
+          "height": 4
         },
         "priority": 0,
         "required": true,
