@@ -179,12 +179,21 @@ public sealed class OrthogonalConnectionRouter
                     targetElement.Bounds.X -
                     profile.RouteClearanceMm);
 
+        double departureY =
+            start.Y +
+            Math.Max(
+                profile.GridMm,
+                profile.RouteClearanceMm);
+
         return NormalizeRoute(
             [
                 start,
                 new MmPoint(
+                    start.X,
+                    departureY),
+                new MmPoint(
                     channelX,
-                    start.Y),
+                    departureY),
                 new MmPoint(
                     channelX,
                     end.Y),
