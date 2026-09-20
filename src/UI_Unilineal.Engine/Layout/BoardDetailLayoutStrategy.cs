@@ -1,4 +1,4 @@
-﻿using UI_Unilineal.Domain.Profiles;
+using UI_Unilineal.Domain.Profiles;
 using UI_Unilineal.Domain.Scene;
 using UI_Unilineal.Engine.Composition;
 
@@ -6,14 +6,7 @@ namespace UI_Unilineal.Engine.Layout;
 
 public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 {
-    private const double BoardSideMarginMm = 8;
-    private const double BoardHeaderHeightMm = 15;
-    private const double InternalVerticalGapMm = 3;
-    private const double MinimumBoardWidthMm = 80;
-    private const double MinimumSlotWidthMm = 34;
     private const double SemanticBranchWidthMm = 4;
-    private const double SemanticBranchHeightMm = 2;
-    private const double MainBusVisualHeightMm = 6;
 
     public PositionedLayout Layout(
         DrawingComposition composition,
@@ -30,6 +23,9 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 "BoardDetailLayoutStrategy requires a board-detail composition.",
                 nameof(composition));
         }
+
+        Ric18BoardLayoutTokens tokens =
+            Ric18BoardLayoutTokens.From(profile);
 
         CompositionBlock boardFrame =
             SingleByRole(composition, "BoardFrame");
@@ -52,83 +48,87 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         CompositionBlock[] branches =
             ByRole(composition, "CircuitBranch");
 
-        var positioned = new List<PositionedCompositionBlock>();
-        var assigned = new HashSet<string>(StringComparer.Ordinal);
-        var externalDestinations =
-            new List<(CompositionBlock Block, double PowerAxisX)>();
-        double maxRight = 0;
-        double maxBottom = 0;
-
         BranchColumn[] columns =
             branches
                 .Select(branch =>
                     MeasureColumn(
                         composition,
                         measurement,
-                        branch))
+                        branch,
+                        tokens))
                 .ToArray();
 
-        double requiredColumnWidth =
+        double incomingStackBottom =
+            StackBottom(
+                profile.GridMm,
+                incoming
+                    .Select(block =>
+                        measurement.GetBlock(block.Id).Size.Height)
+                    .ToArray(),
+                tokens.ElementGapMm);
+
+        double mainProtectionStackHeight =
+            StackHeight(
+                mainProtections
+                    .Select(block =>
+                        measurement.GetBlock(block.Id).Size.Height)
+                    .ToArray(),
+                tokens.ElementGapMm);
+
+        double maximumBranchContentHeight =
             columns.Length == 0
-                ? MinimumSlotWidthMm
-                : columns.Max(column => column.RequiredWidthMm);
-        double slotWidth =
-            Math.Max(
-                MinimumSlotWidthMm,
-                requiredColumnWidth + profile.BranchGapMm);
+                ? 0
+                : columns.Max(column =>
+                    column.InternalContentHeightMm);
 
-        double branchAreaWidth =
-            Math.Max(
-                measurement.GetBlock(bus.Id).Size.Width,
-                Math.Max(1, columns.Length) * slotWidth);
-        double boardWidth =
-            Math.Max(
-                MinimumBoardWidthMm,
-                branchAreaWidth + (BoardSideMarginMm * 2));
-        double boardLeft = profile.GridMm;
-        double branchAreaLeft =
-            boardLeft + BoardSideMarginMm;
-        double centerX =
-            boardLeft + (boardWidth / 2.0);
+        Ric18BoardGeometry geometry =
+            new Ric18BoardGeometryPlanner().Plan(
+                profile,
+                tokens,
+                columns.Length,
+                columns
+                    .Select(column => column.RequiredWidthMm)
+                    .ToArray(),
+                measurement.GetBlock(bus.Id).Size,
+                measurement.GetBlock(peBus.Id).Size,
+                measurement.GetBlock(neutralBus.Id).Size,
+                incomingStackBottom,
+                mainProtectionStackHeight,
+                maximumBranchContentHeight);
 
-        // Incoming supply/EMPALME is external to the board and its electrical
-        // power axis is kept collinear with the board incoming path.
-        double y = profile.GridMm;
+        var positioned =
+            new List<PositionedCompositionBlock>();
+        var assigned =
+            new HashSet<string>(StringComparer.Ordinal);
+        var externalDestinations =
+            new List<(CompositionBlock Block, double PowerAxisX)>();
+        double maxRight = 0;
+        double maxBottom = 0;
+
+        double incomingY = profile.GridMm;
         foreach (CompositionBlock block in incoming)
         {
             MeasuredBlock measured =
                 measurement.GetBlock(block.Id);
+
             AddOnPowerAxis(
                 block.Id,
-                centerX,
-                y,
+                geometry.CenterX,
+                incomingY,
                 measured,
                 positioned,
                 assigned,
                 ref maxRight,
                 ref maxBottom);
 
-            y +=
+            incomingY +=
                 measured.Size.Height +
-                InternalVerticalGapMm;
+                tokens.ElementGapMm;
         }
-
-        double boardTop = y;
-        double contentTop =
-            boardTop + BoardHeaderHeightMm;
-
-        MmSize peSize =
-            measurement.GetBlock(peBus.Id).Size;
-        MmSize neutralSize =
-            measurement.GetBlock(neutralBus.Id).Size;
 
         Add(
             peBus.Id,
-            new MmRect(
-                branchAreaLeft,
-                contentTop,
-                peSize.Width,
-                peSize.Height),
+            geometry.ProtectiveEarthBounds,
             positioned,
             assigned,
             ref maxRight,
@@ -136,20 +136,15 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
         Add(
             neutralBus.Id,
-            new MmRect(
-                boardLeft +
-                boardWidth -
-                BoardSideMarginMm -
-                neutralSize.Width,
-                contentTop,
-                neutralSize.Width,
-                neutralSize.Height),
+            geometry.NeutralBounds,
             positioned,
             assigned,
             ref maxRight,
             ref maxBottom);
 
-        double mainProtectionBottom = contentTop;
+        double mainProtectionY =
+            geometry.ContentTop;
+
         foreach (CompositionBlock block in mainProtections)
         {
             MeasuredBlock measured =
@@ -157,84 +152,56 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
             AddOnPowerAxis(
                 block.Id,
-                centerX,
-                mainProtectionBottom,
+                geometry.CenterX,
+                mainProtectionY,
                 measured,
                 positioned,
                 assigned,
                 ref maxRight,
                 ref maxBottom);
 
-            mainProtectionBottom +=
+            mainProtectionY +=
                 measured.Size.Height +
-                InternalVerticalGapMm;
+                tokens.ElementGapMm;
         }
-
-        double accessoriesBottom =
-            Math.Max(
-                contentTop + Math.Max(peSize.Height, neutralSize.Height),
-                mainProtectionBottom);
-
-        MeasuredBlock busMeasured =
-            measurement.GetBlock(bus.Id);
-        double busY =
-            accessoriesBottom +
-            InternalVerticalGapMm;
-        double actualBranchAreaWidth =
-            boardWidth - (BoardSideMarginMm * 2);
 
         Add(
             bus.Id,
-            new MmRect(
-                branchAreaLeft,
-                busY,
-                actualBranchAreaWidth,
-                MainBusVisualHeightMm),
+            geometry.MainBusBounds,
             positioned,
             assigned,
             ref maxRight,
             ref maxBottom);
 
-        double branchY =
-            busY +
-            MainBusVisualHeightMm +
-            InternalVerticalGapMm;
-
         for (int index = 0; index < columns.Length; index++)
         {
-            BranchColumn column = columns[index];
-            double slotCenterX =
-                branchAreaLeft +
-                (actualBranchAreaWidth *
-                 (index + 0.5) /
-                 columns.Length);
+            BranchColumn column =
+                columns[index];
+            double powerAxisX =
+                geometry.CircuitAxes[index];
 
             Add(
                 column.Branch.Id,
                 new MmRect(
-                    slotCenterX - (SemanticBranchWidthMm / 2.0),
-                    branchY,
+                    powerAxisX -
+                    (SemanticBranchWidthMm / 2.0),
+                    geometry.BranchY,
                     SemanticBranchWidthMm,
-                    SemanticBranchHeightMm),
+                    tokens.BranchStubHeightMm),
                 positioned,
                 assigned,
                 ref maxRight,
                 ref maxBottom);
 
             double itemY =
-                branchY +
-                SemanticBranchHeightMm +
-                InternalVerticalGapMm;
+                geometry.BranchContentY;
 
             foreach (CompositionBlock block in column.Children)
             {
-                if (block.SemanticRole is
-                        "DownstreamBoard" or
-                        "FinalLoad" or
-                        "Unknown")
+                if (IsExternalDestination(block))
                 {
                     externalDestinations.Add(
-                        (block, slotCenterX));
+                        (block, powerAxisX));
                     continue;
                 }
 
@@ -243,7 +210,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
                 AddOnPowerAxis(
                     block.Id,
-                    slotCenterX,
+                    powerAxisX,
                     itemY,
                     measured,
                     positioned,
@@ -253,40 +220,22 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
                 itemY +=
                     measured.Size.Height +
-                    InternalVerticalGapMm;
+                    tokens.ElementGapMm;
             }
         }
-
-        double boardBottom =
-            positioned
-                .Where(item =>
-                    !incoming.Any(block =>
-                        string.Equals(
-                            block.Id,
-                            item.BlockId,
-                            StringComparison.Ordinal)))
-                .Select(item => item.Bounds.Bottom)
-                .DefaultIfEmpty(contentTop + 30)
-                .Max() +
-            BoardSideMarginMm;
 
         Add(
             boardFrame.Id,
             new MmRect(
-                boardLeft,
-                boardTop,
-                boardWidth,
-                Math.Max(
-                    40,
-                    boardBottom - boardTop)),
+                geometry.BoardLeft,
+                geometry.BoardTop,
+                geometry.BoardWidth,
+                geometry.BoardBottom -
+                geometry.BoardTop),
             positioned,
             assigned,
             ref maxRight,
             ref maxBottom);
-
-        double externalDestinationY =
-            boardBottom +
-            InternalVerticalGapMm;
 
         foreach ((CompositionBlock block, double powerAxisX) in
                  externalDestinations
@@ -300,7 +249,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
             AddOnPowerAxis(
                 block.Id,
                 powerAxisX,
-                externalDestinationY,
+                geometry.ExternalDestinationY,
                 measured,
                 positioned,
                 assigned,
@@ -308,15 +257,20 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 ref maxBottom);
         }
 
-        // Preserve explicit visibility of any future non-template extension
-        // without allowing it to deform the deterministic RIC18 core.
+        // Future extensions stay outside the RIC18 core so they cannot deform
+        // its power axes or hierarchy.
         double auxiliaryY =
-            maxBottom + profile.ContinuationRowGapMm;
-        double auxiliaryX = boardLeft;
+            maxBottom +
+            profile.ContinuationRowGapMm;
+        double auxiliaryX =
+            geometry.BoardLeft;
 
         foreach (CompositionBlock block in composition.Blocks
-                     .Where(block => !assigned.Contains(block.Id))
-                     .OrderBy(block => block.Id, StringComparer.Ordinal))
+                     .Where(block =>
+                         !assigned.Contains(block.Id))
+                     .OrderBy(
+                         block => block.Id,
+                         StringComparer.Ordinal))
         {
             MmSize size =
                 measurement.GetBlock(block.Id).Size;
@@ -356,7 +310,8 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
     private static BranchColumn MeasureColumn(
         DrawingComposition composition,
         CompositionMeasurement measurement,
-        CompositionBlock branch)
+        CompositionBlock branch,
+        Ric18BoardLayoutTokens tokens)
     {
         CompositionBlock[] children =
             composition.Blocks
@@ -366,22 +321,76 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                         branch.Id,
                         StringComparison.Ordinal))
                 .OrderBy(ChildOrder)
-                .ThenBy(block => block.Id, StringComparer.Ordinal)
+                .ThenBy(
+                    block => block.Id,
+                    StringComparer.Ordinal)
                 .ToArray();
 
         double requiredWidth =
             children.Length == 0
-                ? MinimumSlotWidthMm
+                ? tokens.MinimumCircuitPitchMm
                 : children
                     .Select(block =>
                         measurement.GetBlock(block.Id).Size.Width)
                     .Max();
 
+        double internalContentHeight =
+            StackHeight(
+                children
+                    .Where(block =>
+                        !IsExternalDestination(block))
+                    .Select(block =>
+                        measurement.GetBlock(block.Id).Size.Height)
+                    .ToArray(),
+                tokens.ElementGapMm);
+
         return new BranchColumn(
             branch,
             children,
-            requiredWidth);
+            requiredWidth,
+            internalContentHeight);
     }
+
+    private static double StackBottom(
+        double startY,
+        IReadOnlyList<double> heights,
+        double gap)
+    {
+        if (heights.Count == 0)
+        {
+            return startY;
+        }
+
+        return
+            startY +
+            StackHeight(
+                heights,
+                gap);
+    }
+
+    private static double StackHeight(
+        IReadOnlyList<double> heights,
+        double gap)
+    {
+        if (heights.Count == 0)
+        {
+            return 0;
+        }
+
+        return
+            heights.Sum() +
+            (gap *
+             Math.Max(
+                 0,
+                 heights.Count - 1));
+    }
+
+    private static bool IsExternalDestination(
+        CompositionBlock block) =>
+        block.SemanticRole is
+            "DownstreamBoard" or
+            "FinalLoad" or
+            "Unknown";
 
     private static void AddOnPowerAxis(
         string blockId,
@@ -400,7 +409,8 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         Add(
             blockId,
             new MmRect(
-                powerAxisX - axisOffset,
+                powerAxisX -
+                axisOffset,
                 y,
                 measured.Size.Width,
                 measured.Size.Height),
@@ -419,7 +429,9 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                     block.SemanticRole,
                     role,
                     StringComparison.Ordinal))
-            .OrderBy(block => block.Id, StringComparer.Ordinal)
+            .OrderBy(
+                block => block.Id,
+                StringComparer.Ordinal)
             .ToArray();
 
     private static CompositionBlock SingleByRole(
@@ -427,7 +439,9 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
         string role)
     {
         CompositionBlock[] blocks =
-            ByRole(composition, role);
+            ByRole(
+                composition,
+                role);
 
         if (blocks.Length != 1)
         {
@@ -482,5 +496,6 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
     private sealed record BranchColumn(
         CompositionBlock Branch,
         IReadOnlyList<CompositionBlock> Children,
-        double RequiredWidthMm);
+        double RequiredWidthMm,
+        double InternalContentHeightMm);
 }
