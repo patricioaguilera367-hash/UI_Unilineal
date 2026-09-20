@@ -251,6 +251,13 @@ public sealed class DiagramSceneValidator
                 StringComparer.Ordinal)
             .ToArray();
 
+        TextSceneElement[] texts = scene.Elements
+            .OfType<TextSceneElement>()
+            .OrderBy(
+                text => text.Id.Value,
+                StringComparer.Ordinal)
+            .ToArray();
+
         foreach (PolylineSceneElement route in scene.Elements
                      .OfType<PolylineSceneElement>()
                      .Where(element =>
@@ -294,8 +301,37 @@ public sealed class DiagramSceneValidator
                     route.Id.ToString(),
                     nameof(PolylineSceneElement.Points)));
             }
+
+            foreach (TextSceneElement text in texts)
+            {
+                if (IsOwnedBy(
+                        text.Id,
+                        connection.Source.ElementId) ||
+                    IsOwnedBy(
+                        text.Id,
+                        connection.Target.ElementId) ||
+                    !RouteCrossesInterior(
+                        route.Points,
+                        text.Bounds))
+                {
+                    continue;
+                }
+
+                issues.Add(Error(
+                    SceneValidationCodes.RouteIntersectsText,
+                    $"Route '{route.Id}' intersects text '{text.Id}'.",
+                    route.Id.ToString(),
+                    nameof(PolylineSceneElement.Points)));
+            }
         }
     }
+
+    private static bool IsOwnedBy(
+        SceneId childId,
+        SceneId ownerId) =>
+        childId.Value.StartsWith(
+            ownerId.Value + "/",
+            StringComparison.Ordinal);
 
     private static bool IsStructuralRail(
         GroupSceneElement group)
