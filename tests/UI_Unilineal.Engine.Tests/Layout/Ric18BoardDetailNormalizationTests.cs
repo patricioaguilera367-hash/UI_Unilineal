@@ -106,10 +106,106 @@ public sealed class Ric18BoardDetailNormalizationTests
             Group(scene, "detail/B1/bus/NEUTRAL");
 
         Assert.True(
-            pe.Bounds.Y >= frame.Bounds.Y + 10);
+            pe.Bounds.Y >= frame.Bounds.Y + 14);
         Assert.True(
-            neutral.Bounds.Y >= frame.Bounds.Y + 10);
+            neutral.Bounds.Y >= frame.Bounds.Y + 14);
         Assert.True(pe.Bounds.X < neutral.Bounds.X);
+    }
+
+    [Fact]
+    public void MinimalBoard_CircuitBranchContainsContinuousPowerSegment()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+        GroupSceneElement branch =
+            Group(
+                scene,
+                "detail/B1/branch/C1");
+        LineSceneElement axis =
+            Assert.IsType<LineSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "detail/B1/branch/C1/axis"));
+
+        Assert.Equal(
+            Anchor(branch, "IN").Point,
+            axis.Start);
+        Assert.Equal(
+            Anchor(branch, "OUT").Point,
+            axis.End);
+    }
+
+    [Fact]
+    public void MinimalBoard_FrameEndsCloseToItsLastCircuitContent()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+        GroupSceneElement frame =
+            Group(
+                scene,
+                "detail/B1");
+        GroupSceneElement destination =
+            Group(
+                scene,
+                "detail/B1/branch/C1/destination");
+
+        Assert.InRange(
+            frame.Bounds.Bottom -
+            destination.Bounds.Bottom,
+            0,
+            10);
+    }
+
+    [Fact]
+    public void DifferentialBranch_NeutralPassesThroughRcdAndTpBypassesIt()
+    {
+        DiagramScene scene =
+            BuildScene(
+                MinimalWithDifferential(),
+                new EntityUid("B1"));
+        GroupSceneElement rcd =
+            Group(
+                scene,
+                "detail/B1/branch/C1/protection/PR-RCD");
+        GroupSceneElement destination =
+            Group(
+                scene,
+                "detail/B1/branch/C1/destination");
+
+        PolylineSceneElement neutralIn =
+            Route(
+                scene,
+                "detail/B1/connection/neutral-in/C1");
+        PolylineSceneElement neutralOut =
+            Route(
+                scene,
+                "detail/B1/connection/neutral-out/C1");
+        PolylineSceneElement protectiveEarth =
+            Route(
+                scene,
+                "detail/B1/connection/protective-earth/C1");
+
+        Assert.Equal(
+            Anchor(rcd, "N_IN").Point,
+            neutralIn.Points[^1]);
+        Assert.Equal(
+            Anchor(rcd, "N_OUT").Point,
+            neutralOut.Points[0]);
+        Assert.Equal(
+            Anchor(destination, "N").Point,
+            neutralOut.Points[^1]);
+        Assert.Equal(
+            Anchor(destination, "PE").Point,
+            protectiveEarth.Points[^1]);
+        Assert.DoesNotContain(
+            protectiveEarth.Points,
+            point =>
+                point == Anchor(rcd, "N_IN").Point ||
+                point == Anchor(rcd, "N_OUT").Point);
     }
 
     [Fact]
@@ -168,6 +264,59 @@ public sealed class Ric18BoardDetailNormalizationTests
         string id) =>
         group.Anchors.Single(anchor =>
             anchor.Id == id);
+
+    private static PolylineSceneElement Route(
+        DiagramScene scene,
+        string connectionId) =>
+        Assert.IsType<PolylineSceneElement>(
+            scene.Elements.Single(element =>
+                element is PolylineSceneElement route &&
+                route.Metadata.TryGetValue(
+                    "connectionId",
+                    out string? value) &&
+                value == connectionId));
+
+    private static SingleLineInput MinimalWithDifferential()
+    {
+        SingleLineInput source =
+            SemanticFixtureFactory.Minimal();
+        CircuitInput circuit =
+            Assert.Single(source.Circuits);
+        var differential =
+            new ProtectionInput(
+                new EntityUid("PR-RCD"),
+                new EntityReference(
+                    circuit.Uid,
+                    EntityKind.Circuit),
+                new EntityReference(
+                    circuit.Uid,
+                    EntityKind.Circuit),
+                ProtectionKind.Differential,
+                ProtectionRole.Adopted,
+                2,
+                25m,
+                null,
+                null,
+                30m,
+                "A",
+                null,
+                null,
+                OperationalState.Active,
+                DataState.Complete);
+
+        return new SingleLineInput(
+            source.Project,
+            source.Sources,
+            source.Boards,
+            source.Buses,
+            source.Circuits,
+            source.SupplyConnections,
+            [.. source.Protections, differential],
+            source.Grounding,
+            source.Results,
+            source.Metadata,
+            source.ServiceEntrances);
+    }
 
     private static RIC18DrawingProfile Profile() =>
         new Ric18DrawingProfileLoader().LoadDirectory(

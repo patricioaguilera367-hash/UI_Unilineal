@@ -73,6 +73,36 @@ public sealed class SummaryLayoutStrategy : ISingleLineLayoutStrategy
             y += rowHeights[depth] + profile.VerticalGapMm;
         }
 
+        var rowWidths = new Dictionary<int, double>();
+        double maximumRowWidth = 0;
+
+        for (int depth = 0; depth <= maxDepth; depth++)
+        {
+            if (!blocksByDepth.TryGetValue(
+                    depth,
+                    out string[]? ids) ||
+                ids.Length == 0)
+            {
+                rowWidths[depth] = 0;
+                continue;
+            }
+
+            double width =
+                ids.Sum(id =>
+                    measurement.GetBlock(id).Size.Width) +
+                (profile.HorizontalGapMm *
+                 Math.Max(0, ids.Length - 1));
+
+            rowWidths[depth] = width;
+            maximumRowWidth =
+                Math.Max(
+                    maximumRowWidth,
+                    width);
+        }
+
+        double summaryCenterX =
+            profile.GridMm +
+            (maximumRowWidth / 2.0);
         var positioned = new List<PositionedCompositionBlock>();
         double maxRight = 0;
         double maxBottom = 0;
@@ -86,7 +116,9 @@ public sealed class SummaryLayoutStrategy : ISingleLineLayoutStrategy
                 continue;
             }
 
-            double x = profile.GridMm;
+            double x =
+                summaryCenterX -
+                (rowWidths[depth] / 2.0);
 
             foreach (string id in ids)
             {

@@ -293,6 +293,29 @@ public sealed class SceneAssembly
         double centerX =
             positioned.Bounds.X +
             (positioned.Bounds.Width / 2.0);
+        MmPoint start =
+            new(
+                centerX,
+                positioned.Bounds.Y);
+        MmPoint end =
+            new(
+                centerX,
+                positioned.Bounds.Bottom);
+        SceneId axisId =
+            new($"{block.Id}/axis");
+
+        output.Add(
+            new LineSceneElement(
+                axisId,
+                BoundsFor([start, end]),
+                SceneLayer.Power,
+                15,
+                SceneVisibility.Both,
+                block.Entity,
+                GroupMetadata(block, definition.Id),
+                start,
+                end,
+                "POWER"));
 
         output.Add(
             new GroupSceneElement(
@@ -303,21 +326,17 @@ public sealed class SceneAssembly
                 SceneVisibility.Both,
                 block.Entity,
                 GroupMetadata(block, definition.Id),
-                [],
+                [axisId],
                 [
                     new SceneAnchor(
                         "IN",
                         AnchorRole.PowerIn,
-                        new MmPoint(
-                            centerX,
-                            positioned.Bounds.Y),
+                        start,
                         AnchorDirection.Up),
                     new SceneAnchor(
                         "OUT",
                         AnchorRole.PowerOut,
-                        new MmPoint(
-                            centerX,
-                            positioned.Bounds.Bottom),
+                        end,
                         AnchorDirection.Down)
                 ]));
     }
@@ -589,6 +608,294 @@ public sealed class SceneAssembly
                 anchors));
     }
 
+    private static void AssembleServiceEntranceFrame(
+        CompositionBlock block,
+        PositionedCompositionBlock positioned,
+        BlockDefinition definition,
+        ICollection<SceneElement> output,
+        ICollection<SceneId> children)
+    {
+        const double inset = 2;
+        const double headerHeight = 10;
+        MmRect frameBounds =
+            new(
+                positioned.Bounds.X + inset,
+                positioned.Bounds.Y + inset,
+                Math.Max(
+                    positioned.Bounds.Width - (inset * 2),
+                    MinimumPrimitiveExtentMm),
+                Math.Max(
+                    positioned.Bounds.Height - (inset * 2),
+                    MinimumPrimitiveExtentMm));
+        SceneId frameId =
+            new($"{block.Id}/service-frame");
+
+        output.Add(
+            new RectangleSceneElement(
+                frameId,
+                frameBounds,
+                SceneLayer.Symbol,
+                15,
+                SceneVisibility.Both,
+                block.Entity,
+                GroupMetadata(block, definition.Id),
+                "POWER"));
+        children.Add(frameId);
+
+        SceneId headerId =
+            new($"{block.Id}/service-header");
+        MmPoint headerStart =
+            new(
+                frameBounds.X,
+                frameBounds.Y + headerHeight);
+        MmPoint headerEnd =
+            new(
+                frameBounds.Right,
+                frameBounds.Y + headerHeight);
+
+        output.Add(
+            new LineSceneElement(
+                headerId,
+                BoundsFor([headerStart, headerEnd]),
+                SceneLayer.Power,
+                15,
+                SceneVisibility.Both,
+                block.Entity,
+                GroupMetadata(block, definition.Id),
+                headerStart,
+                headerEnd,
+                "POWER"));
+        children.Add(headerId);
+
+        if (block.Labels.TryGetValue(
+                "TITLE",
+                out string? title) &&
+            !string.IsNullOrWhiteSpace(title))
+        {
+            SceneId titleId =
+                new($"{block.Id}/service-title");
+
+            output.Add(
+                new TextSceneElement(
+                    titleId,
+                    new MmRect(
+                        frameBounds.X + 2,
+                        frameBounds.Y + 2,
+                        Math.Max(
+                            frameBounds.Width - 4,
+                            MinimumPrimitiveExtentMm),
+                        5),
+                    SceneLayer.Text,
+                    30,
+                    SceneVisibility.Both,
+                    block.Entity,
+                    GroupMetadata(block, definition.Id),
+                    title,
+                    "TECH"));
+            children.Add(titleId);
+        }
+    }
+
+    private static void AddServiceEntranceInternalLinks(
+        CompositionBlock block,
+        PositionedCompositionBlock positioned,
+        BlockDefinition definition,
+        IReadOnlyDictionary<string, SymbolDefinition> symbols,
+        ICollection<SceneElement> output,
+        ICollection<SceneId> children)
+    {
+        BlockPartDefinition? meterPart =
+            definition.Parts.SingleOrDefault(part =>
+                string.Equals(
+                    part.Id,
+                    "METER",
+                    StringComparison.Ordinal));
+        BlockPartDefinition? protectionPart =
+            definition.Parts.SingleOrDefault(part =>
+                string.Equals(
+                    part.Id,
+                    "PROTECTION",
+                    StringComparison.Ordinal));
+
+        if (meterPart is null ||
+            protectionPart is null ||
+            !symbols.TryGetValue(
+                meterPart.SymbolId,
+                out SymbolDefinition? meter))
+        {
+            return;
+        }
+
+        string protectionSymbolId =
+            block.SymbolOverrides.TryGetValue(
+                protectionPart.Id,
+                out string? overrideId)
+                    ? overrideId
+                    : protectionPart.SymbolId;
+
+        if (!symbols.TryGetValue(
+                protectionSymbolId,
+                out SymbolDefinition? protection))
+        {
+            return;
+        }
+
+        AnchorDefinition? protectionIn =
+            protection.Anchors.SingleOrDefault(anchor =>
+                string.Equals(
+                    anchor.Id,
+                    "IN",
+                    StringComparison.Ordinal));
+
+        if (protectionIn is null)
+        {
+            return;
+        }
+
+        double axisX =
+            positioned.Bounds.X +
+            protectionPart.Offset.X +
+            protectionIn.Point.X;
+        double frameHeaderY =
+            positioned.Bounds.Y + 12;
+        double meterTop =
+            positioned.Bounds.Y +
+            meterPart.Offset.Y +
+            meter.NominalBounds.Y;
+        double meterBottom =
+            meterTop +
+            meter.NominalBounds.Height;
+        double protectionTop =
+            positioned.Bounds.Y +
+            protectionPart.Offset.Y +
+            protectionIn.Point.Y;
+
+        AddServiceAxisSegment(
+            block,
+            definition,
+            $"{block.Id}/service-axis/top",
+            axisX,
+            frameHeaderY,
+            meterTop,
+            output,
+            children);
+        AddServiceAxisSegment(
+            block,
+            definition,
+            $"{block.Id}/service-axis/meter-protection",
+            axisX,
+            meterBottom,
+            protectionTop,
+            output,
+            children);
+    }
+
+    private static void AddServiceAxisSegment(
+        CompositionBlock block,
+        BlockDefinition definition,
+        string idValue,
+        double x,
+        double firstY,
+        double secondY,
+        ICollection<SceneElement> output,
+        ICollection<SceneId> children)
+    {
+        if (firstY == secondY)
+        {
+            return;
+        }
+
+        MmPoint start =
+            new(
+                x,
+                Math.Min(
+                    firstY,
+                    secondY));
+        MmPoint end =
+            new(
+                x,
+                Math.Max(
+                    firstY,
+                    secondY));
+        SceneId id =
+            new(idValue);
+
+        output.Add(
+            new LineSceneElement(
+                id,
+                BoundsFor([start, end]),
+                SceneLayer.Power,
+                15,
+                SceneVisibility.Both,
+                block.Entity,
+                GroupMetadata(block, definition.Id),
+                start,
+                end,
+                "POWER"));
+        children.Add(id);
+    }
+
+    private static SceneAnchor[] NormalizeSummaryPowerAnchors(
+        CompositionBlock block,
+        MmRect bounds,
+        IReadOnlyList<SceneAnchor> anchors)
+    {
+        if (block.SemanticRole is not ("Source" or "BoardSummary"))
+        {
+            return anchors.ToArray();
+        }
+
+        double centerX =
+            bounds.X +
+            (bounds.Width / 2.0);
+
+        return anchors
+            .Select(anchor =>
+            {
+                if (block.SemanticRole == "Source" &&
+                    anchor.Role == AnchorRole.PowerOut)
+                {
+                    return new SceneAnchor(
+                        anchor.Id,
+                        anchor.Role,
+                        new MmPoint(
+                            centerX,
+                            bounds.Bottom),
+                        AnchorDirection.Down);
+                }
+
+                if (block.SemanticRole == "BoardSummary" &&
+                    anchor.Role == AnchorRole.PowerIn)
+                {
+                    return new SceneAnchor(
+                        anchor.Id,
+                        anchor.Role,
+                        new MmPoint(
+                            centerX,
+                            bounds.Y),
+                        AnchorDirection.Up);
+                }
+
+                if (block.SemanticRole == "BoardSummary" &&
+                    anchor.Role == AnchorRole.PowerOut)
+                {
+                    return new SceneAnchor(
+                        anchor.Id,
+                        anchor.Role,
+                        new MmPoint(
+                            centerX,
+                            bounds.Bottom),
+                        AnchorDirection.Down);
+                }
+
+                return anchor;
+            })
+            .OrderBy(
+                anchor => anchor.Id,
+                StringComparer.Ordinal)
+            .ToArray();
+    }
+
     private static void AssembleBlock(
         CompositionBlock block,
         PositionedCompositionBlock positioned,
@@ -610,6 +917,21 @@ public sealed class SceneAssembly
 
         foreach (BlockPartDefinition part in definition.Parts)
         {
+            if (block.SemanticRole == "ServiceEntranceAssembly" &&
+                string.Equals(
+                    part.Id,
+                    "FRAME",
+                    StringComparison.Ordinal))
+            {
+                AssembleServiceEntranceFrame(
+                    block,
+                    positioned,
+                    definition,
+                    output,
+                    children);
+                continue;
+            }
+
             string symbolId = block.SymbolOverrides.TryGetValue(
                 part.Id,
                 out string? overrideSymbolId)
@@ -694,11 +1016,27 @@ public sealed class SceneAssembly
                 children);
         }
 
+        if (block.SemanticRole == "ServiceEntranceAssembly")
+        {
+            AddServiceEntranceInternalLinks(
+                block,
+                positioned,
+                definition,
+                symbols,
+                output,
+                children);
+        }
+
         SceneAnchor[] groupAnchors =
             AddSemanticDestinationAnchors(
                 block,
                 positioned.Bounds,
                 ResolveGroupAnchorIds(anchorCandidates));
+        groupAnchors =
+            NormalizeSummaryPowerAnchors(
+                block,
+                positioned.Bounds,
+                groupAnchors);
 
         var group = new GroupSceneElement(
             new SceneId(block.Id),

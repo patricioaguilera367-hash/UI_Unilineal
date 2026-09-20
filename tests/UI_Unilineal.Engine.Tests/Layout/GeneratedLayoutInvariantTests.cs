@@ -12,6 +12,7 @@ public sealed class GeneratedLayoutInvariantTests
 {
     [Theory]
     [InlineData(1)]
+    [InlineData(2)]
     [InlineData(4)]
     [InlineData(12)]
     [InlineData(24)]
@@ -82,6 +83,71 @@ public sealed class GeneratedLayoutInvariantTests
 
     [Theory]
     [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(4)]
+    [InlineData(12)]
+    public void GeneratedBoardDetail_MainBusTapsMatchCircuitColumnAxes(
+        int circuitCount)
+    {
+        RIC18DrawingProfile profile = Profile();
+        SingleLineProjection projection =
+            Project(
+                GeneratedInput(
+                    circuitCount,
+                    reverse: false));
+        SingleLineLayoutResult result =
+            new SingleLineLayoutEngine(
+                new DeterministicTextMetrics())
+                .LayoutBoardDetail(
+                    projection,
+                    new EntityUid("B1"),
+                    profile);
+
+        Assert.True(
+            result.Success,
+            result.Failure?.Message);
+        DiagramScene scene =
+            Assert.IsType<DiagramScene>(
+                result.Scene);
+        GroupSceneElement bus =
+            Assert.IsType<GroupSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "detail/B1/bus/BUS:B1:MAIN"));
+
+        for (int index = 1; index <= circuitCount; index++)
+        {
+            string suffix =
+                index.ToString(
+                    "D3",
+                    System.Globalization.CultureInfo.InvariantCulture);
+            GroupSceneElement branch =
+                Assert.IsType<GroupSceneElement>(
+                    scene.Elements.Single(element =>
+                        element.Id.Value ==
+                        $"detail/B1/branch/C{suffix}"));
+            SceneAnchor tap =
+                bus.Anchors.Single(anchor =>
+                    anchor.Id == $"TAP:C{suffix}");
+            SceneAnchor branchIn =
+                branch.Anchors.Single(anchor =>
+                    anchor.Id == "IN");
+            SceneAnchor branchOut =
+                branch.Anchors.Single(anchor =>
+                    anchor.Id == "OUT");
+
+            Assert.Equal(
+                tap.Point.X,
+                branchIn.Point.X);
+            Assert.Equal(
+                branchIn.Point.X,
+                branchOut.Point.X);
+        }
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
     [InlineData(12)]
     [InlineData(48)]
     [InlineData(100)]

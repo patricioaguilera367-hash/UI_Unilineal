@@ -7,12 +7,13 @@ namespace UI_Unilineal.Engine.Layout;
 public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 {
     private const double BoardSideMarginMm = 8;
-    private const double BoardHeaderHeightMm = 11;
-    private const double InternalVerticalGapMm = 4;
+    private const double BoardHeaderHeightMm = 15;
+    private const double InternalVerticalGapMm = 3;
     private const double MinimumBoardWidthMm = 80;
     private const double MinimumSlotWidthMm = 34;
     private const double SemanticBranchWidthMm = 4;
     private const double SemanticBranchHeightMm = 2;
+    private const double MainBusVisualHeightMm = 6;
 
     public PositionedLayout Layout(
         DrawingComposition composition,
@@ -186,7 +187,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 branchAreaLeft,
                 busY,
                 actualBranchAreaWidth,
-                busMeasured.Size.Height),
+                MainBusVisualHeightMm),
             positioned,
             assigned,
             ref maxRight,
@@ -194,7 +195,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
 
         double branchY =
             busY +
-            busMeasured.Size.Height +
+            MainBusVisualHeightMm +
             InternalVerticalGapMm;
 
         for (int index = 0; index < columns.Length; index++)
