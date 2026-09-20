@@ -551,14 +551,15 @@ public static class SymbolGallerySceneBuilder
             return "3 — RCD variants";
         }
 
-        if (symbol.Id == "CIRCUIT_MARKER")
+        if (symbol.Id is "CIRCUIT_MARKER" or "CIRCUIT_USE_TEXT")
         {
             return "5 — Circuit marker";
         }
 
         return symbol.SemanticRole switch
         {
-            "SourceUtility" or "ServiceEntrance" => "1 — Supply",
+            "SourceUtility" or "ServiceEntrance" or "ServiceEntranceFrame" or "Meter" or
+            "ServiceEntranceText" => "1 — Supply / empalme",
             "Breaker" or "ResidualCurrentDevice" or "Fuse" => "4 — Protection · generic / compatibility",
             "Bus" or "Ground" or "ServiceGround" or "ProtectiveGround" or "ConnectionNode" =>
                 "6 — Distribution & grounding",
