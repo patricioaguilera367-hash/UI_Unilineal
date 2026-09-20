@@ -268,10 +268,15 @@ public sealed class AvaloniaSceneRenderer
             ?? throw new KeyNotFoundException(
                 $"Drawing profile does not contain symbol '{symbol.SymbolDefinitionId}'.");
 
+        if (definition.Primitives.Count == 0)
+        {
+            // Label-only symbols are valid semantic/layout carriers.
+            // Their visible content is emitted as TextSceneElement instances.
+            return;
+        }
+
         SymbolPrimitive firstPrimitive =
-            definition.Primitives.FirstOrDefault()
-            ?? throw new InvalidOperationException(
-                $"Symbol '{definition.Id}' contains no drawable primitives.");
+            definition.Primitives[0];
         Pen pen =
             resources.ResolvePen(firstPrimitive.LineStyleId);
         Geometry geometry =
