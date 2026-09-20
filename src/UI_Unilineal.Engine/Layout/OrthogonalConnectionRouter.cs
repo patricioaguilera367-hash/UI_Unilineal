@@ -227,13 +227,6 @@ public sealed class OrthogonalConnectionRouter
         IEnumerable<(string Id, MmRect Bounds)> annotations =
             scene.Elements
                 .OfType<TextSceneElement>()
-                .Where(text =>
-                    !IsOwnedBy(
-                        text.Id,
-                        sourceElement.Id) &&
-                    !IsOwnedBy(
-                        text.Id,
-                        targetElement.Id))
                 .Select(text =>
                     (
                         text.Id.Value,
@@ -251,13 +244,6 @@ public sealed class OrthogonalConnectionRouter
                     profile.RouteClearanceMm))
             .ToArray();
     }
-
-    private static bool IsOwnedBy(
-        SceneId childId,
-        SceneId ownerId) =>
-        childId.Value.StartsWith(
-            ownerId.Value + "/",
-            StringComparison.Ordinal);
 
     private static bool IsSameBranchPath(
         SceneElement source,
