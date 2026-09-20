@@ -703,6 +703,19 @@ public sealed class PdfExporter
                     .Append("] 0 d\n");
                 break;
 
+            case LinePattern.DashDot:
+                output
+                    .Append('[')
+                    .Append(Number(4d * PointsPerMillimeter))
+                    .Append(' ')
+                    .Append(Number(2d * PointsPerMillimeter))
+                    .Append(' ')
+                    .Append(Number(1d * PointsPerMillimeter))
+                    .Append(' ')
+                    .Append(Number(2d * PointsPerMillimeter))
+                    .Append("] 0 d\n");
+                break;
+
             case LinePattern.Dotted:
                 output
                     .Append('[')
