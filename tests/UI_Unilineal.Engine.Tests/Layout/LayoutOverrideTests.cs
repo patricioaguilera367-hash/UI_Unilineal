@@ -12,14 +12,10 @@ public sealed class LayoutOverrideTests
     [Fact]
     public void Apply_EmptyState_PreservesAutomaticLayoutExactly()
     {
-        PositionedLayout automatic =
-            Layout(
-                Block("A", 10, 10),
-                Block("B", 10, 10));
+        RIC18DrawingProfile profile = Profile();
+        PositionedLayout automatic = AutomaticLayout();
         DrawingComposition composition =
-            Composition(
-                EntityBlock("A", "E1"),
-                EntityBlock("B", "E2"));
+            Composition(profile);
         var state =
             new DiagramLayoutState(
                 DiagramSceneKind.ProjectSummary,
@@ -33,13 +29,12 @@ public sealed class LayoutOverrideTests
                 automatic,
                 composition,
                 state,
-                Profile());
+                profile.Layout);
 
         Assert.Same(
             automatic,
             result);
     }
-
 
     [Fact]
     public void Apply_LockedEntityNeverMovesEvenWhenItCreatesOverlap()
