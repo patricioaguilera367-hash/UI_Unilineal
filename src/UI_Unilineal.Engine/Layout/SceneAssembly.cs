@@ -375,6 +375,18 @@ public sealed class SceneAssembly
                 frameId
             };
 
+        double boardCenterX =
+            positioned.Bounds.X +
+            (positioned.Bounds.Width / 2.0);
+        double labelLeft =
+            positioned.Bounds.X + 2;
+        double labelRight =
+            boardCenterX - 2;
+        double labelWidth =
+            Math.Max(
+                labelRight - labelLeft,
+                MinimumPrimitiveExtentMm);
+
         if (block.Labels.TryGetValue("CODE", out string? code) &&
             !string.IsNullOrWhiteSpace(code))
         {
@@ -385,9 +397,9 @@ public sealed class SceneAssembly
                 new TextSceneElement(
                     id,
                     new MmRect(
-                        positioned.Bounds.X + 2,
+                        labelLeft,
                         positioned.Bounds.Y + 1.5,
-                        28,
+                        labelWidth,
                         4),
                     SceneLayer.Text,
                     30,
@@ -410,11 +422,9 @@ public sealed class SceneAssembly
                 new TextSceneElement(
                     id,
                     new MmRect(
-                        positioned.Bounds.X + 2,
+                        labelLeft,
                         positioned.Bounds.Y + 5.5,
-                        Math.Max(
-                            positioned.Bounds.Width - 4,
-                            MinimumPrimitiveExtentMm),
+                        labelWidth,
                         4),
                     SceneLayer.Text,
                     30,
