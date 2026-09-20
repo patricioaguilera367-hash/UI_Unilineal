@@ -19,6 +19,8 @@ public sealed class AnchorCompatibilityTests
                      target == AnchorRole.PowerIn) ||
                     (source == AnchorRole.BusTap &&
                      target == AnchorRole.PowerIn) ||
+                    (source == AnchorRole.Neutral &&
+                     target == AnchorRole.Neutral) ||
                     (source == AnchorRole.Ground &&
                      target == AnchorRole.Ground) ||
                     (source == AnchorRole.Reference &&
