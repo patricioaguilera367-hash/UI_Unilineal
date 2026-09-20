@@ -11,6 +11,7 @@ public static class AnchorCompatibility
         {
             (AnchorRole.PowerOut, AnchorRole.PowerIn) => true,
             (AnchorRole.BusTap, AnchorRole.PowerIn) => true,
+            (AnchorRole.Neutral, AnchorRole.Neutral) => true,
             (AnchorRole.Ground, AnchorRole.Ground) => true,
             (AnchorRole.Reference, AnchorRole.Reference) => true,
             (AnchorRole.Annotation, AnchorRole.Annotation) => true,
