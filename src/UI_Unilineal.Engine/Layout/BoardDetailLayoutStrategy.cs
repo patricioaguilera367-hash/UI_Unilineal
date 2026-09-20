@@ -97,7 +97,75 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
             positioned.Single(item => item.BlockId == bus.Id);
 
         CompositionBlock[] branches = ByRole(composition, "CircuitBranch");
-        double rowY = busPosition.Bounds.Bottom + profile.VerticalGapMm;
+        CompositionBlock[] neutralBuses = ByRole(composition, "NeutralBus");
+        CompositionBlock[] peBuses = ByRole(composition, "ProtectiveEarthBus");
+
+        if (neutralBuses.Length != 1 || peBuses.Length != 1)
+        {
+            throw new InvalidOperationException(
+                "Board-detail composition must contain exactly one neutral bus and one protective-earth bus.");
+        }
+
+        double branchSpan =
+            branches.Length == 0
+                ? busPosition.Bounds.Width
+                : branches
+                    .Select(branch =>
+                    {
+                        CompositionBlock[] children = composition.Blocks
+                            .Where(block =>
+                                string.Equals(
+                                    block.ParentId,
+                                    branch.Id,
+                                    StringComparison.Ordinal))
+                            .OrderBy(ChildOrder)
+                            .ThenBy(block => block.Id, StringComparer.Ordinal)
+                            .ToArray();
+
+                        return new[] { branch, .. children }
+                            .Select(block =>
+                                measurement.GetBlock(block.Id).Size.Width)
+                            .Max();
+                    })
+                    .Sum() +
+                  (profile.BranchGapMm * Math.Max(0, branches.Length - 1));
+
+        double railWidth =
+            Math.Max(
+                busPosition.Bounds.Width,
+                Math.Min(
+                    profile.MaxBoardDetailWidthMm,
+                    branchSpan));
+
+        double railY =
+            busPosition.Bounds.Bottom +
+            profile.VerticalGapMm;
+
+        foreach (CompositionBlock rail in neutralBuses.Concat(peBuses))
+        {
+            MmSize measured =
+                measurement.GetBlock(rail.Id).Size;
+            var bounds =
+                new MmRect(
+                    profile.GridMm,
+                    railY,
+                    railWidth,
+                    measured.Height);
+
+            Add(
+                rail.Id,
+                bounds,
+                positioned,
+                assigned,
+                ref maxRight,
+                ref maxBottom);
+
+            railY =
+                bounds.Bottom +
+                profile.VerticalGapMm;
+        }
+
+        double rowY = railY;
         double currentX = profile.GridMm;
         double rowMaxHeight = 0;
         bool rowHasBranch = false;
@@ -236,6 +304,7 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
     private static int ChildOrder(CompositionBlock block) =>
         block.SemanticRole switch
         {
+            "DifferentialProtection" => 0,
             "Protection" => 0,
             "DownstreamBoard" => 1,
             "FinalLoad" => 1,
