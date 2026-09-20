@@ -46,4 +46,5 @@ public static class SceneValidationCodes
     public const string OrphanGroupChild = "ORPHAN_GROUP_CHILD";
     public const string StructuralBlockOverlap = "STRUCTURAL_BLOCK_OVERLAP";
     public const string RouteIntersectsStructuralBlock = "ROUTE_INTERSECTS_STRUCTURAL_BLOCK";
+    public const string RouteIntersectsText = "ROUTE_INTERSECTS_TEXT";
 }
