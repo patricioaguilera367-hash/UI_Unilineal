@@ -71,6 +71,7 @@ public sealed class CompositionBuilder
         EnsureRequiredBlocks(
             profile,
             "INCOMING_SUPPLY_BLOCK",
+            "SERVICE_ENTRANCE_ASSEMBLY_BLOCK",
             "MAIN_PROTECTION_BLOCK",
             "MAIN_BUS_BLOCK",
             "NEUTRAL_BUS_BLOCK",
@@ -251,6 +252,77 @@ public sealed class CompositionBuilder
             : incoming.OriginBoard is not null
                 ? DisplayLabel(incoming.OriginBoard.Code, incoming.OriginBoard.Name)
                 : incoming.Supply.Origin.Uid.ToString();
+
+        if (incoming.Source is not null &&
+            incoming.ServiceEntrance is ServiceEntranceInput serviceEntrance)
+        {
+            var labels =
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["TITLE"] = "EMPALME",
+                    ["METER_CODE"] =
+                        serviceEntrance.MeterKind switch
+                        {
+                            MeterKind.SinglePhase => "M 1F",
+                            MeterKind.ThreePhase => "M 3F",
+                            MeterKind.Other => "M",
+                            _ => "M ?"
+                        },
+                    ["TARIFF"] =
+                        string.IsNullOrWhiteSpace(serviceEntrance.TariffCode)
+                            ? "Tarifa: —"
+                            : $"Tarifa: {serviceEntrance.TariffCode}",
+                    ["DETAILS"] =
+                        string.IsNullOrWhiteSpace(serviceEntrance.Details)
+                            ? "Detalle: —"
+                            : serviceEntrance.Details
+                };
+
+            var overrides =
+                new Dictionary<string, string>(StringComparer.Ordinal);
+
+            if (incoming.ServiceProtection is ProtectionInput protection)
+            {
+                (_, IReadOnlyDictionary<string, string> protectionOverrides) =
+                    ProtectionPresentation(
+                        protection,
+                        "PROTECTION");
+
+                foreach ((string key, string value) in protectionOverrides)
+                {
+                    overrides[key] = value;
+                }
+
+                IReadOnlyDictionary<string, string> protectionLabels =
+                    ProtectionLabels(protection);
+
+                labels["PROTECTION_TEXT"] =
+                    protectionLabels.TryGetValue(
+                        "RATING",
+                        out string? rating)
+                        ? $"{rating} · {serviceEntrance.ProtectionAuthority}"
+                        : serviceEntrance.ProtectionAuthority.ToString();
+            }
+            else
+            {
+                labels["PROTECTION_TEXT"] =
+                    $"Protección: — · {serviceEntrance.ProtectionAuthority}";
+            }
+
+            return new CompositionBlock(
+                CompositionIdFactory.DetailIncoming(
+                    boardUid,
+                    incoming.Supply.Uid),
+                "SERVICE_ENTRANCE_ASSEMBLY_BLOCK",
+                "ServiceEntranceAssembly",
+                new EntityReference(
+                    incoming.Supply.Uid,
+                    EntityKind.SupplyConnection),
+                labels,
+                incoming.Status,
+                CompositionIdFactory.DetailBoard(boardUid),
+                overrides);
+        }
 
         return new CompositionBlock(
             CompositionIdFactory.DetailIncoming(
