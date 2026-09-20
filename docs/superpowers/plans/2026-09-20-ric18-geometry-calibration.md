@@ -1,13 +1,15 @@
-# RIC 18 geometry calibration plan
+# RIC 18 visual-grammar grounding plan
 
 Date: 2026-09-20  
 Branch: `feature/ric18-graphic-grounding`
 
 ## Objective
 
-Replace the current generic board-detail geometry with a deterministic RIC-18-oriented geometric grammar calibrated against the supplied reference DXF and visual RIC 18 sheet.
+Replace the current generic board-detail geometry with a deterministic visual grammar that reproduces the relationships shown in the RIC 18 reference image.
 
-This work is about **visual structure and geometry**, not about claiming that the DXF dimensions are normative.
+**Critical premise:** for this figure, RIC 18 provides the image only. It does not define dimensions, proportions, coordinates, scales or tolerances. The supplied DXF is a manual trace made by the user to help us inspect that image; its dimensions and normalized ratios are not acceptance targets.
+
+This work is therefore about **topology, hierarchy, connection grammar, alignment intent, bars, nodes, symbol relationships and visual organization**. Numeric layout dimensions are UI_Unilineal design decisions.
 
 ## Scope rule
 
@@ -41,37 +43,30 @@ Therefore the task is **not** to add more offsets to the current geometry. The t
 
 ---
 
-# Checkpoint A — canonical DXF fixture
+# Checkpoint A — canonical visual-grammar fixture
 
-Create a canonical machine-readable reference fixture from the supplied DXF.
+Create a machine-readable fixture that records the **categorical relationships** observable in the RIC 18 image and made easier to inspect by the hand-traced DXF.
 
-The fixture must store normalized relations rather than treating raw DXF dimensions as regulation.
+Required grammar facts include:
 
-Required normalized reference data:
+- incoming supply is upstream of the board;
+- incoming conductor establishes the main vertical power axis;
+- general protection belongs to that incoming path;
+- main distribution bus is horizontal;
+- circuit branches leave the bus through explicit junction nodes;
+- TP/PE and N are distinct bars/zones;
+- branch chains preserve their own vertical power axes;
+- neutral and protective-earth paths have different routing semantics;
+- differential protection is part of the branch chain when present;
+- loads / downstream boards are downstream of their branch;
+- physical coincident junctions are rendered once;
+- annotations belong to elements but do not define electrical topology.
 
-- board frame aspect ratio;
-- incoming axis;
-- main bus level;
-- PE/TP header zone;
-- neutral header zone;
-- circuit axes;
-- general protection zone;
-- branch protection zone;
-- differential zone;
-- bottom exit zone;
-- external destination / circuit-number zone;
-- label anchor zones.
-
-For each quantity store:
-
-1. raw measured example value;
-2. normalized value relative to board frame;
-3. provenance = `DXF_REFERENCE_EXAMPLE`;
-4. tolerance used by visual regression tests.
+Raw DXF measurements may remain stored as **diagnostic provenance only**. Do not derive pass/fail tolerances from them.
 
 ### Acceptance
 
-A unit test can load the reference fixture and verify that the measured DXF-derived normalized values are internally consistent.
+A unit test can load the fixture and verify the categorical grammar without asserting any RIC18 dimension, ratio or coordinate.
 
 ---
 
@@ -96,9 +91,9 @@ Ric18BoardGeometry
 └── ExternalDestinationLevel
 ```
 
-The geometry model must own layout ratios/tokens. `BoardDetailLayoutStrategy` must stop owning arbitrary visual constants.
+The geometry model must own explicit layout tokens. `BoardDetailLayoutStrategy` must stop owning scattered arbitrary visual constants.
 
-The model may scale to content, but ratios are calibrated against the reference fixture.
+Those tokens are **UI_Unilineal design choices**, selected to reproduce the visual grammar coherently across different circuit counts and content. They are not calibrated as if the hand-traced DXF supplied normative proportions.
 
 ### Circuit-axis rule
 
@@ -148,10 +143,10 @@ For the canonical three-circuit fixture:
 
 - incoming power axis is centered;
 - main protection is centered;
-- main bus is at the calibrated normalized level;
-- circuit axes approximate the DXF normalized positions within tolerance;
-- TP and N occupy calibrated header zones;
-- branch protection and differential levels fall within calibrated vertical bands;
+- main bus occupies the intended structural level below the incoming protection;
+- circuit axes are distributed deterministically and symmetrically;
+- TP and N occupy the intended left/right header regions;
+- branch protection and differential elements remain in the correct vertical order;
 - circuit exits are below the differential area;
 - final loads/downstream boards are outside the frame;
 - no electrical conductor is rerouted merely to make room for a text label.
@@ -182,27 +177,31 @@ Automated overlap checks cover at minimum:
 
 ---
 
-# Checkpoint E — geometric comparison against DXF
+# Checkpoint E — grammar regression tests
 
-Add a visual-geometry regression test for a canonical 3-circuit board.
+Add regression tests for canonical board-detail fixtures, including a three-circuit case inspired by the reference image.
 
-The test compares normalized feature vectors, not pixels:
+The tests must compare **relations**, not DXF dimensions:
 
 ```text
-board.aspect
-incoming.x
-bus.y
-tp.center.x
-neutral.center.x
-circuit[0..2].x
-branchProtection.y
-differential.y
-exit.y
+incoming above board
+incoming axis == main protection axis
+incoming axis == main-bus input axis
+main bus horizontal
+TP left of incoming axis
+N right of incoming axis
+branch taps ordered left-to-right
+odd middle branch may share incoming axis
+protection precedes differential
+neutral traverses differential when applicable
+PE bypasses differential
+destinations remain downstream/outside as applicable
+coincident junctions render once
 ```
 
-Each feature has an explicit tolerance.
+Tests may also enforce UI_Unilineal-owned layout tokens for internal consistency, but those tokens must be labelled as implementation/design decisions rather than RIC18 requirements.
 
-This test is the main guard against returning to a generic-looking layout that still satisfies only semantic invariants.
+This regression layer prevents a return to the generic layout while avoiding the opposite error of turning the user's hand trace into a dimensional standard.
 
 ---
 
@@ -212,7 +211,7 @@ Only after A–E are GREEN:
 
 1. run the Playground;
 2. open a board detail;
-3. compare side-by-side with the RIC 18 visual reference and DXF render;
+3. compare side-by-side primarily with the RIC 18 reference image; use the DXF render only as an inspection aid for connections/alignment that are hard to read in the raster image;
 4. record remaining discrepancies by category:
    - geometry;
    - symbol;
@@ -244,13 +243,13 @@ This checkpoint is intentionally blocked until BoardDetail is accepted.
 Do not:
 
 - regenerate goldens simply to silence failures;
-- declare arbitrary DXF dimensions to be regulatory RIC 18 values;
+- declare any DXF dimension or normalized ratio to be a RIC 18 value or acceptance target;
 - add another one-off layout offset without a named geometric rule;
 - modify Summary while BoardDetail is still visually ungrounded;
 - move electrical axes because annotation text is too wide.
 
 Every visual change must be traceable to one of:
 
-- `RIC18_VISUAL_REFERENCE`
-- `DXF_REFERENCE_EXAMPLE`
-- `NORMALIZED_LAYOUT_DECISION`
+- `RIC18_VISUAL_GRAMMAR` — categorical relation visible in the reference image;
+- `DXF_HAND_TRACE_EVIDENCE` — inspection aid only, never metric authority;
+- `UI_LAYOUT_DECISION` — numeric size/spacing/proportion chosen by UI_Unilineal.
