@@ -25,6 +25,8 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 nameof(composition));
         }
 
+        CompositionBlock boardFrame =
+            SingleByRole(composition, "BoardFrame");
         CompositionBlock[] incoming =
             composition.Blocks
                 .Where(block =>
@@ -222,6 +224,32 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                 column.Width +
                 profile.BranchGapMm;
         }
+
+        double boardBottom =
+            positioned
+                .Where(item =>
+                    !incoming.Any(block =>
+                        string.Equals(
+                            block.Id,
+                            item.BlockId,
+                            StringComparison.Ordinal)))
+                .Select(item => item.Bounds.Bottom)
+                .DefaultIfEmpty(boardTop + 40)
+                .Max();
+
+        Add(
+            boardFrame.Id,
+            new MmRect(
+                boardLeft,
+                boardTop - 2,
+                boardWidth,
+                Math.Max(
+                    40,
+                    boardBottom - boardTop + BoardSideMarginMm + 2)),
+            positioned,
+            assigned,
+            ref maxRight,
+            ref maxBottom);
 
         double auxiliaryY =
             Math.Max(
