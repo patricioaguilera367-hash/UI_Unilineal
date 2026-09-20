@@ -182,7 +182,11 @@ public sealed class OrthogonalConnectionRouter
             return false;
         }
 
-        return role is "NeutralBus" or "ProtectiveEarthBus";
+        return role is
+            "BoardFrame" or
+            "MainBus" or
+            "NeutralBus" or
+            "ProtectiveEarthBus";
     }
 
     private static SceneElement ResolveElement(
