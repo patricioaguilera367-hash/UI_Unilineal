@@ -122,7 +122,10 @@ public sealed class BoardDetailLayoutStrategy : ISingleLineLayoutStrategy
                             .ThenBy(block => block.Id, StringComparer.Ordinal)
                             .ToArray();
 
-                        return new[] { branch, .. children }
+                        CompositionBlock[] column =
+                            [branch, .. children];
+
+                        return column
                             .Select(block =>
                                 measurement.GetBlock(block.Id).Size.Width)
                             .Max();
