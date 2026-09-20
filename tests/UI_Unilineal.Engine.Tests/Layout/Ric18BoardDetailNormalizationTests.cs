@@ -281,7 +281,7 @@ public sealed class Ric18BoardDetailNormalizationTests
     {
         DiagramScene scene =
             BuildScene(
-                SemanticFixtureFactory.Nested(),
+                SemanticFixtureFactory.NestedBoards(),
                 new EntityUid("B1"));
 
         GroupSceneElement board =
