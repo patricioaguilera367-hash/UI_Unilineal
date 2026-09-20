@@ -192,6 +192,7 @@ public sealed class SceneAssembly
                     block,
                     positioned,
                     definition,
+                    profile.Layout,
                     elements);
             }
             else
@@ -435,8 +436,11 @@ public sealed class SceneAssembly
         CompositionBlock block,
         PositionedCompositionBlock positioned,
         BlockDefinition definition,
+        LayoutProfile layoutProfile,
         ICollection<SceneElement> output)
     {
+        const double ConnectionNodeRadiusMm = 1.2;
+
         string lineStyleId =
             block.SemanticRole switch
             {
@@ -464,36 +468,13 @@ public sealed class SceneAssembly
             block.SemanticRole == "MainBus"
                 ? 0
                 : 4;
-        double left =
+        double nominalLeft =
             positioned.Bounds.X + railInset;
-        double right =
+        double nominalRight =
             positioned.Bounds.Right - railInset;
         double y =
             positioned.Bounds.Y +
             (positioned.Bounds.Height / 2.0);
-
-        SceneId railId =
-            new($"{block.Id}/rail");
-
-        var rail = new LineSceneElement(
-            railId,
-            new MmRect(
-                left,
-                y,
-                Math.Max(
-                    right - left,
-                    MinimumPrimitiveExtentMm),
-                MinimumPrimitiveExtentMm),
-            layer,
-            15,
-            SceneVisibility.Both,
-            block.Entity,
-            GroupMetadata(block, definition.Id),
-            new MmPoint(left, y),
-            new MmPoint(right, y),
-            lineStyleId);
-
-        output.Add(rail);
 
         string[] taps =
             block.Labels.TryGetValue("TAPS", out string? raw) &&
@@ -507,21 +488,85 @@ public sealed class SceneAssembly
         var anchors =
             new List<SceneAnchor>();
 
+        double railLeft =
+            nominalLeft;
+        double railRight =
+            nominalRight;
+
         if (block.SemanticRole == "MainBus")
         {
+            double incomingX =
+                nominalLeft +
+                ((nominalRight - nominalLeft) / 2.0);
+            double minimumNodeSeparationMm =
+                Math.Max(
+                    ConnectionNodeRadiusMm * 2.0,
+                    layoutProfile.GridMm);
+
             anchors.Add(
                 new SceneAnchor(
                     "IN",
                     AnchorRole.PowerIn,
                     new MmPoint(
-                        left + ((right - left) / 2.0),
+                        incomingX,
                         y),
                     AnchorDirection.Up));
+
+            for (int index = 0; index < taps.Length; index++)
+            {
+                double fraction =
+                    (index + 0.5) /
+                    Math.Max(1, taps.Length);
+                double x =
+                    nominalLeft +
+                    ((nominalRight - nominalLeft) * fraction);
+
+                if (Math.Abs(x - incomingX) <
+                    0.000001)
+                {
+                    x +=
+                        minimumNodeSeparationMm;
+                }
+
+                anchors.Add(
+                    new SceneAnchor(
+                        $"TAP:{taps[index]}",
+                        AnchorRole.BusTap,
+                        new MmPoint(x, y),
+                        AnchorDirection.Down));
+            }
+
+            double[] attachmentXs =
+                anchors
+                    .Where(anchor =>
+                        anchor.Id == "IN" ||
+                        anchor.Id.StartsWith(
+                            "TAP:",
+                            StringComparison.Ordinal))
+                    .Select(anchor => anchor.Point.X)
+                    .ToArray();
+
+            if (attachmentXs.Length > 0)
+            {
+                railLeft =
+                    Math.Max(
+                        nominalLeft,
+                        attachmentXs.Min() -
+                        ConnectionNodeRadiusMm);
+                railRight =
+                    Math.Min(
+                        nominalRight,
+                        attachmentXs.Max() +
+                        ConnectionNodeRadiusMm);
+            }
+
             anchors.Add(
                 new SceneAnchor(
                     "OUT",
                     AnchorRole.PowerOut,
-                    new MmPoint(right, y),
+                    new MmPoint(
+                        railRight,
+                        y),
                     AnchorDirection.Right));
         }
         else
@@ -530,61 +575,58 @@ public sealed class SceneAssembly
                 new SceneAnchor(
                     "IN",
                     anchorRole,
-                    new MmPoint(left, y),
+                    new MmPoint(
+                        nominalLeft,
+                        y),
                     AnchorDirection.Left));
             anchors.Add(
                 new SceneAnchor(
                     "OUT",
                     anchorRole,
-                    new MmPoint(right, y),
+                    new MmPoint(
+                        nominalRight,
+                        y),
                     AnchorDirection.Right));
-        }
 
-        for (int index = 0; index < taps.Length; index++)
-        {
-            double x;
-
-            if (block.SemanticRole == "MainBus")
-            {
-                // Layout owns branch-column geometry. The bus tap must be
-                // collinear with the corresponding branch, while the incoming
-                // feeder retains the centre node.
-                double centerX =
-                    left + ((right - left) / 2.0);
-                double slotWidth =
-                    (right - left) /
-                    Math.Max(1, taps.Length);
-                double relativeSlot =
-                    index - ((taps.Length - 1) / 2.0);
-
-                if (relativeSlot >= 0)
-                {
-                    relativeSlot += 1.0;
-                }
-
-                x =
-                    centerX +
-                    (relativeSlot * slotWidth);
-            }
-            else
+            for (int index = 0; index < taps.Length; index++)
             {
                 double fraction =
                     (index + 1.0) /
                     (taps.Length + 1.0);
-                x =
-                    left +
-                    ((right - left) * fraction);
-            }
+                double x =
+                    nominalLeft +
+                    ((nominalRight - nominalLeft) * fraction);
 
-            anchors.Add(
-                new SceneAnchor(
-                    $"TAP:{taps[index]}",
-                    block.SemanticRole == "MainBus"
-                        ? AnchorRole.BusTap
-                        : anchorRole,
-                    new MmPoint(x, y),
-                    AnchorDirection.Down));
+                anchors.Add(
+                    new SceneAnchor(
+                        $"TAP:{taps[index]}",
+                        anchorRole,
+                        new MmPoint(x, y),
+                        AnchorDirection.Down));
+            }
         }
+
+        SceneId railId =
+            new($"{block.Id}/rail");
+
+        output.Add(
+            new LineSceneElement(
+                railId,
+                new MmRect(
+                    railLeft,
+                    y,
+                    Math.Max(
+                        railRight - railLeft,
+                        MinimumPrimitiveExtentMm),
+                    MinimumPrimitiveExtentMm),
+                layer,
+                15,
+                SceneVisibility.Both,
+                block.Entity,
+                GroupMetadata(block, definition.Id),
+                new MmPoint(railLeft, y),
+                new MmPoint(railRight, y),
+                lineStyleId));
 
         var children =
             new List<SceneId>
