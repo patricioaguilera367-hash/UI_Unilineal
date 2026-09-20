@@ -184,6 +184,14 @@
     "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
   },
   {
+    "symbolId": "CIRCUIT_USE_TEXT",
+    "annex18_5Analogue": "Text below the numbered circuit marker indicating use, such as Ilum. or ench.; text content is project data.",
+    "referenceStatus": "VERIFIED",
+    "currentGeometryStatus": "REFERENCE_ALIGNED",
+    "shapeSourceId": "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
+    "sizeSourceId": "APP:GRAPHIC_CONVENTIONS"
+  },
+  {
     "symbolId": "FINAL_LOAD",
     "annex18_5Analogue": "Outgoing circuits terminate in numbered circuit bubbles and textual load descriptions; no universal final-load icon is established by this figure.",
     "referenceStatus": "NOT_SHOWN",
