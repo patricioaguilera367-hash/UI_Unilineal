@@ -1851,24 +1851,6 @@
           "y": 16
         },
         "direction": "Down"
-      },
-      {
-        "id": "N",
-        "role": "Neutral",
-        "point": {
-          "x": 3,
-          "y": 0
-        },
-        "direction": "Up"
-      },
-      {
-        "id": "PE",
-        "role": "Ground",
-        "point": {
-          "x": 19,
-          "y": 0
-        },
-        "direction": "Up"
       }
     ],
     "primitives": [
@@ -1917,24 +1899,6 @@
         "role": "PowerIn",
         "point": {
           "x": 8,
-          "y": 0
-        },
-        "direction": "Up"
-      },
-      {
-        "id": "N",
-        "role": "Neutral",
-        "point": {
-          "x": 3,
-          "y": 0
-        },
-        "direction": "Up"
-      },
-      {
-        "id": "PE",
-        "role": "Ground",
-        "point": {
-          "x": 13,
           "y": 0
         },
         "direction": "Up"
@@ -2000,24 +1964,6 @@
           "y": 0
         },
         "direction": "Up"
-      },
-      {
-        "id": "N",
-        "role": "Neutral",
-        "point": {
-          "x": 3,
-          "y": 0
-        },
-        "direction": "Up"
-      },
-      {
-        "id": "PE",
-        "role": "Ground",
-        "point": {
-          "x": 13,
-          "y": 0
-        },
-        "direction": "Up"
       }
     ],
     "primitives": [
@@ -2077,24 +2023,6 @@
         "role": "PowerIn",
         "point": {
           "x": 9,
-          "y": 0
-        },
-        "direction": "Up"
-      },
-      {
-        "id": "N",
-        "role": "Neutral",
-        "point": {
-          "x": 3,
-          "y": 0
-        },
-        "direction": "Up"
-      },
-      {
-        "id": "PE",
-        "role": "Ground",
-        "point": {
-          "x": 15,
           "y": 0
         },
         "direction": "Up"
@@ -2365,6 +2293,7 @@
       }
     ],
     "provenanceIds": [
+      "RIC18:ANNEX18.5:DIAGRAMA_UNILINEAL",
       "APP:SYMBOLS",
       "APP:GRAPHIC_CONVENTIONS"
     ]
