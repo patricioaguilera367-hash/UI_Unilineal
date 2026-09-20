@@ -120,6 +120,28 @@ public sealed class GraphicGroundingContractTests
 
 
     [Fact]
+    public void AuxiliaryNeutralAndGroundUseDashDotPattern()
+    {
+        RIC18DrawingProfile profile =
+            LoadProfile();
+
+        foreach (string styleId in new[]
+                 {
+                     "NEUTRAL_AUX",
+                     "GROUND_AUX"
+                 })
+        {
+            LineStyleDefinition style =
+                profile.LineStyles.Single(candidate =>
+                    candidate.Id == styleId);
+
+            Assert.Equal(
+                "DashDot",
+                style.Pattern.ToString());
+        }
+    }
+
+    [Fact]
     public void BreakerVariants_UseSharedCellAnchorsAndOnePoleMarkerPerProtectedConductor()
     {
         RIC18DrawingProfile profile = LoadProfile();
