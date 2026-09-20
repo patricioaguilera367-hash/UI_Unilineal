@@ -70,6 +70,7 @@ public sealed class CompositionBuilder
 
         EnsureRequiredBlocks(
             profile,
+            "BOARD_DETAIL_FRAME_BLOCK",
             "INCOMING_SUPPLY_BLOCK",
             "SERVICE_ENTRANCE_ASSEMBLY_BLOCK",
             "MAIN_PROTECTION_BLOCK",
@@ -90,6 +91,22 @@ public sealed class CompositionBuilder
 
         var blocks = new List<CompositionBlock>();
         var connections = new List<CompositionConnection>();
+
+        blocks.Add(
+            new CompositionBlock(
+                CompositionIdFactory.DetailBoard(boardUid),
+                "BOARD_DETAIL_FRAME_BLOCK",
+                "BoardFrame",
+                new EntityReference(
+                    detail.Board.Uid,
+                    EntityKind.Board),
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["CODE"] = detail.Board.Code,
+                    ["NAME"] = detail.Board.Name
+                },
+                detail.Status,
+                null));
 
         CompositionBlock[] incomingBlocks = detail.IncomingSupplies
             .OrderBy(item => item.Supply.Priority)
