@@ -168,6 +168,9 @@ public sealed class Ric18BoardGeometryTests
         Assert.True(
             tokens.AuxiliaryLaneOffsetMm >=
             profile.RouteClearanceMm);
+        Assert.True(
+            tokens.AuxiliaryAnchorApproachMm >=
+            profile.RouteClearanceMm);
     }
 
     private static Ric18BoardGeometry Plan(
