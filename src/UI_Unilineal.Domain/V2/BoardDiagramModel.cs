@@ -60,6 +60,7 @@ public sealed record BoardDiagramBranchModel(
     bool DifferentialEnabled,
     string? DifferentialLabel,
     string? ConductorLabel,
+    string? CurrentLabel,
     BoardDiagramPresence NeutralPresence,
     string? NeutralLabel,
     BoardDiagramPresence ProtectiveEarthPresence,

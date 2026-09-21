@@ -311,6 +311,7 @@ public sealed class BoardDiagramSceneBuilderTests
             false,
             null,
             "RZ1 10 mm²",
+            "Ib 40,2 A · Id 44,2 A",
                     BoardDiagramPresence.Unknown,
                     null,
                     BoardDiagramPresence.Unknown,

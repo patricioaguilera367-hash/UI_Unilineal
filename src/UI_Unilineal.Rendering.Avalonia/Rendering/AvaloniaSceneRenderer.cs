@@ -220,7 +220,7 @@ public sealed class AvaloniaSceneRenderer
             style.HeightMm,
             brush)
         {
-            MaxTextWidth = text.Bounds.Width,
+            MaxTextWidth = double.PositiveInfinity,
             TextAlignment = text.HorizontalAlignment switch
             {
                 SceneTextHorizontalAlignment.Start => TextAlignment.Left,

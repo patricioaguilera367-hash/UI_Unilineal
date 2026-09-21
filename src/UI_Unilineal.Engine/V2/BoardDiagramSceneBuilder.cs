@@ -34,6 +34,8 @@ public sealed class BoardDiagramSceneBuilder
     private const double TargetGapMm = 18;
     private const double BottomMarginMm = 12;
     private const double NodeRadiusMm = 1.2;
+    private const double DataGapMm = 8;
+    private const double DataLineHeightMm = 6;
 
     public DiagramScene Build(
         BoardDiagramModel model,
@@ -136,7 +138,8 @@ public sealed class BoardDiagramSceneBuilder
                 : branches.Max(item =>
                     MainBusYmm +
                     ProtectionStartGapMm +
-                    ProtectionStackHeight(item.Branch));
+                    ProtectionStackHeight(item.Branch) +
+                    DataBlockHeight(item.Branch));
 
         double junctionY =
             maximumProtectionBottom +
@@ -305,6 +308,26 @@ public sealed class BoardDiagramSceneBuilder
         return
             (count * 16.0) +
             ((count - 1) * ProtectionGapMm);
+    }
+
+    private static double DataBlockHeight(
+        BoardDiagramBranchModel branch)
+    {
+        int lines = 0;
+
+        if (!string.IsNullOrWhiteSpace(branch.ConductorLabel))
+        {
+            lines++;
+        }
+
+        if (!string.IsNullOrWhiteSpace(branch.CurrentLabel))
+        {
+            lines++;
+        }
+
+        return lines == 0
+            ? 0
+            : DataGapMm + (lines * DataLineHeightMm);
     }
 
     private static void AddBoardTitle(
@@ -611,18 +634,37 @@ public sealed class BoardDiagramSceneBuilder
                 rcd.Bounds.Bottom;
         }
 
+        double dataY = currentY + DataGapMm;
+
         if (!string.IsNullOrWhiteSpace(branch.ConductorLabel))
         {
             elements.Add(
                 new TextSceneElement(
                     new SceneId($"{prefix}/conductor"),
-                    new MmRect(axisX + 3, currentY + 1, 45, 6),
+                    new MmRect(axisX + 3, dataY, 45, DataLineHeightMm),
                     SceneLayer.Text,
                     30,
                     SceneVisibility.Both,
                     circuitReference,
                     Metadata("CircuitConductor", branch.CircuitUid.Value),
                     branch.ConductorLabel,
+                    "LABEL_SMALL",
+                    SceneTextHorizontalAlignment.Start));
+            dataY += DataLineHeightMm;
+        }
+
+        if (!string.IsNullOrWhiteSpace(branch.CurrentLabel))
+        {
+            elements.Add(
+                new TextSceneElement(
+                    new SceneId($"{prefix}/current"),
+                    new MmRect(axisX + 3, dataY, 45, DataLineHeightMm),
+                    SceneLayer.Text,
+                    30,
+                    SceneVisibility.Both,
+                    circuitReference,
+                    Metadata("CircuitCurrent", branch.CircuitUid.Value),
+                    branch.CurrentLabel,
                     "LABEL_SMALL",
                     SceneTextHorizontalAlignment.Start));
         }
@@ -1063,7 +1105,10 @@ public sealed class BoardDiagramSceneBuilder
                 reference,
                 Metadata(
                     semanticRole,
-                    reference.Uid.Value),
+                    reference.Uid.Value,
+                    (
+                        "fillMode",
+                        "Solid")),
                 point,
                 NodeRadiusMm,
                 lineStyleId));
