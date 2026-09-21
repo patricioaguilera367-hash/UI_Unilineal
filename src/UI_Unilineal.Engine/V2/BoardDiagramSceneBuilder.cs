@@ -1507,7 +1507,7 @@ public sealed class BoardDiagramSceneBuilder
                         reference,
                         metadata),
 
-                PathSymbolPrimitive =>
+                PathSymbolPrimitive _ =>
                     throw new InvalidOperationException(
                         $"V2 symbol '{idPrefix}' uses a path primitive that cannot be translated safely by the direct scene builder."),
 
