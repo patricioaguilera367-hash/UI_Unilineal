@@ -1421,19 +1421,43 @@ public sealed class SceneAssembly
             return;
         }
 
-        CompositionBlock boardFrame =
-            composition.Blocks.Single(block =>
-                block.SemanticRole == "BoardFrame");
-        MmRect frame =
-            positions[boardFrame.Id].Bounds;
+        CompositionBlock[] destinations =
+            composition.Blocks
+                .Where(block =>
+                    block.SemanticRole is
+                        "FinalLoad" or
+                        "DownstreamBoard" or
+                        "Unknown")
+                .OrderBy(block => block.Id, StringComparer.Ordinal)
+                .ToArray();
 
-        foreach (CompositionBlock destination in composition.Blocks
-                     .Where(block =>
-                         block.SemanticRole is
-                             "FinalLoad" or
-                             "DownstreamBoard" or
-                             "Unknown")
-                     .OrderBy(block => block.Id, StringComparer.Ordinal))
+        if (destinations.Length == 0)
+        {
+            return;
+        }
+
+        CompositionBlock? boardFrame =
+            composition.Blocks.SingleOrDefault(block =>
+                block.SemanticRole == "BoardFrame");
+
+        if (boardFrame is null)
+        {
+            throw new InvalidOperationException(
+                "BoardDetail compositions with external destinations require a BoardFrame.");
+        }
+
+        if (!positions.TryGetValue(
+                boardFrame.Id,
+                out PositionedCompositionBlock? positionedFrame))
+        {
+            throw new InvalidOperationException(
+                $"Board frame '{boardFrame.Id}' has no positioned geometry.");
+        }
+
+        MmRect frame =
+            positionedFrame.Bounds;
+
+        foreach (CompositionBlock destination in destinations)
         {
             if (destination.ParentId is null ||
                 !positions.TryGetValue(
