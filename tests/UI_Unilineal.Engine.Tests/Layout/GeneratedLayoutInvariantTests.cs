@@ -96,6 +96,17 @@ public sealed class GeneratedLayoutInvariantTests
 
         Assert.NotEmpty(auxiliaryRoutes);
 
+        double frameClearance =
+            Ric18BoardLayoutTokens
+                .From(profile.Layout)
+                .AuxiliaryFrameClearanceMm;
+        MmRect safeArea =
+            new(
+                frame.Bounds.X + frameClearance,
+                frame.Bounds.Y + frameClearance,
+                frame.Bounds.Width - (frameClearance * 2.0),
+                frame.Bounds.Height - (frameClearance * 2.0));
+
         Assert.All(
             auxiliaryRoutes,
             route =>
@@ -103,8 +114,8 @@ public sealed class GeneratedLayoutInvariantTests
                     route.Points,
                     point =>
                         Assert.True(
-                            frame.Bounds.Contains(point),
-                            $"Auxiliary route escaped board frame: {route.Id} at {point}.")));
+                            safeArea.Contains(point),
+                            $"Auxiliary route violated board-frame clearance: {route.Id} at {point}.")));
     }
 
     [Theory]
