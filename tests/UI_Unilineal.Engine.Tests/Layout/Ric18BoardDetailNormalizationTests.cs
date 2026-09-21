@@ -159,10 +159,10 @@ public sealed class Ric18BoardDetailNormalizationTests
             Group(
                 scene,
                 "detail/B1/branch/C1/protection/PR1");
-        GroupSceneElement egress =
+        GroupSceneElement destination =
             Group(
                 scene,
-                "detail/B1/branch/C1/destination/egress");
+                "detail/B1/branch/C1/destination");
 
         Assert.True(
             protection.Bounds.Bottom <=
@@ -186,10 +186,10 @@ public sealed class Ric18BoardDetailNormalizationTests
             Group(
                 scene,
                 "detail/B1/branch/C1/protection/PR-RCD");
-        GroupSceneElement destination =
+        GroupSceneElement egress =
             Group(
                 scene,
-                "detail/B1/branch/C1/destination");
+                "detail/B1/branch/C1/destination/egress");
 
         PolylineSceneElement neutralIn =
             Route(
