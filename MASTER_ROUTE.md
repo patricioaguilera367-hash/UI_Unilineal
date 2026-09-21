@@ -120,6 +120,12 @@ and remains the common output for screen and export.
 11. No gate is considered complete only because CI is green. Visual acceptance
     against real project data is mandatory for geometry gates.
 12. New abstractions are added only when a concrete project case requires them.
+13. Electrical lines never merge, split or connect by accidental geometric
+    contact. Every multi-line union/fan-out is represented by an explicit
+    bar/bus with connection node(s).
+14. A feeder circuit may have multiple downstream board destinations, and a
+    board may have multiple incoming supplies. The read model and layout must
+    preserve those cardinalities.
 
 ---
 
@@ -196,21 +202,42 @@ Inspect the real project model and answer, with code references:
 - Which results are current vs STALE?
 - What data is absent and would otherwise have to be invented?
 
-#### Critical decision
+#### Accepted topology decision
 
-The relation:
+The relation must be explicit and canonical, but it is **not one-to-one**:
 
 ```text
-origin board -> feeder circuit -> downstream board
+origin board -> feeder circuit -> one or more downstream boards
+one downstream board <- one or more incoming feeder circuits
 ```
 
-must be explicit and canonical before reliable board-to-board single-line
-navigation is claimed.
+Use a separate canonical supply relation in ProyectoElectrico rather than a
+single `Circuit.DownstreamBoardId` shortcut.
 
-If ProyectoElectrico does not yet store it, add the smallest correct canonical
-relationship there. Do not hide the gap in the graphics adapter.
+Current direction:
 
-**Exit:** a written mapping exists and no required topology is silently inferred.
+```text
+BoardSupply
+├── FeederCircuitId
+├── DestinationBoardId
+├── SupplyRole / Priority
+├── IsNormallyActive
+└── state/data-state metadata
+```
+
+Generator/ATS/source entities are future scope. Do not build them now merely
+for hypothetical extensibility, but keep this relation migratable to a richer
+source model later.
+
+Graphic rule: when one feeder fans out to several destinations, the diagram
+derives an explicit junction/distribution bus with nodes. Lines never branch by
+touching each other directly.
+
+Decision record:
+`docs/integration/R1_TOPOLOGY_DECISION.md`
+
+**Exit:** topology mapping and cardinality decision are written; the next host
+change is the canonical supply relation in ProyectoElectrico.
 
 ---
 
@@ -224,7 +251,7 @@ Create the smallest read-only contract needed for one board, conceptually:
 ```text
 BoardDiagramModel
 ├── Board identity/display
-├── Incoming
+├── IncomingSupplies[]
 ├── Main protection
 ├── Main bus
 ├── Branches[]
@@ -234,7 +261,9 @@ BoardDiagramModel
 │   ├── Conductor/display data
 │   ├── HasNeutral / Unknown
 │   ├── HasPE / Unknown
-│   ├── Final load or downstream board
+│   ├── Destinations[]
+│   │   ├── final/load destination, or
+│   │   └── one or more downstream boards
 │   └── result/status
 └── Issues
 ```
@@ -280,6 +309,11 @@ Rules:
 - branch power path is an explicit vertical axis;
 - main bus is an explicit horizontal structure;
 - branch tap positions are deterministic;
+- every merge/split/fan-out is expressed through a bus/bar with explicit nodes;
+- lines never become electrically connected merely because their geometry
+  touches or crosses;
+- one branch with multiple downstream boards receives a deterministic
+  junction/distribution bus before its destination lines;
 - N and PE paths exist only when supported by semantics;
 - RCD neutral traversal is modeled only when applicable;
 - direct known paths are emitted directly, not discovered by a generic router;
@@ -482,27 +516,21 @@ questions.
 
 ## 9. Immediate next action
 
-After R0, do **R1 only**:
+R0 is complete and the R1 topology audit/decision is documented.
 
-> Audit ProyectoElectrico's actual canonical topology against the information
-> required by `BoardDiagramModel`.
+The next implementation step is:
 
-Do not redesign the renderer during R1.
+> Add the smallest canonical `BoardSupply` relation to ProyectoElectrico that
+> supports many destinations per feeder circuit and many incoming feeder
+> circuits per board, including validation and persistence migration.
 
-The output of R1 must be a small mapping table with:
+Do not add generator/ATS/source entities yet.
 
-```text
-diagram requirement | ProyectoElectrico source | status | gap/action
-```
+After that host change is proven with tests and a migrated sample, proceed to
+R2 and build the minimal read-only `BoardDiagramModel`.
 
-Statuses:
-
-- EXISTS
-- PARTIAL
-- MISSING
-- CONTRADICTS
-
-Only after that mapping is reviewed do we implement the integration contract.
+The renderer/layout must not be redesigned in parallel with the host schema
+change.
 
 ---
 
@@ -514,6 +542,8 @@ Stop and ask before continuing if:
 - a proposed convenience would create a second source of electrical truth;
 - a RIC image is being treated as if it defined dimensions it does not define;
 - the same visual fix requires repeated special cases in layout/router/validator;
+- a merge/split would be represented only by touching line geometry instead of
+  an explicit bus/node structure;
 - the host model and diagram model disagree on entity identity;
 - a new feature is expanding G7/G8-style scope before R4 is accepted.
 
