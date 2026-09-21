@@ -215,6 +215,12 @@ public sealed class SceneAssembly
             }
         }
 
+        AssembleCircuitEgresses(
+            input.Composition,
+            positions,
+            Ric18BoardLayoutTokens.From(profile.Layout),
+            elements);
+
         Dictionary<string, GroupSceneElement> groups = elements
             .OfType<GroupSceneElement>()
             .ToDictionary(
@@ -1070,61 +1076,12 @@ public sealed class SceneAssembly
         SceneAnchor[] groupAnchors =
             NormalizeDifferentialNeutralAnchors(
                 block,
-                AddSemanticDestinationAnchors(
-                    block,
-                    positioned.Bounds,
-                    ResolveGroupAnchorIds(anchorCandidates),
-                    output));
+                ResolveGroupAnchorIds(anchorCandidates));
         groupAnchors =
             NormalizeSummaryPowerAnchors(
                 block,
                 positioned.Bounds,
                 groupAnchors);
-
-        if (block.SemanticRole is
-                "FinalLoad" or
-                "DownstreamBoard" or
-                "Unknown")
-        {
-            foreach (SceneAnchor terminalAnchor in
-                     groupAnchors.Where(anchor =>
-                         anchor.Id is "N" or "PE"))
-            {
-                SceneId terminalId =
-                    new(
-                        $"{block.Id}/terminal/{terminalAnchor.Id}");
-
-                string terminalStyleId =
-                    terminalAnchor.Id == "PE"
-                        ? "GROUND"
-                        : "BUS";
-
-                output.Add(
-                    new CircleSceneElement(
-                        terminalId,
-                        new MmRect(
-                            terminalAnchor.Point.X - connectionNodeRadiusMm,
-                            terminalAnchor.Point.Y - connectionNodeRadiusMm,
-                            connectionNodeRadiusMm * 2.0,
-                            connectionNodeRadiusMm * 2.0),
-                        terminalAnchor.Id == "PE"
-                            ? SceneLayer.Grounding
-                            : SceneLayer.Power,
-                        20,
-                        SceneVisibility.Both,
-                        block.Entity,
-                        SyntheticNodeMetadata(
-                            block,
-                            definition.Id,
-                            terminalAnchor.Id),
-                        terminalAnchor.Point,
-                        connectionNodeRadiusMm,
-                        terminalStyleId));
-
-                children.Add(
-                    terminalId);
-            }
-        }
 
         var group = new GroupSceneElement(
             new SceneId(block.Id),
@@ -1453,137 +1410,113 @@ public sealed class SceneAssembly
             .ToArray();
     }
 
-    private static SceneAnchor[] AddSemanticDestinationAnchors(
-        CompositionBlock block,
+    private static void AssembleCircuitEgresses(
+        DrawingComposition composition,
+        IReadOnlyDictionary<string, PositionedCompositionBlock> positions,
+        Ric18BoardLayoutTokens tokens,
+        ICollection<SceneElement> output)
+    {
+        if (composition.Kind != DrawingCompositionKind.BoardDetail)
+        {
+            return;
+        }
+
+        CompositionBlock boardFrame =
+            composition.Blocks.Single(block =>
+                block.SemanticRole == "BoardFrame");
+        MmRect frame =
+            positions[boardFrame.Id].Bounds;
+
+        foreach (CompositionBlock destination in composition.Blocks
+                     .Where(block =>
+                         block.SemanticRole is
+                             "FinalLoad" or
+                             "DownstreamBoard" or
+                             "Unknown")
+                     .OrderBy(block => block.Id, StringComparer.Ordinal))
+        {
+            if (destination.ParentId is null ||
+                !positions.TryGetValue(
+                    destination.ParentId,
+                    out PositionedCompositionBlock? branch))
+            {
+                throw new InvalidOperationException(
+                    $"Destination '{destination.Id}' has no positioned parent branch.");
+            }
+
+            double powerAxisX =
+                branch.Bounds.X +
+                (branch.Bounds.Width / 2.0);
+            double terminalOffset =
+                Math.Max(
+                    tokens.AuxiliaryAnchorApproachMm,
+                    tokens.ConnectionNodeRadiusMm * 2.0);
+            double egressY =
+                frame.Bottom -
+                (tokens.BoardBottomPaddingMm / 2.0);
+
+            MmPoint pePoint =
+                new(
+                    powerAxisX - terminalOffset,
+                    egressY);
+            MmPoint neutralPoint =
+                new(
+                    powerAxisX + terminalOffset,
+                    egressY);
+
+            if (!Contains(frame, pePoint) ||
+                !Contains(frame, neutralPoint))
+            {
+                throw new InvalidOperationException(
+                    $"Circuit egress for '{destination.Id}' falls outside the board frame.");
+            }
+
+            SceneId egressId =
+                new($"{destination.Id}/egress");
+            MmRect egressBounds =
+                new(
+                    pePoint.X,
+                    egressY -
+                    (MinimumPrimitiveExtentMm / 2.0),
+                    neutralPoint.X - pePoint.X,
+                    MinimumPrimitiveExtentMm);
+
+            output.Add(
+                new GroupSceneElement(
+                    egressId,
+                    egressBounds,
+                    SceneLayer.Symbol,
+                    5,
+                    SceneVisibility.Both,
+                    destination.Entity,
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["compositionRole"] = "CircuitEgress",
+                        ["parentId"] = destination.ParentId
+                    },
+                    [],
+                    [
+                        new SceneAnchor(
+                            "PE",
+                            AnchorRole.Ground,
+                            pePoint,
+                            AnchorDirection.Left),
+                        new SceneAnchor(
+                            "N",
+                            AnchorRole.Neutral,
+                            neutralPoint,
+                            AnchorDirection.Right)
+                    ]));
+        }
+    }
+
+    private static bool Contains(
         MmRect bounds,
-        IReadOnlyList<SceneAnchor> anchors,
-        IEnumerable<SceneElement> elements)
-    {
-        if (block.SemanticRole is not ("FinalLoad" or "DownstreamBoard" or "Unknown"))
-        {
-            return anchors.ToArray();
-        }
-
-        var result =
-            new List<SceneAnchor>(anchors);
-
-        bool hasBoundTerminals =
-            TryResolveDestinationTerminalPoints(
-                block,
-                elements,
-                out MmPoint neutralPoint,
-                out MmPoint protectiveEarthPoint);
-
-        if (!result.Any(anchor =>
-                string.Equals(
-                    anchor.Id,
-                    "N",
-                    StringComparison.Ordinal)))
-        {
-            result.Add(
-                new SceneAnchor(
-                    "N",
-                    AnchorRole.Neutral,
-                    hasBoundTerminals
-                        ? neutralPoint
-                        : new MmPoint(
-                            bounds.X + (bounds.Width * 0.68),
-                            bounds.Y + 2),
-                    AnchorDirection.Up));
-        }
-
-        if (!result.Any(anchor =>
-                string.Equals(
-                    anchor.Id,
-                    "PE",
-                    StringComparison.Ordinal)))
-        {
-            result.Add(
-                new SceneAnchor(
-                    "PE",
-                    AnchorRole.Ground,
-                    hasBoundTerminals
-                        ? protectiveEarthPoint
-                        : new MmPoint(
-                            bounds.X + (bounds.Width * 0.32),
-                            bounds.Y + 2),
-                    AnchorDirection.Up));
-        }
-
-        return result
-            .OrderBy(anchor => anchor.Id, StringComparer.Ordinal)
-            .ToArray();
-    }
-
-    private static bool TryResolveDestinationTerminalPoints(
-        CompositionBlock block,
-        IEnumerable<SceneElement> elements,
-        out MmPoint neutralPoint,
-        out MmPoint protectiveEarthPoint)
-    {
-        if (block.SemanticRole == "FinalLoad")
-        {
-            CircleSceneElement? marker =
-                elements
-                    .OfType<CircleSceneElement>()
-                    .SingleOrDefault(element =>
-                        element.Id.Value.StartsWith(
-                            $"{block.Id}/part/MARKER/primitive/",
-                            StringComparison.Ordinal));
-
-            if (marker is not null)
-            {
-                double horizontalOffset =
-                    marker.RadiusMm * 0.6;
-                double verticalOffset =
-                    marker.RadiusMm * 0.8;
-
-                protectiveEarthPoint =
-                    new MmPoint(
-                        marker.Center.X -
-                        horizontalOffset,
-                        marker.Center.Y -
-                        verticalOffset);
-                neutralPoint =
-                    new MmPoint(
-                        marker.Center.X +
-                        horizontalOffset,
-                        marker.Center.Y -
-                        verticalOffset);
-                return true;
-            }
-        }
-
-        if (block.SemanticRole == "DownstreamBoard")
-        {
-            RectangleSceneElement? boardBody =
-                elements
-                    .OfType<RectangleSceneElement>()
-                    .SingleOrDefault(element =>
-                        element.Id.Value.StartsWith(
-                            $"{block.Id}/part/BOARD/primitive/",
-                            StringComparison.Ordinal));
-
-            if (boardBody is not null)
-            {
-                protectiveEarthPoint =
-                    new MmPoint(
-                        boardBody.Bounds.X +
-                        (boardBody.Bounds.Width * 0.3),
-                        boardBody.Bounds.Y);
-                neutralPoint =
-                    new MmPoint(
-                        boardBody.Bounds.X +
-                        (boardBody.Bounds.Width * 0.7),
-                        boardBody.Bounds.Y);
-                return true;
-            }
-        }
-
-        neutralPoint = default;
-        protectiveEarthPoint = default;
-        return false;
-    }
+        MmPoint point) =>
+        point.X >= bounds.X &&
+        point.X <= bounds.Right &&
+        point.Y >= bounds.Y &&
+        point.Y <= bounds.Bottom;
 
     private static SceneAnchor[] ResolveGroupAnchorIds(
         IReadOnlyList<(string PartId, SceneAnchor Anchor)> candidates)
@@ -1621,12 +1554,21 @@ public sealed class SceneAssembly
                 $"Connection source block '{connection.Source.BlockId}' was not assembled.");
         }
 
+        string targetElementId =
+            connection.Target.Role is
+                AnchorRole.Neutral or
+                AnchorRole.Ground &&
+            groups.ContainsKey(
+                $"{connection.Target.BlockId}/egress")
+                ? $"{connection.Target.BlockId}/egress"
+                : connection.Target.BlockId;
+
         if (!groups.TryGetValue(
-                connection.Target.BlockId,
+                targetElementId,
                 out GroupSceneElement? target))
         {
             throw new InvalidOperationException(
-                $"Connection target block '{connection.Target.BlockId}' was not assembled.");
+                $"Connection target block '{targetElementId}' was not assembled.");
         }
 
         if (!lineStyles.TryGetValue(
