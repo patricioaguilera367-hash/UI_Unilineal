@@ -109,6 +109,50 @@ public sealed class Ric18BoardGeometryTests
     }
 
     [Fact]
+    public void Planner_AsymmetricCircuitExtentStillFitsBothSidesInsideBoard()
+    {
+        LayoutProfile profile = Layout();
+        Ric18BoardLayoutTokens tokens =
+            Ric18BoardLayoutTokens.From(profile);
+
+        Ric18BoardGeometry geometry =
+            new Ric18BoardGeometryPlanner().Plan(
+                profile,
+                tokens,
+                circuitCount: 1,
+                circuitExtents:
+                [
+                    new Ric18CircuitExtent(
+                        leftMm: 10,
+                        rightMm: 30)
+                ],
+                mainBusMeasuredSize: new MmSize(48, 14),
+                protectiveEarthSize: new MmSize(18, 8),
+                neutralSize: new MmSize(18, 8),
+                incomingStackBottom: 26.5,
+                mainProtectionStackHeight: 20,
+                centeredHeaderLeftExtentMm: 10,
+                centeredHeaderRightExtentMm: 10,
+                maximumBranchContentHeight: 48);
+
+        double axis =
+            Assert.Single(
+                geometry.CircuitAxes);
+        double branchAreaLeft =
+            geometry.BoardLeft +
+            tokens.BoardOuterPaddingMm;
+        double branchAreaRight =
+            geometry.BoardLeft +
+            geometry.BoardWidth -
+            tokens.BoardOuterPaddingMm;
+
+        Assert.True(
+            axis - 10 >= branchAreaLeft);
+        Assert.True(
+            axis + 30 <= branchAreaRight);
+    }
+
+    [Fact]
     public void Planner_BusAndHeaderRailsShareOneCoherentBoardEnvelope()
     {
         LayoutProfile profile = Layout();
