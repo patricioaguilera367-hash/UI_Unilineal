@@ -80,6 +80,31 @@ public sealed class GeneratedLayoutInvariantTests
         {
             AssertOrthogonal(route.Points);
         }
+
+        GroupSceneElement frame =
+            Assert.IsType<GroupSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value == "detail/B1"));
+
+        PolylineSceneElement[] auxiliaryRoutes =
+            routes
+                .Where(route =>
+                    route.LineStyleId is
+                        "NEUTRAL_AUX" or
+                        "GROUND_AUX")
+                .ToArray();
+
+        Assert.NotEmpty(auxiliaryRoutes);
+
+        Assert.All(
+            auxiliaryRoutes,
+            route =>
+                Assert.All(
+                    route.Points,
+                    point =>
+                        Assert.True(
+                            frame.Bounds.Contains(point),
+                            $"Auxiliary route escaped board frame: {route.Id} at {point}.")));
     }
 
     [Theory]
