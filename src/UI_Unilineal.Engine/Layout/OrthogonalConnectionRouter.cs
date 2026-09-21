@@ -162,6 +162,10 @@ public sealed class OrthogonalConnectionRouter
             sourceRole is "NeutralBus" or "ProtectiveEarthBus";
         Ric18BoardLayoutTokens tokens =
             Ric18BoardLayoutTokens.From(profile);
+        MmRect? routeBounds =
+            ResolveAuxiliaryRouteBounds(
+                scene,
+                targetElement);
 
         MmRect[] obstacles =
             BuildObstacles(
@@ -179,7 +183,8 @@ public sealed class OrthogonalConnectionRouter
                 targetAnchor,
                 obstacles,
                 tokens,
-                leavesStructuralRail);
+                leavesStructuralRail,
+                routeBounds);
 
         if (semanticLane is not null)
         {
@@ -204,7 +209,8 @@ public sealed class OrthogonalConnectionRouter
                 departure,
                 approach,
                 obstacles,
-                profile);
+                profile,
+                routeBounds);
 
         var points =
             new List<MmPoint>
@@ -225,7 +231,8 @@ public sealed class OrthogonalConnectionRouter
         SceneAnchor targetAnchor,
         IReadOnlyList<MmRect> obstacles,
         Ric18BoardLayoutTokens tokens,
-        bool leavesStructuralRail)
+        bool leavesStructuralRail,
+        MmRect? routeBounds)
     {
         MmPoint start =
             sourceAnchor.Point;
@@ -249,6 +256,22 @@ public sealed class OrthogonalConnectionRouter
                   tokens.AuxiliaryLaneOffsetMm
                 : routingEnvelope.X -
                   tokens.AuxiliaryLaneOffsetMm;
+
+        if (routeBounds is not null)
+        {
+            double minimumLaneX =
+                routeBounds.Value.X +
+                tokens.AuxiliaryLaneOffsetMm;
+            double maximumLaneX =
+                routeBounds.Value.Right -
+                tokens.AuxiliaryLaneOffsetMm;
+
+            laneX =
+                Math.Clamp(
+                    laneX,
+                    minimumLaneX,
+                    maximumLaneX);
+        }
 
         MmPoint departure =
             OffsetFromAnchor(
@@ -286,7 +309,8 @@ public sealed class OrthogonalConnectionRouter
         return
             normalized.Count >= 2 &&
             IsOrthogonal(normalized) &&
-            IsClear(normalized, obstacles)
+            IsClear(normalized, obstacles) &&
+            IsWithinBounds(normalized, routeBounds)
                 ? normalized
                 : null;
     }
@@ -366,6 +390,64 @@ public sealed class OrthogonalConnectionRouter
                     item.Bounds,
                     profile.RouteClearanceMm))
             .ToArray();
+    }
+
+    private static MmRect? ResolveAuxiliaryRouteBounds(
+        DiagramScene scene,
+        SceneElement targetElement)
+    {
+        string? branchPrefix =
+            BranchPrefix(
+                targetElement.Id.Value);
+
+        if (branchPrefix is null)
+        {
+            return null;
+        }
+
+        const string marker =
+            "/branch/";
+        int branchIndex =
+            branchPrefix.IndexOf(
+                marker,
+                StringComparison.Ordinal);
+
+        if (branchIndex < 0)
+        {
+            return null;
+        }
+
+        string boardId =
+            branchPrefix[..branchIndex];
+
+        return scene.Elements
+            .OfType<GroupSceneElement>()
+            .SingleOrDefault(group =>
+                string.Equals(
+                    group.Id.Value,
+                    boardId,
+                    StringComparison.Ordinal) &&
+                string.Equals(
+                    CompositionRole(group),
+                    "BoardFrame",
+                    StringComparison.Ordinal))
+            ?.Bounds;
+    }
+
+    private static bool IsWithinBounds(
+        IReadOnlyList<MmPoint> points,
+        MmRect? bounds)
+    {
+        if (bounds is null)
+        {
+            return true;
+        }
+
+        return points.All(point =>
+            point.X >= bounds.Value.X &&
+            point.X <= bounds.Value.Right &&
+            point.Y >= bounds.Value.Y &&
+            point.Y <= bounds.Value.Bottom);
     }
 
     private static MmRect AuxiliaryRoutingEnvelope(
@@ -571,7 +653,8 @@ public sealed class OrthogonalConnectionRouter
         MmPoint start,
         MmPoint end,
         IReadOnlyList<MmRect> obstacles,
-        LayoutProfile profile)
+        LayoutProfile profile,
+        MmRect? routeBounds = null)
     {
         var candidates = new List<IReadOnlyList<MmPoint>>();
 
@@ -595,6 +678,14 @@ public sealed class OrthogonalConnectionRouter
                 start.Y,
                 end.Y
             };
+
+        if (routeBounds is not null)
+        {
+            xChannels.Add(routeBounds.Value.X);
+            xChannels.Add(routeBounds.Value.Right);
+            yChannels.Add(routeBounds.Value.Y);
+            yChannels.Add(routeBounds.Value.Bottom);
+        }
 
         foreach (MmRect obstacle in obstacles)
         {
@@ -681,7 +772,8 @@ public sealed class OrthogonalConnectionRouter
             .Where(candidate =>
                 candidate.Count >= 2 &&
                 IsOrthogonal(candidate) &&
-                IsClear(candidate, obstacles))
+                IsClear(candidate, obstacles) &&
+                IsWithinBounds(candidate, routeBounds))
             .OrderBy(RouteCost)
             .ThenBy(RouteSignature, StringComparer.Ordinal)
             .FirstOrDefault();
