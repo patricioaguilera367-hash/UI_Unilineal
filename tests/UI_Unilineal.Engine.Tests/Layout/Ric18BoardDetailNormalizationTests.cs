@@ -495,6 +495,103 @@ public sealed class Ric18BoardDetailNormalizationTests
     }
 
     [Fact]
+    public void FinalLoad_AuxiliaryTerminalsSitOnVisibleLoadMarker()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+        GroupSceneElement destination =
+            Group(
+                scene,
+                "detail/B1/branch/C1/destination");
+        CircleSceneElement marker =
+            Assert.IsType<CircleSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "detail/B1/branch/C1/destination/part/MARKER/primitive/001"));
+
+        foreach (string anchorId in new[] { "N", "PE" })
+        {
+            SceneAnchor anchor =
+                Anchor(
+                    destination,
+                    anchorId);
+            double distance =
+                Math.Sqrt(
+                    Math.Pow(
+                        anchor.Point.X -
+                        marker.Center.X,
+                        2) +
+                    Math.Pow(
+                        anchor.Point.Y -
+                        marker.Center.Y,
+                        2));
+
+            Assert.InRange(
+                Math.Abs(
+                    distance -
+                    marker.Radius),
+                0,
+                1e-9);
+            Assert.Equal(
+                AnchorDirection.Up,
+                anchor.Direction);
+        }
+
+        Assert.True(
+            Anchor(destination, "PE").Point.X <
+            Anchor(destination, "IN").Point.X);
+        Assert.True(
+            Anchor(destination, "N").Point.X >
+            Anchor(destination, "IN").Point.X);
+    }
+
+    [Fact]
+    public void DownstreamBoard_AuxiliaryTerminalsSitOnVisibleBoardTopEdge()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.NestedBoards(),
+                new EntityUid("B1"));
+        GroupSceneElement destination =
+            Group(
+                scene,
+                "detail/B1/branch/C4/destination");
+        RectangleSceneElement boardBody =
+            Assert.IsType<RectangleSceneElement>(
+                scene.Elements.Single(element =>
+                    element.Id.Value ==
+                    "detail/B1/branch/C4/destination/part/BOARD/primitive/001"));
+
+        foreach (string anchorId in new[] { "N", "PE" })
+        {
+            SceneAnchor anchor =
+                Anchor(
+                    destination,
+                    anchorId);
+
+            Assert.Equal(
+                boardBody.Bounds.Y,
+                anchor.Point.Y);
+            Assert.InRange(
+                anchor.Point.X,
+                boardBody.Bounds.X,
+                boardBody.Bounds.Right);
+            Assert.Equal(
+                AnchorDirection.Up,
+                anchor.Direction);
+        }
+
+        Assert.True(
+            Anchor(destination, "PE").Point.X <
+            Anchor(destination, "IN").Point.X);
+        Assert.True(
+            Anchor(destination, "N").Point.X >
+            Anchor(destination, "IN").Point.X);
+    }
+
+    [Fact]
     public void DownstreamBoard_IsExternalDestinationOfItsCircuit()
     {
         DiagramScene scene =
