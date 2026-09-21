@@ -1,4 +1,4 @@
-using UI_Unilineal.Domain.Semantics;
+﻿using UI_Unilineal.Domain.Semantics;
 
 namespace UI_Unilineal.Domain.V2;
 

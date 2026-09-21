@@ -1,4 +1,4 @@
-using UI_Unilineal.Domain.Profiles;
+﻿using UI_Unilineal.Domain.Profiles;
 using UI_Unilineal.Domain.Scene;
 using UI_Unilineal.Domain.Semantics;
 using UI_Unilineal.Domain.V2;
@@ -23,12 +23,11 @@ public sealed class BoardDiagramSceneBuilderTests
                     ]));
 
         LineSceneElement junction =
-            Assert.Single(
-                scene.Elements
+            Assert.Single(scene.Elements
                     .OfType<LineSceneElement>()
-                    .Where(element =>
+, element =>
                         Role(element) ==
-                        "JunctionBus"));
+                        "JunctionBus");
 
         CircleSceneElement[] nodes =
             scene.Elements
@@ -182,12 +181,11 @@ public sealed class BoardDiagramSceneBuilderTests
                     ]));
 
         LineSceneElement alternate =
-            Assert.Single(
-                scene.Elements
+            Assert.Single(scene.Elements
                     .OfType<LineSceneElement>()
-                    .Where(element =>
+, element =>
                         element.LineStyleId ==
-                        "ALTERNATE_SUPPLY"));
+                        "ALTERNATE_SUPPLY");
 
         CircleSceneElement[] mainNodes =
             scene.Elements
