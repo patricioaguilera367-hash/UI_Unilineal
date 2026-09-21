@@ -1447,25 +1447,15 @@ public sealed class SceneAssembly
             double powerAxisX =
                 branch.Bounds.X +
                 (branch.Bounds.Width / 2.0);
-            double terminalOffset =
-                Math.Max(
-                    tokens.AuxiliaryAnchorApproachMm,
-                    tokens.ConnectionNodeRadiusMm * 2.0);
             double egressY =
                 frame.Bottom -
                 (tokens.BoardBottomPaddingMm / 2.0);
-
-            MmPoint pePoint =
+            MmPoint egressPoint =
                 new(
-                    powerAxisX - terminalOffset,
-                    egressY);
-            MmPoint neutralPoint =
-                new(
-                    powerAxisX + terminalOffset,
+                    powerAxisX,
                     egressY);
 
-            if (!Contains(frame, pePoint) ||
-                !Contains(frame, neutralPoint))
+            if (!Contains(frame, egressPoint))
             {
                 throw new InvalidOperationException(
                     $"Circuit egress for '{destination.Id}' falls outside the board frame.");
@@ -1475,10 +1465,11 @@ public sealed class SceneAssembly
                 new($"{destination.Id}/egress");
             MmRect egressBounds =
                 new(
-                    pePoint.X,
-                    egressY -
+                    egressPoint.X -
                     (MinimumPrimitiveExtentMm / 2.0),
-                    neutralPoint.X - pePoint.X,
+                    egressPoint.Y -
+                    (MinimumPrimitiveExtentMm / 2.0),
+                    MinimumPrimitiveExtentMm,
                     MinimumPrimitiveExtentMm);
 
             output.Add(
@@ -1499,12 +1490,12 @@ public sealed class SceneAssembly
                         new SceneAnchor(
                             "PE",
                             AnchorRole.Ground,
-                            pePoint,
+                            egressPoint,
                             AnchorDirection.Left),
                         new SceneAnchor(
                             "N",
                             AnchorRole.Neutral,
-                            neutralPoint,
+                            egressPoint,
                             AnchorDirection.Right)
                     ]));
         }
