@@ -6,6 +6,7 @@ using UI_Unilineal.Domain.Semantics;
 using UI_Unilineal.Engine.Interaction;
 using UI_Unilineal.Engine.Interaction.Electrical;
 using UI_Unilineal.Engine.Interaction.Layout;
+using UI_Unilineal.Engine.V2;
 using UI_Unilineal.Playground.Fixtures;
 using UI_Unilineal.Playground.ViewModels;
 using UI_Unilineal.Rendering.Avalonia.Interaction;
@@ -16,6 +17,7 @@ public sealed partial class MainWindow : Window
 {
     private readonly SingleLineWorkspaceViewModel _viewModel;
     private bool _showingSymbolGallery;
+    private bool _showingV2Board;
     private bool _galleryShowGrid = true;
     private bool _galleryShowBounds = true;
     private bool _galleryShowAnchors;
@@ -32,11 +34,15 @@ public sealed partial class MainWindow : Window
             fitScene: true);
     }
 
+    private bool IsReadOnlyReview =>
+        _showingSymbolGallery ||
+        _showingV2Board;
+
     private void OnBackClicked(
         object? sender,
         RoutedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             _viewModel.ShowSummary();
             ApplyWorkspace(
@@ -62,6 +68,11 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e) =>
         ShowSymbolGallery();
+
+    private void OnV2BoardClicked(
+        object? sender,
+        RoutedEventArgs e) =>
+        ShowV2Board();
 
     private void OnGalleryGridClicked(
         object? sender,
@@ -154,7 +165,7 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -168,7 +179,7 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -182,7 +193,7 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -197,7 +208,7 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -212,7 +223,7 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -240,7 +251,7 @@ public sealed partial class MainWindow : Window
         object? sender,
         LayoutMoveRequestedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -255,7 +266,7 @@ public sealed partial class MainWindow : Window
         object? sender,
         ElectricalProposalRequestedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -277,7 +288,7 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -292,7 +303,7 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -307,7 +318,7 @@ public sealed partial class MainWindow : Window
         object? sender,
         RoutedEventArgs e)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -319,7 +330,7 @@ public sealed partial class MainWindow : Window
     private void SetInteractionMode(
         InteractionMode mode)
     {
-        if (_showingSymbolGallery)
+        if (IsReadOnlyReview)
         {
             return;
         }
@@ -346,6 +357,7 @@ public sealed partial class MainWindow : Window
     private void ShowSymbolGallery()
     {
         _showingSymbolGallery = true;
+        _showingV2Board = false;
 
         _viewModel.TrySetInteractionMode(
             InteractionMode.Navigate);
@@ -361,6 +373,35 @@ public sealed partial class MainWindow : Window
 
         RefreshSymbolGallery(
             fitScene: true);
+    }
+
+    private void ShowV2Board()
+    {
+        _showingSymbolGallery = false;
+        _showingV2Board = true;
+
+        _viewModel.TrySetInteractionMode(
+            InteractionMode.Navigate);
+        _viewModel.CancelElectricalProposal();
+
+        DiagramView.DrawingProfile =
+            _viewModel.Profile;
+        DiagramView.InteractionMode =
+            InteractionMode.Navigate;
+        DiagramView.Scene =
+            new BoardDiagramSceneBuilder()
+                .Build(
+                    V2BoardDiagramFixtureFactory.Create(),
+                    _viewModel.Profile);
+
+        BackButton.IsEnabled = true;
+        RouteText.Text =
+            "V2 BoardDetail — fan-out + explicit bus nodes";
+
+        UpdateInteractionShell();
+
+        Dispatcher.UIThread.Post(
+            DiagramView.FitScene);
     }
 
     private void RefreshSymbolGallery(
@@ -386,6 +427,7 @@ public sealed partial class MainWindow : Window
         bool fitScene)
     {
         _showingSymbolGallery = false;
+        _showingV2Board = false;
 
         DiagramView.DrawingProfile =
             _viewModel.Profile;
@@ -416,7 +458,9 @@ public sealed partial class MainWindow : Window
         ModeText.Text =
             _showingSymbolGallery
                 ? "Mode: Symbol review (read-only)"
-                : $"Mode: {_viewModel.InteractionMode}";
+                : _showingV2Board
+                    ? "Mode: V2 board grammar review (read-only)"
+                    : $"Mode: {_viewModel.InteractionMode}";
         InteractionStateText.Text =
             $"State: {DiagramView.InteractionState.Kind}";
 
@@ -428,10 +472,10 @@ public sealed partial class MainWindow : Window
                     : $"Selection: {_viewModel.SelectedEntity.Kind} {_viewModel.SelectedEntity.Uid.Value}";
 
         LayoutModeButton.IsEnabled =
-            !_showingSymbolGallery &&
+            !IsReadOnlyReview &&
             _viewModel.Capabilities.CanEditLayout;
         ElectricalModeButton.IsEnabled =
-            !_showingSymbolGallery &&
+            !IsReadOnlyReview &&
             _viewModel.Capabilities.CanEditElectrical;
 
         GalleryGridButton.IsEnabled =
@@ -453,14 +497,14 @@ public sealed partial class MainWindow : Window
                 ? "Anchors: On"
                 : "Anchors: Off";
         UndoLayoutButton.IsEnabled =
-            !_showingSymbolGallery &&
+            !IsReadOnlyReview &&
             _viewModel.CanUndoLayout;
         RedoLayoutButton.IsEnabled =
-            !_showingSymbolGallery &&
+            !IsReadOnlyReview &&
             _viewModel.CanRedoLayout;
 
         bool selectedLayoutEditable =
-            !_showingSymbolGallery &&
+            !IsReadOnlyReview &&
             _viewModel.Capabilities.CanEditLayout &&
             _viewModel.InteractionMode ==
             InteractionMode.Layout &&
@@ -476,15 +520,17 @@ public sealed partial class MainWindow : Window
         CapabilitiesText.Text =
             _showingSymbolGallery
                 ? "Gallery — read-only review. Grid, nominal bounds/guides and anchor circles are optional inspection overlays."
-                : $"Host capabilities — Layout: {EnabledText(_viewModel.Capabilities.CanEditLayout)}, " +
-                  $"Electrical: {EnabledText(_viewModel.Capabilities.CanEditElectrical)}";
+                : _showingV2Board
+                    ? "V2 — read-only acceptance view. Fan-out must use an explicit distribution bar and nodes; no line-touch junctions."
+                    : $"Host capabilities — Layout: {EnabledText(_viewModel.Capabilities.CanEditLayout)}, " +
+                      $"Electrical: {EnabledText(_viewModel.Capabilities.CanEditElectrical)}";
 
         ElectricalCommandProposal? proposal =
-            _showingSymbolGallery
+            IsReadOnlyReview
                 ? null
                 : _viewModel.PendingElectricalProposal;
         CommandResult? result =
-            _showingSymbolGallery
+            IsReadOnlyReview
                 ? null
                 : _viewModel.LastElectricalResult;
 
