@@ -1449,7 +1449,7 @@ public sealed class SceneAssembly
                 (branch.Bounds.Width / 2.0);
             double egressY =
                 frame.Bottom -
-                (tokens.BoardBottomPaddingMm / 2.0);
+                tokens.CircuitEgressInsetMm;
             MmPoint egressPoint =
                 new(
                     powerAxisX,
