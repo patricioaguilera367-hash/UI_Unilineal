@@ -1851,24 +1851,6 @@
           "y": 16
         },
         "direction": "Down"
-      },
-      {
-        "id": "PE",
-        "role": "Ground",
-        "point": {
-          "x": 7,
-          "y": 3
-        },
-        "direction": "Up"
-      },
-      {
-        "id": "N",
-        "role": "Neutral",
-        "point": {
-          "x": 15,
-          "y": 3
-        },
-        "direction": "Up"
       }
     ],
     "primitives": [
@@ -1942,24 +1924,6 @@
         "point": {
           "x": 8,
           "y": 0
-        },
-        "direction": "Up"
-      },
-      {
-        "id": "PE",
-        "role": "Ground",
-        "point": {
-          "x": 5,
-          "y": 4
-        },
-        "direction": "Up"
-      },
-      {
-        "id": "N",
-        "role": "Neutral",
-        "point": {
-          "x": 11,
-          "y": 4
         },
         "direction": "Up"
       }
