@@ -382,6 +382,53 @@ public sealed class Ric18BoardDetailNormalizationTests
     }
 
     [Fact]
+    public void MinimalBoard_Ric18AuxiliaryRoutes_EnterDestinationFromAbove()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+        GroupSceneElement destination =
+            Group(
+                scene,
+                "detail/B1/branch/C1/destination");
+
+        foreach ((string routeId, string anchorId) in new[]
+                 {
+                     (
+                         "detail/B1/connection/neutral/C1",
+                         "N"
+                     ),
+                     (
+                         "detail/B1/connection/protective-earth/C1",
+                         "PE"
+                     )
+                 })
+        {
+            PolylineSceneElement route =
+                Route(
+                    scene,
+                    routeId);
+            SceneAnchor anchor =
+                Anchor(
+                    destination,
+                    anchorId);
+            MmPoint approach =
+                route.Points[^2];
+
+            Assert.Equal(
+                anchor.Point,
+                route.Points[^1]);
+            Assert.Equal(
+                anchor.Point.X,
+                approach.X);
+            Assert.True(
+                approach.Y <
+                anchor.Point.Y);
+        }
+    }
+
+    [Fact]
     public void SyntheticConnectionNodes_AreMarkedForSolidFill()
     {
         DiagramScene scene =
