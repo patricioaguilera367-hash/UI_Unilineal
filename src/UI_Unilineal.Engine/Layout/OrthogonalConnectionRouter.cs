@@ -190,12 +190,14 @@ public sealed class OrthogonalConnectionRouter
             OffsetFromAnchor(
                 start,
                 sourceAnchor.Direction,
-                tokens.AuxiliaryRailDepartureMm);
+                leavesStructuralRail
+                    ? tokens.AuxiliaryRailDepartureMm
+                    : tokens.AuxiliaryAnchorApproachMm);
         MmPoint approach =
             OffsetFromAnchor(
                 end,
                 targetAnchor.Direction,
-                tokens.AuxiliaryRailDepartureMm);
+                tokens.AuxiliaryAnchorApproachMm);
 
         IReadOnlyList<MmPoint> continuation =
             FindRoute(
@@ -254,12 +256,14 @@ public sealed class OrthogonalConnectionRouter
                 leavesStructuralRail
                     ? AnchorDirection.Down
                     : sourceAnchor.Direction,
-                tokens.AuxiliaryRailDepartureMm);
+                leavesStructuralRail
+                    ? tokens.AuxiliaryRailDepartureMm
+                    : tokens.AuxiliaryAnchorApproachMm);
         MmPoint approach =
             OffsetFromAnchor(
                 end,
                 targetAnchor.Direction,
-                tokens.AuxiliaryRailDepartureMm);
+                tokens.AuxiliaryAnchorApproachMm);
 
         var candidate =
             new List<MmPoint>
