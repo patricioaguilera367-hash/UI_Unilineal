@@ -213,6 +213,62 @@ public sealed class OrthogonalConnectionRouterTests
     }
 
     [Fact]
+    public void Route_NeutralRcdOutputLeavesRightFacingAnchorToRight()
+    {
+        RIC18DrawingProfile profile = Profile();
+
+        GroupSceneElement source = GroupWithRole(
+            "detail/B1/branch/C1/protection/RCD1",
+            new MmRect(40, 20, 20, 20),
+            "DifferentialProtection",
+            new SceneAnchor(
+                "N_OUT",
+                AnchorRole.Neutral,
+                new MmPoint(60, 35),
+                AnchorDirection.Right));
+        GroupSceneElement target = GroupWithRole(
+            "detail/B1/branch/C1/destination",
+            new MmRect(40, 70, 30, 20),
+            "FinalLoad",
+            new SceneAnchor(
+                "N",
+                AnchorRole.Neutral,
+                new MmPoint(60, 72),
+                AnchorDirection.Up));
+        var connection = new SceneConnection(
+            new SceneId("detail/B1/connection/neutral-out/C1"),
+            new SceneAnchorRef(source.Id, "N_OUT"),
+            new SceneAnchorRef(target.Id, "N"),
+            "NEUTRAL_AUX",
+            SceneLayer.Power,
+            10,
+            SceneVisibility.Both,
+            null);
+        var scene = new DiagramScene(
+            new MmRect(0, 0, 140, 110),
+            [source, target],
+            Metadata(),
+            [connection]);
+
+        RoutedConnection routed =
+            new OrthogonalConnectionRouter().Route(
+                connection,
+                scene,
+                profile.Layout);
+
+        AssertOrthogonal(routed.Points);
+
+        MmPoint departure = routed.Points[1];
+
+        Assert.Equal(
+            routed.Points[0].Y,
+            departure.Y);
+        Assert.True(
+            departure.X >
+            routed.Points[0].X);
+    }
+
+    [Fact]
     public void Route_IncompatibleAnchorRoles_Throws()
     {
         RIC18DrawingProfile profile = Profile();
