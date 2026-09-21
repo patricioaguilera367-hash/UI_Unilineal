@@ -23,7 +23,8 @@ public sealed record Ric18BoardLayoutTokens
         double annotationClearanceMm,
         double auxiliaryRailDepartureMm,
         double auxiliaryLaneOffsetMm,
-        double connectionNodeRadiusMm)
+        double connectionNodeRadiusMm,
+        double? auxiliaryAnchorApproachMm = null)
     {
         ValidatePositive(boardOuterPaddingMm, nameof(boardOuterPaddingMm));
         ValidatePositive(boardHeaderHeightMm, nameof(boardHeaderHeightMm));
@@ -39,6 +40,13 @@ public sealed record Ric18BoardLayoutTokens
         ValidatePositive(auxiliaryLaneOffsetMm, nameof(auxiliaryLaneOffsetMm));
         ValidatePositive(connectionNodeRadiusMm, nameof(connectionNodeRadiusMm));
 
+        double resolvedAuxiliaryAnchorApproachMm =
+            auxiliaryAnchorApproachMm ??
+            auxiliaryRailDepartureMm;
+        ValidatePositive(
+            resolvedAuxiliaryAnchorApproachMm,
+            nameof(auxiliaryAnchorApproachMm));
+
         BoardOuterPaddingMm = boardOuterPaddingMm;
         BoardHeaderHeightMm = boardHeaderHeightMm;
         ElementGapMm = elementGapMm;
@@ -51,6 +59,8 @@ public sealed record Ric18BoardLayoutTokens
         AnnotationClearanceMm = annotationClearanceMm;
         AuxiliaryRailDepartureMm = auxiliaryRailDepartureMm;
         AuxiliaryLaneOffsetMm = auxiliaryLaneOffsetMm;
+        AuxiliaryAnchorApproachMm =
+            resolvedAuxiliaryAnchorApproachMm;
         ConnectionNodeRadiusMm = connectionNodeRadiusMm;
     }
 
@@ -78,6 +88,8 @@ public sealed record Ric18BoardLayoutTokens
 
     public double AuxiliaryLaneOffsetMm { get; }
 
+    public double AuxiliaryAnchorApproachMm { get; }
+
     public double ConnectionNodeRadiusMm { get; }
 
     public static Ric18BoardLayoutTokens From(LayoutProfile profile)
@@ -101,7 +113,10 @@ public sealed record Ric18BoardLayoutTokens
             auxiliaryLaneOffsetMm: Math.Max(
                 profile.RouteClearanceMm + profile.TextPaddingMm,
                 grid * 1.5),
-            connectionNodeRadiusMm: Math.Max(0.75, grid * 0.3));
+            connectionNodeRadiusMm: Math.Max(0.75, grid * 0.3),
+            auxiliaryAnchorApproachMm: Math.Max(
+                profile.RouteClearanceMm,
+                grid));
     }
 
     private static void ValidatePositive(
