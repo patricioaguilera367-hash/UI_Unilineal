@@ -266,6 +266,31 @@ public sealed class Ric18BoardDetailNormalizationTests
     }
 
     [Fact]
+    public void CircuitEgress_ClearsLastInternalProtectionBeforeBoardExit()
+    {
+        DiagramScene scene =
+            BuildScene(
+                SemanticFixtureFactory.Minimal(),
+                new EntityUid("B1"));
+        GroupSceneElement protection =
+            Group(
+                scene,
+                "detail/B1/branch/C1/protection/PR1");
+        GroupSceneElement egress =
+            Group(
+                scene,
+                "detail/B1/branch/C1/destination/egress");
+
+        double clearance =
+            Profile().Layout.RouteClearanceMm;
+
+        Assert.True(
+            Anchor(egress, "N").Point.Y >
+            protection.Bounds.Bottom +
+            clearance);
+    }
+
+    [Fact]
     public void MinimalBoard_Ric18BusGrammar_SingleCircuitSharesIncomingCenterNode()
     {
         DiagramScene scene =
