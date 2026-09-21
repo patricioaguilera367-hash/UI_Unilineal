@@ -214,6 +214,8 @@ public sealed class DiagramSceneValidator
             {
                 if (IsBoardContainer(groups[left]) ||
                     IsBoardContainer(groups[right]) ||
+                    IsPassThroughJunction(groups[left]) ||
+                    IsPassThroughJunction(groups[right]) ||
                     !Overlaps(
                         groups[left].Bounds,
                         groups[right].Bounds))
@@ -283,7 +285,8 @@ public sealed class DiagramSceneValidator
             {
                 if (group.Id == connection.Source.ElementId ||
                     group.Id == connection.Target.ElementId ||
-                    IsStructuralRail(group))
+                    IsStructuralRail(group) ||
+                    IsPassThroughJunction(group))
                 {
                     continue;
                 }
@@ -335,6 +338,22 @@ public sealed class DiagramSceneValidator
             "MainBus" or
             "NeutralBus" or
             "ProtectiveEarthBus";
+    }
+
+    private static bool IsPassThroughJunction(
+        GroupSceneElement group)
+    {
+        if (!group.Metadata.TryGetValue(
+                "compositionRole",
+                out string? role))
+        {
+            return false;
+        }
+
+        return string.Equals(
+            role,
+            "CircuitEgress",
+            StringComparison.Ordinal);
     }
 
     private static bool IsBoardContainer(
