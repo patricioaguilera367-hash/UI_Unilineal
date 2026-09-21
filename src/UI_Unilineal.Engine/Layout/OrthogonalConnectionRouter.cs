@@ -104,8 +104,8 @@ public sealed class OrthogonalConnectionRouter
                     scene,
                     sourceElement,
                     targetElement,
-                    sourceAnchor.Point,
-                    targetAnchor.Point,
+                    sourceAnchor,
+                    targetAnchor,
                     profile));
         }
 
@@ -148,10 +148,14 @@ public sealed class OrthogonalConnectionRouter
         DiagramScene scene,
         SceneElement sourceElement,
         SceneElement targetElement,
-        MmPoint start,
-        MmPoint end,
+        SceneAnchor sourceAnchor,
+        SceneAnchor targetAnchor,
         LayoutProfile profile)
     {
+        MmPoint start =
+            sourceAnchor.Point;
+        MmPoint end =
+            targetAnchor.Point;
         string? sourceRole =
             CompositionRole(sourceElement);
         bool leavesStructuralRail =
@@ -171,8 +175,8 @@ public sealed class OrthogonalConnectionRouter
                 lineStyleId,
                 scene,
                 targetElement,
-                start,
-                end,
+                sourceAnchor,
+                targetAnchor,
                 obstacles,
                 tokens,
                 leavesStructuralRail);
@@ -182,30 +186,21 @@ public sealed class OrthogonalConnectionRouter
             return semanticLane;
         }
 
-        if (!leavesStructuralRail)
-        {
-            return FindRoute(
+        MmPoint departure =
+            OffsetFromAnchor(
                 start,
+                sourceAnchor.Direction,
+                tokens.AuxiliaryRailDepartureMm);
+        MmPoint approach =
+            OffsetFromAnchor(
                 end,
-                obstacles,
-                profile);
-        }
-
-        double departureY =
-            end.Y >= start.Y
-                ? Math.Min(
-                    end.Y,
-                    start.Y + tokens.AuxiliaryRailDepartureMm)
-                : start.Y;
-        var departure =
-            new MmPoint(
-                start.X,
-                departureY);
+                targetAnchor.Direction,
+                tokens.AuxiliaryRailDepartureMm);
 
         IReadOnlyList<MmPoint> continuation =
             FindRoute(
                 departure,
-                end,
+                approach,
                 obstacles,
                 profile);
 
@@ -215,6 +210,7 @@ public sealed class OrthogonalConnectionRouter
                 start
             };
         points.AddRange(continuation);
+        points.Add(end);
 
         return NormalizeRoute(points);
     }
@@ -223,12 +219,16 @@ public sealed class OrthogonalConnectionRouter
         string lineStyleId,
         DiagramScene scene,
         SceneElement targetElement,
-        MmPoint start,
-        MmPoint end,
+        SceneAnchor sourceAnchor,
+        SceneAnchor targetAnchor,
         IReadOnlyList<MmRect> obstacles,
         Ric18BoardLayoutTokens tokens,
         bool leavesStructuralRail)
     {
+        MmPoint start =
+            sourceAnchor.Point;
+        MmPoint end =
+            targetAnchor.Point;
         if (end.Y < start.Y)
         {
             return null;
@@ -248,37 +248,33 @@ public sealed class OrthogonalConnectionRouter
                 : routingEnvelope.X -
                   tokens.AuxiliaryLaneOffsetMm;
 
+        MmPoint departure =
+            OffsetFromAnchor(
+                start,
+                leavesStructuralRail
+                    ? AnchorDirection.Down
+                    : sourceAnchor.Direction,
+                tokens.AuxiliaryRailDepartureMm);
+        MmPoint approach =
+            OffsetFromAnchor(
+                end,
+                targetAnchor.Direction,
+                tokens.AuxiliaryRailDepartureMm);
+
         var candidate =
             new List<MmPoint>
             {
-                start
-            };
-
-        if (leavesStructuralRail)
-        {
-            double departureY =
-                Math.Min(
-                    end.Y,
-                    start.Y + tokens.AuxiliaryRailDepartureMm);
-
-            candidate.Add(
+                start,
+                departure,
                 new MmPoint(
-                    start.X,
-                    departureY));
-        }
-
-        MmPoint current =
-            candidate[^1];
-
-        candidate.Add(
-            new MmPoint(
-                laneX,
-                current.Y));
-        candidate.Add(
-            new MmPoint(
-                laneX,
-                end.Y));
-        candidate.Add(end);
+                    laneX,
+                    departure.Y),
+                new MmPoint(
+                    laneX,
+                    approach.Y),
+                approach,
+                end
+            };
 
         IReadOnlyList<MmPoint> normalized =
             Simplify(candidate);
@@ -290,6 +286,36 @@ public sealed class OrthogonalConnectionRouter
                 ? normalized
                 : null;
     }
+
+    private static MmPoint OffsetFromAnchor(
+        MmPoint point,
+        AnchorDirection direction,
+        double distance) =>
+        direction switch
+        {
+            AnchorDirection.Left =>
+                new MmPoint(
+                    point.X - distance,
+                    point.Y),
+            AnchorDirection.Right =>
+                new MmPoint(
+                    point.X + distance,
+                    point.Y),
+            AnchorDirection.Up =>
+                new MmPoint(
+                    point.X,
+                    point.Y - distance),
+            AnchorDirection.Down =>
+                new MmPoint(
+                    point.X,
+                    point.Y + distance),
+            AnchorDirection.Any =>
+                point,
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(direction),
+                direction,
+                "Unsupported anchor direction.")
+        };
 
     private static MmRect[] BuildObstacles(
         DiagramScene scene,
