@@ -1,6 +1,6 @@
 # R1 — ProyectoElectrico topology audit
 
-Status: **BLOCKED ON ONE PRODUCT/ENGINEERING DECISION BEFORE SCHEMA CHANGE**
+Status: **TOPOLOGY DECISION RESOLVED — READY FOR CANONICAL SUPPLY-MODEL DESIGN**
 
 Audit target:
 
@@ -114,52 +114,87 @@ But the following are electrical facts and must not be fabricated by the view:
 This distinction lets us keep the host model small without allowing the
 renderer to invent engineering information.
 
-## Recommended minimal next schema change
+## Accepted topology decision
 
-Do **not** implement this until the unresolved topology question below is
-answered.
+The product requirements are now explicit:
 
-The smallest useful relationship is conceptually:
+1. A downstream board **may have more than one incoming supply**.
+2. A feeder circuit **may feed more than one downstream board**.
+3. Generator-specific modeling is future scope, but the topology chosen now
+   must not make future normal/emergency or alternate-source support impossible.
+4. In the single-line diagram, lines never merge/split merely by touching.
+   **Every union or fan-out is concentrated on a bar/bus with explicit node(s).**
 
-```text
-Circuit.DownstreamBoardId : nullable FK -> Board
-```
-
-Meaning:
-
-- null: this circuit does not canonically identify a downstream board;
-- value: this exact circuit feeds that board.
-
-For the current single-parent hierarchy, validation can require:
+Therefore the previously considered shortcut:
 
 ```text
-downstreamBoard.ParentBoardId == circuit.BoardId
+Circuit.DownstreamBoardId
 ```
 
-This is simpler than importing UI_Unilineal's full `SupplyConnection` domain
-into ProyectoElectrico.
+is rejected. It cannot represent the required cardinalities.
 
-If the product must support multiple incoming supplies, alternate supplies,
-generators/ATS, or one circuit feeding multiple downstream boards as first-class
-cases, this single FK is not sufficient and we should use an explicit
-`BoardSupply` / supply-connection model instead.
+The canonical direction is a separate supply relation in ProyectoElectrico,
+conceptually:
 
-## Decision required before R2
+```text
+BoardSupply
+├── Id / Uid
+├── ProjectId
+├── FeederCircuitId
+├── DestinationBoardId
+├── SupplyRole
+├── Priority
+├── IsNormallyActive
+├── State
+└── DataState
+```
 
-Please answer this from the intended electrical-project behavior, not from the
-current code:
+This permits both:
 
-1. **Can a downstream board have more than one incoming supply that must be
-   represented in the project?**
-   Examples: normal + emergency, utility + generator, transfer switch, two
-   alternate feeders.
+```text
+one feeder circuit -> many downstream boards
+one downstream board <- many feeder circuits
+```
 
-2. **Can one feeder circuit intentionally feed more than one downstream board,
-   or should one feeder circuit identify at most one destination board?**
+The exact persistence/schema migration belongs to ProyectoElectrico and must be
+implemented there, not hidden inside UI_Unilineal.
 
-This answer decides whether ProyectoElectrico needs:
+### Graphic consequence
 
-- the simple `Circuit.DownstreamBoardId` relation, or
-- a separate supply-connection entity/table.
+When one feeder supplies several boards, BoardDetail derives a distribution
+junction bar from the canonical supply relations:
 
-No schema change should be made before this is explicit.
+```text
+            feeder
+              |
+        ======●======
+           ●     ●
+           |     |
+        Board A Board B
+```
+
+No direct T-junction made from touching polylines is accepted.
+
+The generated junction bar is a **view-grammar element**, not automatically a
+persisted electrical entity. It must not invent current rating, section or
+capacity. If engineering properties are later attached to that bus, it must
+then become canonical in ProyectoElectrico.
+
+See the accepted decision record:
+
+- `docs/integration/R1_TOPOLOGY_DECISION.md`
+
+## Remaining R1 gaps not resolved by this decision
+
+The supply-topology decision does not invent information that ProyectoElectrico
+still does not model, including:
+
+- main-board utility/source/empalme entity;
+- differential protection;
+- explicit neutral-presence state;
+- PE conductor/presence;
+- grounding scheme;
+- bus electrical ratings.
+
+Those remain explicit Unknown/Missing until the canonical host model supports
+them.
