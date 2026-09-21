@@ -25,7 +25,8 @@ public sealed record Ric18BoardLayoutTokens
         double auxiliaryLaneOffsetMm,
         double connectionNodeRadiusMm,
         double? auxiliaryAnchorApproachMm = null,
-        double? circuitEgressInsetMm = null)
+        double? circuitEgressInsetMm = null,
+        double? auxiliaryFrameClearanceMm = null)
     {
         ValidatePositive(boardOuterPaddingMm, nameof(boardOuterPaddingMm));
         ValidatePositive(boardHeaderHeightMm, nameof(boardHeaderHeightMm));
@@ -48,11 +49,20 @@ public sealed record Ric18BoardLayoutTokens
             resolvedAuxiliaryAnchorApproachMm,
             nameof(auxiliaryAnchorApproachMm));
 
+        double resolvedAuxiliaryFrameClearanceMm =
+            auxiliaryFrameClearanceMm ??
+            auxiliaryLaneOffsetMm;
+        ValidatePositive(
+            resolvedAuxiliaryFrameClearanceMm,
+            nameof(auxiliaryFrameClearanceMm));
+
         double resolvedCircuitEgressInsetMm =
             circuitEgressInsetMm ??
-            Math.Min(
-                connectionNodeRadiusMm,
-                boardBottomPaddingMm / 2.0);
+            Math.Max(
+                resolvedAuxiliaryFrameClearanceMm,
+                Math.Min(
+                    connectionNodeRadiusMm,
+                    boardBottomPaddingMm / 2.0));
         ValidatePositive(
             resolvedCircuitEgressInsetMm,
             nameof(circuitEgressInsetMm));
@@ -71,6 +81,8 @@ public sealed record Ric18BoardLayoutTokens
         AuxiliaryLaneOffsetMm = auxiliaryLaneOffsetMm;
         AuxiliaryAnchorApproachMm =
             resolvedAuxiliaryAnchorApproachMm;
+        AuxiliaryFrameClearanceMm =
+            resolvedAuxiliaryFrameClearanceMm;
         CircuitEgressInsetMm =
             resolvedCircuitEgressInsetMm;
         ConnectionNodeRadiusMm = connectionNodeRadiusMm;
@@ -102,6 +114,8 @@ public sealed record Ric18BoardLayoutTokens
 
     public double AuxiliaryAnchorApproachMm { get; }
 
+    public double AuxiliaryFrameClearanceMm { get; }
+
     public double CircuitEgressInsetMm { get; }
 
     public double ConnectionNodeRadiusMm { get; }
@@ -112,8 +126,12 @@ public sealed record Ric18BoardLayoutTokens
 
         double grid = profile.GridMm;
 
+        double auxiliaryFrameClearanceMm =
+            Math.Max(
+                profile.RouteClearanceMm,
+                grid);
         double circuitEgressInsetMm =
-            Math.Max(0.75, grid * 0.3);
+            auxiliaryFrameClearanceMm;
         double boardBottomPaddingMm =
             Math.Max(
                 Math.Max(5.0, grid * 2.0),
@@ -140,7 +158,8 @@ public sealed record Ric18BoardLayoutTokens
             auxiliaryAnchorApproachMm: Math.Max(
                 profile.RouteClearanceMm,
                 grid),
-            circuitEgressInsetMm: circuitEgressInsetMm);
+            circuitEgressInsetMm: circuitEgressInsetMm,
+            auxiliaryFrameClearanceMm: auxiliaryFrameClearanceMm);
     }
 
     private static void ValidatePositive(
