@@ -531,7 +531,7 @@ public sealed class Ric18BoardDetailNormalizationTests
             Assert.InRange(
                 Math.Abs(
                     distance -
-                    marker.Radius),
+                    marker.RadiusMm),
                 0,
                 1e-9);
             Assert.Equal(
