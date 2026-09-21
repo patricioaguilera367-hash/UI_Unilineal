@@ -516,21 +516,25 @@ questions.
 
 ## 9. Immediate next action
 
-R0 is complete and the R1 topology audit/decision is documented.
+R0 is complete. R1 topology is resolved. The ProyectoElectrico host branch now
+contains the schema-v2 `BoardSupply` relation, validation/persistence migration,
+a canonical topology sample, and the R2 `BoardDiagramReadModel`.
 
-The next implementation step is:
+Evidence/status:
+`docs/integration/R2_BOARD_DIAGRAM_READ_MODEL.md`.
 
-> Add the smallest canonical `BoardSupply` relation to ProyectoElectrico that
-> supports many destinations per feeder circuit and many incoming feeder
-> circuits per board, including validation and persistence migration.
+The next implementation step is **R3**:
 
-Do not add generator/ATS/source entities yet.
+> Build the deterministic BoardDetail V2 grammar against the minimal board
+> diagram contract. The first required hard case is one feeder circuit with
+> multiple downstream boards, represented by an explicit distribution bar and
+> nodes.
 
-After that host change is proven with tests and a migrated sample, proceed to
-R2 and build the minimal read-only `BoardDiagramModel`.
+Do not revive generic electrical editing, project-summary layout, or unrelated
+export work while R3/R4 are open.
 
-The renderer/layout must not be redesigned in parallel with the host schema
-change.
+The ProyectoElectrico host work is not called GREEN until GitHub Actions
+actually executes Windows + Linux jobs successfully.
 
 ---
 
