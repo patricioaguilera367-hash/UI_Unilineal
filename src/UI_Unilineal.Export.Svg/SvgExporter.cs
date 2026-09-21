@@ -374,9 +374,32 @@ public sealed class SvgExporter
             .Append(Number(style.HeightMm))
             .Append("mm\" font-weight=\"")
             .Append(style.Bold ? "bold" : "normal")
-            .Append("\">")
-            .Append(EscapeText(text.Text))
-            .Append("</text>\n");
+            .Append("\">");
+
+        string[] lines = text.Text.Split('\n');
+        double lineHeight = style.HeightMm * 1.25;
+        for (int index = 0; index < lines.Length; index++)
+        {
+            if (index > 0)
+            {
+                output
+                    .Append("<tspan x=\"")
+                    .Append(Number(x))
+                    .Append("\" dy=\"")
+                    .Append(Number(lineHeight))
+                    .Append("mm\">");
+            }
+            else
+            {
+                output.Append("<tspan>");
+            }
+
+            output
+                .Append(EscapeText(lines[index]))
+                .Append("</tspan>");
+        }
+
+        output.Append("</text>\n");
     }
 
     private static void AppendLineStyle(

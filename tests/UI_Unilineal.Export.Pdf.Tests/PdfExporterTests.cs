@@ -76,7 +76,7 @@ public sealed class PdfExporterTests
     public async Task Pdf_text_escapes_delimiters_controls_and_non_ascii_deterministically()
     {
         const string text =
-            "A(\\)\n\r\t\u0001ñ😀";
+            "A(\\)\r\t\u0001ñ😀";
         (DrawingDocument document, ResolvedDrawingStyleSet styles) =
             CreateDocument(
                 text: text);
@@ -96,7 +96,7 @@ public sealed class PdfExporterTests
 
         Assert.Equal(first, second);
         Assert.Contains(
-            "A\\(\\\\\\)\\n\\r\\t???",
+            "A\\(\\\\\\)\\r\\t???",
             pdf,
             StringComparison.Ordinal);
         Assert.DoesNotContain(

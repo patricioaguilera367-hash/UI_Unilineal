@@ -658,10 +658,23 @@ public sealed class PdfExporter
             .Append(' ')
             .Append(Number(baselineY))
             .Append(" Tm\n");
-        output
-            .Append('(')
-            .Append(EscapePdfLiteral(text.Text))
-            .Append(") Tj\n");
+        string[] lines = text.Text.Split('\n');
+        for (int index = 0; index < lines.Length; index++)
+        {
+            if (index > 0)
+            {
+                output
+                    .Append("0 ")
+                    .Append(Number(-fontSize * 1.25))
+                    .Append(" Td\n");
+            }
+
+            output
+                .Append('(')
+                .Append(EscapePdfLiteral(lines[index]))
+                .Append(") Tj\n");
+        }
+
         output.Append("ET\n");
     }
 
