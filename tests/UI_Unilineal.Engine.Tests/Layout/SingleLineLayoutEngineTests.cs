@@ -110,6 +110,14 @@ public sealed class SingleLineLayoutEngineTests
         Assert.True(
             downstream.Bounds.Y >
             main.Bounds.Y);
+
+        foreach (GroupSceneElement board in new[] { main, downstream })
+        {
+            Assert.DoesNotContain(
+                board.Anchors,
+                anchor =>
+                    anchor.Id is "N" or "PE");
+        }
     }
 
     [Fact]
