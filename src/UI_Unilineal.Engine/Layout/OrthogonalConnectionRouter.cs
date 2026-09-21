@@ -165,7 +165,8 @@ public sealed class OrthogonalConnectionRouter
         MmRect? routeBounds =
             ResolveAuxiliaryRouteBounds(
                 scene,
-                targetElement);
+                targetElement,
+                tokens);
 
         MmRect[] obstacles =
             BuildObstacles(
@@ -259,18 +260,11 @@ public sealed class OrthogonalConnectionRouter
 
         if (routeBounds is not null)
         {
-            double minimumLaneX =
-                routeBounds.Value.X +
-                tokens.AuxiliaryLaneOffsetMm;
-            double maximumLaneX =
-                routeBounds.Value.Right -
-                tokens.AuxiliaryLaneOffsetMm;
-
             laneX =
                 Math.Clamp(
                     laneX,
-                    minimumLaneX,
-                    maximumLaneX);
+                    routeBounds.Value.X,
+                    routeBounds.Value.Right);
         }
 
         MmPoint departure =
@@ -394,7 +388,8 @@ public sealed class OrthogonalConnectionRouter
 
     private static MmRect? ResolveAuxiliaryRouteBounds(
         DiagramScene scene,
-        SceneElement targetElement)
+        SceneElement targetElement,
+        Ric18BoardLayoutTokens tokens)
     {
         string? branchPrefix =
             BranchPrefix(
@@ -420,18 +415,45 @@ public sealed class OrthogonalConnectionRouter
         string boardId =
             branchPrefix[..branchIndex];
 
-        return scene.Elements
-            .OfType<GroupSceneElement>()
-            .SingleOrDefault(group =>
-                string.Equals(
-                    group.Id.Value,
-                    boardId,
-                    StringComparison.Ordinal) &&
-                string.Equals(
-                    CompositionRole(group),
-                    "BoardFrame",
-                    StringComparison.Ordinal))
-            ?.Bounds;
+        GroupSceneElement? board =
+            scene.Elements
+                .OfType<GroupSceneElement>()
+                .SingleOrDefault(group =>
+                    string.Equals(
+                        group.Id.Value,
+                        boardId,
+                        StringComparison.Ordinal) &&
+                    string.Equals(
+                        CompositionRole(group),
+                        "BoardFrame",
+                        StringComparison.Ordinal));
+
+        if (board is null)
+        {
+            return null;
+        }
+
+        double clearance =
+            tokens.AuxiliaryFrameClearanceMm;
+        double width =
+            board.Bounds.Width -
+            (clearance * 2.0);
+        double height =
+            board.Bounds.Height -
+            (clearance * 2.0);
+
+        if (width <= 0 ||
+            height <= 0)
+        {
+            throw new InvalidOperationException(
+                $"Board '{board.Id}' is too small for auxiliary frame clearance.");
+        }
+
+        return new MmRect(
+            board.Bounds.X + clearance,
+            board.Bounds.Y + clearance,
+            width,
+            height);
     }
 
     private static bool IsWithinBounds(
