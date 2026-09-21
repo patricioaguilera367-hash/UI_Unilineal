@@ -436,7 +436,7 @@ public sealed class Ric18BoardDetailNormalizationTests
     [Theory]
     [InlineData("minimal")]
     [InlineData("nested")]
-    public void BoardDetail_AuxiliaryRoutesStayInsideBoardAndEndAtCircuitEgress(
+    public void BoardDetail_AuxiliaryRoutesRespectFrameClearanceAndEndAtCircuitEgress(
         string fixture)
     {
         SingleLineInput input =
@@ -472,6 +472,17 @@ public sealed class Ric18BoardDetailNormalizationTests
 
         Assert.NotEmpty(auxiliaryRoutes);
 
+        double frameClearance =
+            Ric18BoardLayoutTokens
+                .From(Profile().Layout)
+                .AuxiliaryFrameClearanceMm;
+        MmRect safeArea =
+            new(
+                frame.Bounds.X + frameClearance,
+                frame.Bounds.Y + frameClearance,
+                frame.Bounds.Width - (frameClearance * 2.0),
+                frame.Bounds.Height - (frameClearance * 2.0));
+
         Assert.All(
             auxiliaryRoutes,
             route =>
@@ -481,9 +492,9 @@ public sealed class Ric18BoardDetailNormalizationTests
                     point =>
                         Assert.True(
                             Contains(
-                                frame.Bounds,
+                                safeArea,
                                 point),
-                            $"Auxiliary route escaped board frame: {route.Id} at {point}."));
+                            $"Auxiliary route violated board-frame clearance: {route.Id} at {point}."));
             });
 
         Assert.Contains(
