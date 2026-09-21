@@ -496,15 +496,6 @@ public sealed class BoardDiagramSceneBuilder
                         SceneTextHorizontalAlignment.Center));
             }
 
-            AddNode(
-                $"{prefix}/node",
-                new MmPoint(
-                    x,
-                    MainBusYmm),
-                boardReference,
-                "BUS",
-                "MainBusNode",
-                elements);
         }
     }
 
@@ -1258,17 +1249,13 @@ public sealed class BoardDiagramSceneBuilder
 
     private sealed class SymbolCatalog
     {
-        private readonly RIC18DrawingProfile profile;
         private readonly IReadOnlyDictionary<string, SymbolDefinition> symbols;
         private readonly IReadOnlyDictionary<string, LineStyleDefinition> lineStyles;
 
         public SymbolCatalog(
             RIC18DrawingProfile profile)
         {
-            this.profile =
-                profile ??
-                throw new ArgumentNullException(
-                    nameof(profile));
+            ArgumentNullException.ThrowIfNull(profile);
             symbols =
                 profile.Symbols.ToDictionary(
                     item => item.Id,
