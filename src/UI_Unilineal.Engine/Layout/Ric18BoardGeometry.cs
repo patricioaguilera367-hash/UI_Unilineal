@@ -230,17 +230,20 @@ public sealed class Ric18BoardGeometryPlanner
                 tokens.AnnotationClearanceMm +
                 maximumLeftExtent);
 
-        double circuitSpan =
+        double circuitAxisSpan =
             circuitCount == 0
                 ? 0
-                : ((circuitCount - 1) * circuitPitch) +
-                  maximumLeftExtent +
-                  maximumRightExtent;
+                : (circuitCount - 1) * circuitPitch;
+        double symmetricCircuitExtent =
+            Math.Max(
+                maximumLeftExtent,
+                maximumRightExtent);
 
         double branchAreaWidth =
             Math.Max(
                 mainBusMeasuredSize.Width,
-                circuitSpan);
+                circuitAxisSpan +
+                (symmetricCircuitExtent * 2.0));
 
         double leftHeaderHalfWidth =
             tokens.BoardOuterPaddingMm +
