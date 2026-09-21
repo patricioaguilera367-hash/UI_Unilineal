@@ -611,6 +611,22 @@ public sealed class BoardDiagramSceneBuilder
                 rcd.Bounds.Bottom;
         }
 
+        if (!string.IsNullOrWhiteSpace(branch.ConductorLabel))
+        {
+            elements.Add(
+                new TextSceneElement(
+                    new SceneId($"{prefix}/conductor"),
+                    new MmRect(axisX + 3, currentY + 1, 45, 6),
+                    SceneLayer.Text,
+                    30,
+                    SceneVisibility.Both,
+                    circuitReference,
+                    Metadata("CircuitConductor", branch.CircuitUid.Value),
+                    branch.ConductorLabel,
+                    "LABEL_SMALL",
+                    SceneTextHorizontalAlignment.Start));
+        }
+
         BoardDiagramTargetModel[] targets =
             branch.Targets
                 .OrderBy(item => item.Code, StringComparer.OrdinalIgnoreCase)
