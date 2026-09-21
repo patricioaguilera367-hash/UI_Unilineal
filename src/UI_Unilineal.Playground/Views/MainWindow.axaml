@@ -110,6 +110,11 @@
                 Click="OnBoardB2Clicked"
                 Content="B2 — TDA" />
 
+            <Button
+                Margin="0,8,0,0"
+                Click="OnV2BoardClicked"
+                Content="V2 — Fan-out BoardDetail" />
+
             <TextBlock
                 Margin="0,12,0,0"
                 FontWeight="SemiBold"
