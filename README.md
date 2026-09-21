@@ -1,5 +1,7 @@
 ﻿# UI_Unilineal
 
+> **Ruta vigente:** [MASTER_ROUTE.md](MASTER_ROUTE.md) es el roadmap autoritativo del proyecto. La secuencia V1/G0-G10 se conserva como historia y evidencia técnica, pero no autoriza trabajo nuevo si contradice MASTER_ROUTE.
+
 Motor independiente para generación de diagramas unilineales eléctricos.
 
 ## Objetivo
@@ -256,5 +258,4 @@ La inspección visual/manual sigue siendo complementaria a la evidencia
 estructural headless; la CI no pretende certificar por sí sola calidad
 tipográfica o apreciación visual final.
 
-El siguiente checkpoint es **G9: hardening**. La integración real de lectura
-con `ProyectoElectrico` comienza en G10.
+La antigua secuencia proponía **G9: hardening** y luego integración en G10. Esa secuencia queda congelada como referencia histórica. El trabajo vigente continúa según [MASTER_ROUTE.md](MASTER_ROUTE.md), con integración real de `ProyectoElectrico` primero.
