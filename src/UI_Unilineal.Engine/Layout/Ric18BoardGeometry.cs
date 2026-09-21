@@ -24,7 +24,8 @@ public sealed record Ric18BoardLayoutTokens
         double auxiliaryRailDepartureMm,
         double auxiliaryLaneOffsetMm,
         double connectionNodeRadiusMm,
-        double? auxiliaryAnchorApproachMm = null)
+        double? auxiliaryAnchorApproachMm = null,
+        double? circuitEgressInsetMm = null)
     {
         ValidatePositive(boardOuterPaddingMm, nameof(boardOuterPaddingMm));
         ValidatePositive(boardHeaderHeightMm, nameof(boardHeaderHeightMm));
@@ -47,6 +48,15 @@ public sealed record Ric18BoardLayoutTokens
             resolvedAuxiliaryAnchorApproachMm,
             nameof(auxiliaryAnchorApproachMm));
 
+        double resolvedCircuitEgressInsetMm =
+            circuitEgressInsetMm ??
+            Math.Min(
+                connectionNodeRadiusMm,
+                boardBottomPaddingMm / 2.0);
+        ValidatePositive(
+            resolvedCircuitEgressInsetMm,
+            nameof(circuitEgressInsetMm));
+
         BoardOuterPaddingMm = boardOuterPaddingMm;
         BoardHeaderHeightMm = boardHeaderHeightMm;
         ElementGapMm = elementGapMm;
@@ -61,6 +71,8 @@ public sealed record Ric18BoardLayoutTokens
         AuxiliaryLaneOffsetMm = auxiliaryLaneOffsetMm;
         AuxiliaryAnchorApproachMm =
             resolvedAuxiliaryAnchorApproachMm;
+        CircuitEgressInsetMm =
+            resolvedCircuitEgressInsetMm;
         ConnectionNodeRadiusMm = connectionNodeRadiusMm;
     }
 
@@ -90,6 +102,8 @@ public sealed record Ric18BoardLayoutTokens
 
     public double AuxiliaryAnchorApproachMm { get; }
 
+    public double CircuitEgressInsetMm { get; }
+
     public double ConnectionNodeRadiusMm { get; }
 
     public static Ric18BoardLayoutTokens From(LayoutProfile profile)
@@ -97,6 +111,15 @@ public sealed record Ric18BoardLayoutTokens
         ArgumentNullException.ThrowIfNull(profile);
 
         double grid = profile.GridMm;
+
+        double circuitEgressInsetMm =
+            Math.Max(0.75, grid * 0.3);
+        double boardBottomPaddingMm =
+            Math.Max(
+                Math.Max(5.0, grid * 2.0),
+                profile.RouteClearanceMm +
+                circuitEgressInsetMm +
+                grid);
 
         return new Ric18BoardLayoutTokens(
             boardOuterPaddingMm: Math.Max(5.0, grid * 2.0),
@@ -106,7 +129,7 @@ public sealed record Ric18BoardLayoutTokens
             minimumCircuitPitchMm: Math.Max(26.0, grid * 10.0),
             mainBusHeightMm: Math.Max(4.0, grid * 1.5),
             branchStubHeightMm: Math.Max(2.0, grid * 0.75),
-            boardBottomPaddingMm: Math.Max(5.0, grid * 2.0),
+            boardBottomPaddingMm: boardBottomPaddingMm,
             externalDestinationGapMm: Math.Max(4.0, grid * 1.5),
             annotationClearanceMm: Math.Max(2.0, profile.TextPaddingMm * 2.0),
             auxiliaryRailDepartureMm: Math.Max(profile.RouteClearanceMm, grid),
@@ -116,7 +139,8 @@ public sealed record Ric18BoardLayoutTokens
             connectionNodeRadiusMm: Math.Max(0.75, grid * 0.3),
             auxiliaryAnchorApproachMm: Math.Max(
                 profile.RouteClearanceMm,
-                grid));
+                grid),
+            circuitEgressInsetMm: circuitEgressInsetMm);
     }
 
     private static void ValidatePositive(
