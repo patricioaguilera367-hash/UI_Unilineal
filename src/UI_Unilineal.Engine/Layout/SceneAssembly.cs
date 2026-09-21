@@ -1073,7 +1073,8 @@ public sealed class SceneAssembly
                 AddSemanticDestinationAnchors(
                     block,
                     positioned.Bounds,
-                    ResolveGroupAnchorIds(anchorCandidates)));
+                    ResolveGroupAnchorIds(anchorCandidates),
+                    output));
         groupAnchors =
             NormalizeSummaryPowerAnchors(
                 block,
@@ -1455,7 +1456,8 @@ public sealed class SceneAssembly
     private static SceneAnchor[] AddSemanticDestinationAnchors(
         CompositionBlock block,
         MmRect bounds,
-        IReadOnlyList<SceneAnchor> anchors)
+        IReadOnlyList<SceneAnchor> anchors,
+        IEnumerable<SceneElement> elements)
     {
         if (block.SemanticRole is not ("FinalLoad" or "DownstreamBoard" or "Unknown"))
         {
@@ -1464,6 +1466,13 @@ public sealed class SceneAssembly
 
         var result =
             new List<SceneAnchor>(anchors);
+
+        bool hasBoundTerminals =
+            TryResolveDestinationTerminalPoints(
+                block,
+                elements,
+                out MmPoint neutralPoint,
+                out MmPoint protectiveEarthPoint);
 
         if (!result.Any(anchor =>
                 string.Equals(
@@ -1475,9 +1484,11 @@ public sealed class SceneAssembly
                 new SceneAnchor(
                     "N",
                     AnchorRole.Neutral,
-                    new MmPoint(
-                        bounds.X + (bounds.Width * 0.68),
-                        bounds.Y + 2),
+                    hasBoundTerminals
+                        ? neutralPoint
+                        : new MmPoint(
+                            bounds.X + (bounds.Width * 0.68),
+                            bounds.Y + 2),
                     AnchorDirection.Up));
         }
 
@@ -1491,15 +1502,87 @@ public sealed class SceneAssembly
                 new SceneAnchor(
                     "PE",
                     AnchorRole.Ground,
-                    new MmPoint(
-                        bounds.X + (bounds.Width * 0.32),
-                        bounds.Y + 2),
+                    hasBoundTerminals
+                        ? protectiveEarthPoint
+                        : new MmPoint(
+                            bounds.X + (bounds.Width * 0.32),
+                            bounds.Y + 2),
                     AnchorDirection.Up));
         }
 
         return result
             .OrderBy(anchor => anchor.Id, StringComparer.Ordinal)
             .ToArray();
+    }
+
+    private static bool TryResolveDestinationTerminalPoints(
+        CompositionBlock block,
+        IEnumerable<SceneElement> elements,
+        out MmPoint neutralPoint,
+        out MmPoint protectiveEarthPoint)
+    {
+        if (block.SemanticRole == "FinalLoad")
+        {
+            CircleSceneElement? marker =
+                elements
+                    .OfType<CircleSceneElement>()
+                    .SingleOrDefault(element =>
+                        element.Id.Value.StartsWith(
+                            $"{block.Id}/part/MARKER/primitive/",
+                            StringComparison.Ordinal));
+
+            if (marker is not null)
+            {
+                double horizontalOffset =
+                    marker.RadiusMm * 0.6;
+                double verticalOffset =
+                    marker.RadiusMm * 0.8;
+
+                protectiveEarthPoint =
+                    new MmPoint(
+                        marker.Center.X -
+                        horizontalOffset,
+                        marker.Center.Y -
+                        verticalOffset);
+                neutralPoint =
+                    new MmPoint(
+                        marker.Center.X +
+                        horizontalOffset,
+                        marker.Center.Y -
+                        verticalOffset);
+                return true;
+            }
+        }
+
+        if (block.SemanticRole == "DownstreamBoard")
+        {
+            RectangleSceneElement? boardBody =
+                elements
+                    .OfType<RectangleSceneElement>()
+                    .SingleOrDefault(element =>
+                        element.Id.Value.StartsWith(
+                            $"{block.Id}/part/BOARD/primitive/",
+                            StringComparison.Ordinal));
+
+            if (boardBody is not null)
+            {
+                protectiveEarthPoint =
+                    new MmPoint(
+                        boardBody.Bounds.X +
+                        (boardBody.Bounds.Width * 0.3),
+                        boardBody.Bounds.Y);
+                neutralPoint =
+                    new MmPoint(
+                        boardBody.Bounds.X +
+                        (boardBody.Bounds.Width * 0.7),
+                        boardBody.Bounds.Y);
+                return true;
+            }
+        }
+
+        neutralPoint = default;
+        protectiveEarthPoint = default;
+        return false;
     }
 
     private static SceneAnchor[] ResolveGroupAnchorIds(
