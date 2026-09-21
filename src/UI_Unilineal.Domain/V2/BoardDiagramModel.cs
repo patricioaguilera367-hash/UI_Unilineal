@@ -4,13 +4,16 @@ namespace UI_Unilineal.Domain.V2;
 
 /// <summary>
 /// Minimal renderer-facing contract for one board. This is a read model, not a
-/// second electrical source of truth.
+/// second electrical source of truth. Absent or ambiguous data stays explicit
+/// (null / Unknown / 0) instead of being guessed.
 /// </summary>
 public sealed record BoardDiagramModel(
     EntityUid BoardUid,
     string Code,
     string Name,
     string State,
+    int MainProtectionPoles,
+    string? MainProtectionLabel,
     IReadOnlyList<BoardDiagramIncomingModel> IncomingSupplies,
     IReadOnlyList<BoardDiagramBranchModel> Branches);
 
@@ -54,11 +57,13 @@ public sealed record BoardDiagramBranchModel(
     string State,
     string DataState,
     string? BreakerLabel,
+    bool DifferentialEnabled,
     string? DifferentialLabel,
     string? ConductorLabel,
     BoardDiagramPresence NeutralPresence,
     string? NeutralLabel,
     BoardDiagramPresence ProtectiveEarthPresence,
+    string? Descriptor,
     IReadOnlyList<BoardDiagramTargetModel> Targets,
     string ResultStatus)
 {

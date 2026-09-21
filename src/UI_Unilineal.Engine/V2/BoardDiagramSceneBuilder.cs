@@ -124,6 +124,12 @@ public sealed class BoardDiagramSceneBuilder
             boardReference,
             elements);
 
+        AddMainProtection(
+            model,
+            centerX,
+            symbols,
+            elements);
+
         double maximumProtectionBottom =
             branches.Length == 0
                 ? MainBusYmm + ProtectionStartGapMm
@@ -286,7 +292,7 @@ public sealed class BoardDiagramSceneBuilder
             count++;
         }
 
-        if (!string.IsNullOrWhiteSpace(branch.DifferentialLabel))
+        if (branch.DifferentialEnabled)
         {
             count++;
         }
@@ -527,28 +533,6 @@ public sealed class BoardDiagramSceneBuilder
         double axisX =
             geometry.AxisX;
 
-        elements.Add(
-            new TextSceneElement(
-                new SceneId(
-                    $"{prefix}/label"),
-                new MmRect(
-                    axisX - 17,
-                    MainBusYmm + 3,
-                    34,
-                    10),
-                SceneLayer.Text,
-                30,
-                SceneVisibility.Both,
-                circuitReference,
-                Metadata(
-                    "CircuitLabel",
-                    branch.CircuitUid.Value),
-                Display(
-                    branch.Code,
-                    branch.Name),
-                "LABEL_SMALL",
-                SceneTextHorizontalAlignment.Center));
-
         double currentY =
             MainBusYmm;
         double nextY =
@@ -571,7 +555,7 @@ public sealed class BoardDiagramSceneBuilder
         {
             SymbolInstance breaker =
                 symbols.Add(
-                    "BREAKER",
+                    BreakerSymbolId(branch.SystemCode),
                     new MmPoint(
                         axisX - 6,
                         currentY),
@@ -588,8 +572,7 @@ public sealed class BoardDiagramSceneBuilder
             currentY =
                 breaker.Bounds.Bottom;
 
-            if (!string.IsNullOrWhiteSpace(
-                    branch.DifferentialLabel))
+            if (branch.DifferentialEnabled)
             {
                 AddVerticalLine(
                     $"{prefix}/between-protections",
@@ -605,12 +588,11 @@ public sealed class BoardDiagramSceneBuilder
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(
-                branch.DifferentialLabel))
+        if (branch.DifferentialEnabled)
         {
             SymbolInstance rcd =
                 symbols.Add(
-                    "RCD",
+                    "RCD_2X",
                     new MmPoint(
                         axisX - 6,
                         currentY),
@@ -619,7 +601,7 @@ public sealed class BoardDiagramSceneBuilder
                         StringComparer.Ordinal)
                     {
                         ["RATING"] =
-                            branch.DifferentialLabel
+                            branch.DifferentialLabel ?? string.Empty
                     },
                     $"{prefix}/rcd",
                     "DifferentialProtection",
@@ -637,17 +619,16 @@ public sealed class BoardDiagramSceneBuilder
 
         if (targets.Length == 0)
         {
-            targets =
-            [
-                new BoardDiagramTargetModel(
-                    branch.CircuitUid,
-                    EntityKind.Circuit,
-                    BoardDiagramTargetKind.FinalLoad,
-                    branch.Number.ToString(
-                        CultureInfo.InvariantCulture),
-                    branch.Name)
-            ];
+            AddCircuitEndpoint(
+                branch,
+                axisX,
+                currentY,
+                targetTopY,
+                symbols,
+                elements);
         }
+        else
+        {
 
         double[] targetXs =
             CenteredAxes(
@@ -758,6 +739,7 @@ public sealed class BoardDiagramSceneBuilder
                 symbols,
                 elements);
         }
+        }
 
         if (branch.NeutralPresence ==
             BoardDiagramPresence.Present)
@@ -780,6 +762,115 @@ public sealed class BoardDiagramSceneBuilder
                     $"Circuit '{branch.Code}' declares PE, but V2 power grammar does not route PE until the canonical PE topology contract is explicit.",
                     circuitReference));
         }
+    }
+
+    private static string BreakerSymbolId(string systemCode) =>
+        systemCode.ToUpperInvariant() switch
+        {
+            "MONOFASICO" => "BREAKER_1X",
+            "TRIFASICO" => "BREAKER_3X",
+            _ => "BREAKER",
+        };
+
+    private static void AddCircuitEndpoint(
+        BoardDiagramBranchModel branch,
+        double axisX,
+        double currentY,
+        double targetTopY,
+        SymbolCatalog symbols,
+        ICollection<SceneElement> elements)
+    {
+        EntityReference reference =
+            new(
+                branch.CircuitUid,
+                EntityKind.Circuit);
+        string prefix =
+            $"v2/branch/{Safe(branch.CircuitUid.Value)}";
+
+        AddVerticalLine(
+            $"{prefix}/to-endpoint",
+            axisX,
+            currentY,
+            targetTopY,
+            reference,
+            "POWER",
+            "CircuitPower",
+            elements);
+
+        symbols.Add(
+            "CIRCUIT_MARKER",
+            new MmPoint(
+                axisX - 8,
+                targetTopY),
+            reference,
+            new Dictionary<string, string>(
+                StringComparer.Ordinal)
+            {
+                ["NUMBER"] =
+                    branch.Number.ToString(
+                        CultureInfo.InvariantCulture)
+            },
+            $"{prefix}/endpoint",
+            "FinalLoad",
+            elements);
+
+        if (!string.IsNullOrWhiteSpace(
+                branch.Descriptor))
+        {
+            elements.Add(
+                new TextSceneElement(
+                    new SceneId(
+                        $"{prefix}/endpoint/descriptor"),
+                    new MmRect(
+                        axisX - 15,
+                        targetTopY + 18,
+                        30,
+                        8),
+                    SceneLayer.Text,
+                    30,
+                    SceneVisibility.Both,
+                    reference,
+                    Metadata(
+                        "CircuitDescriptor",
+                        branch.CircuitUid.Value),
+                    branch.Descriptor,
+                    "LABEL_SMALL",
+                    SceneTextHorizontalAlignment.Center));
+        }
+    }
+
+    private static void AddMainProtection(
+        BoardDiagramModel model,
+        double centerX,
+        SymbolCatalog symbols,
+        ICollection<SceneElement> elements)
+    {
+        string symbolId =
+            model.MainProtectionPoles switch
+            {
+                2 => "BREAKER_2X",
+                4 => "BREAKER_4X",
+                _ => "BREAKER",
+            };
+
+        symbols.Add(
+            symbolId,
+            new MmPoint(
+                centerX - 6,
+                MainBusYmm - 22),
+            new EntityReference(
+                model.BoardUid,
+                EntityKind.Board),
+            new Dictionary<string, string>(
+                StringComparer.Ordinal)
+            {
+                ["RATING"] =
+                    model.MainProtectionLabel ??
+                    string.Empty
+            },
+            $"v2/{Safe(model.BoardUid.Value)}/main-protection",
+            "MainProtection",
+            elements);
     }
 
     private static void AddTarget(

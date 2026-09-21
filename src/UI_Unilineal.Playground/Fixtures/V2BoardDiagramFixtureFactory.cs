@@ -12,6 +12,8 @@ public static class V2BoardDiagramFixtureFactory
             "TGBT-01",
             "Tablero general — demo V2",
             "ACTIVO",
+            0,
+            null,
             [
                 new BoardDiagramIncomingModel(
                     new EntityUid("V2-S1"),
@@ -42,11 +44,13 @@ public static class V2BoardDiagramFixtureFactory
                     "ACTIVO",
                     "ADOPTADO",
                     "3x40 A / Curva C",
+                    false,
                     null,
                     "RZ1 10 mm²",
                     BoardDiagramPresence.Present,
                     "N 10 mm²",
                     BoardDiagramPresence.Unknown,
+                    null,
                     [
                         Board(
                             "V2-B2",
@@ -71,19 +75,14 @@ public static class V2BoardDiagramFixtureFactory
                     "ACTIVO",
                     "ADOPTADO",
                     "1x16 A / Curva C",
+                    true,
                     null,
                     "RZ1 2.5 mm²",
                     BoardDiagramPresence.Present,
                     "N 2.5 mm²",
                     BoardDiagramPresence.Unknown,
-                    [
-                        new BoardDiagramTargetModel(
-                            new EntityUid("V2-L2"),
-                            EntityKind.Load,
-                            BoardDiagramTargetKind.FinalLoad,
-                            "C02",
-                            "Iluminación")
-                    ],
+                    "Iluminación",
+                    [],
                     "NO_EVALUADO"),
                 new BoardDiagramBranchModel(
                     new EntityUid("V2-C3"),
@@ -94,11 +93,13 @@ public static class V2BoardDiagramFixtureFactory
                     "ACTIVO",
                     "ADOPTADO",
                     "3x25 A / Curva C",
+                    false,
                     null,
                     "RZ1 6 mm²",
                     BoardDiagramPresence.Unknown,
                     null,
                     BoardDiagramPresence.Unknown,
+                    null,
                     [
                         Board(
                             "V2-B5",

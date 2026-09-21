@@ -295,6 +295,8 @@ public sealed class BoardDiagramSceneBuilderTests
             "TGBT-01",
             "Tablero general",
             "ACTIVO",
+            0,
+            null,
             incoming ?? [],
             [
                 new BoardDiagramBranchModel(
@@ -306,21 +308,14 @@ public sealed class BoardDiagramSceneBuilderTests
                     "ACTIVO",
                     "ADOPTADO",
                     breakerLabel,
-                    null,
-                    "RZ1 10 mm²",
+            false,
+            null,
+            "RZ1 10 mm²",
                     BoardDiagramPresence.Unknown,
                     null,
                     BoardDiagramPresence.Unknown,
-                    targets ??
-                    [
-                        new BoardDiagramTargetModel(
-                            new EntityUid(
-                                "LOAD-C1"),
-                            EntityKind.Load,
-                            BoardDiagramTargetKind.FinalLoad,
-                            "C01",
-                            "Carga final")
-                    ],
+            null,
+            targets ?? [],
                     "NO_EVALUADO")
             ]);
     }
