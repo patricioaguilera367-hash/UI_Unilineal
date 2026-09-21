@@ -47,13 +47,20 @@ public sealed class BoardDiagramSceneBuilder
         var elements = new List<SceneElement>();
         var issues = new List<SceneIssue>();
 
+        BoardDiagramIncomingModel[] incomingSupplies =
+            model.IncomingSupplies
+                .OrderBy(item => item.Role, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(item => item.OriginBoardCode, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(item => item.SupplyUid.Value, StringComparer.Ordinal)
+                .ToArray();
+
         BranchGeometry[] branches = PlanBranches(model.Branches);
         double contentWidth = branches.Length == 0
             ? 0
             : branches[^1].AxisX + branches[^1].HalfWidth;
         double incomingSpan = Math.Max(
             0,
-            (model.IncomingSupplies.Count - 1) * IncomingPitchMm);
+            (incomingSupplies.Length - 1) * IncomingPitchMm);
         double boardWidth = Math.Max(
             MinimumBoardWidthMm,
             Math.Max(
@@ -74,7 +81,7 @@ public sealed class BoardDiagramSceneBuilder
 
         double centerX = boardWidth / 2.0;
         double[] incomingXs = CenteredAxes(
-            model.IncomingSupplies.Count,
+            incomingSupplies.Length,
             centerX,
             IncomingPitchMm);
 
@@ -112,6 +119,7 @@ public sealed class BoardDiagramSceneBuilder
 
         AddIncomingSupplies(
             model,
+            incomingSupplies,
             incomingXs,
             boardReference,
             elements);
@@ -402,16 +410,17 @@ public sealed class BoardDiagramSceneBuilder
 
     private static void AddIncomingSupplies(
         BoardDiagramModel model,
+        IReadOnlyList<BoardDiagramIncomingModel> incomingSupplies,
         IReadOnlyList<double> incomingXs,
         EntityReference boardReference,
         ICollection<SceneElement> elements)
     {
         for (int index = 0;
-             index < model.IncomingSupplies.Count;
+             index < incomingSupplies.Count;
              index++)
         {
             BoardDiagramIncomingModel supply =
-                model.IncomingSupplies[index];
+                incomingSupplies[index];
             double x =
                 incomingXs[index];
             string style =
