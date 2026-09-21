@@ -159,10 +159,10 @@ public sealed class Ric18BoardDetailNormalizationTests
             Group(
                 scene,
                 "detail/B1/branch/C1/protection/PR1");
-        GroupSceneElement destination =
+        GroupSceneElement egress =
             Group(
                 scene,
-                "detail/B1/branch/C1/destination");
+                "detail/B1/branch/C1/destination/egress");
 
         Assert.True(
             protection.Bounds.Bottom <=
@@ -211,10 +211,10 @@ public sealed class Ric18BoardDetailNormalizationTests
             Anchor(rcd, "N_OUT").Point,
             neutralOut.Points[0]);
         Assert.Equal(
-            Anchor(destination, "N").Point,
+            Anchor(egress, "N").Point,
             neutralOut.Points[^1]);
         Assert.Equal(
-            Anchor(destination, "PE").Point,
+            Anchor(egress, "PE").Point,
             protectiveEarth.Points[^1]);
         Assert.DoesNotContain(
             protectiveEarth.Points,
@@ -224,19 +224,35 @@ public sealed class Ric18BoardDetailNormalizationTests
     }
 
     [Fact]
-    public void DestinationAuxiliaryAnchorsKeepTpLeftAndNeutralRight()
+    public void CircuitEgress_KeepsTpLeftAndNeutralRightInsideBoard()
     {
         DiagramScene scene =
             BuildScene(
                 SemanticFixtureFactory.Minimal(),
                 new EntityUid("B1"));
+        GroupSceneElement frame =
+            Group(
+                scene,
+                "detail/B1");
+        GroupSceneElement egress =
+            Group(
+                scene,
+                "detail/B1/branch/C1/destination/egress");
 
-        GroupSceneElement destination =
-            Group(scene, "detail/B1/branch/C1/destination");
+        SceneAnchor pe =
+            Anchor(
+                egress,
+                "PE");
+        SceneAnchor neutral =
+            Anchor(
+                egress,
+                "N");
 
-        Assert.True(
-            Anchor(destination, "PE").Point.X <
-            Anchor(destination, "N").Point.X);
+        Assert.True(pe.Point.X < neutral.Point.X);
+        Assert.Equal(AnchorDirection.Left, pe.Direction);
+        Assert.Equal(AnchorDirection.Right, neutral.Direction);
+        Assert.True(Contains(frame.Bounds, pe.Point));
+        Assert.True(Contains(frame.Bounds, neutral.Point));
     }
 
     [Fact]
@@ -382,214 +398,108 @@ public sealed class Ric18BoardDetailNormalizationTests
         }
     }
 
-    [Fact]
-    public void MinimalBoard_Ric18AuxiliaryRoutes_EnterDestinationFromAbove()
+    [Theory]
+    [InlineData("minimal")]
+    [InlineData("nested")]
+    public void BoardDetail_AuxiliaryRoutesStayInsideBoardAndEndAtCircuitEgress(
+        string fixture)
     {
+        SingleLineInput input =
+            fixture == "minimal"
+                ? SemanticFixtureFactory.Minimal()
+                : SemanticFixtureFactory.NestedBoards();
+        string circuitUid =
+            fixture == "minimal"
+                ? "C1"
+                : "C4";
         DiagramScene scene =
             BuildScene(
-                SemanticFixtureFactory.Minimal(),
+                input,
                 new EntityUid("B1"));
-        GroupSceneElement destination =
+        GroupSceneElement frame =
             Group(
                 scene,
-                "detail/B1/branch/C1/destination");
+                "detail/B1");
+        GroupSceneElement egress =
+            Group(
+                scene,
+                $"detail/B1/branch/{circuitUid}/destination/egress");
 
-        foreach ((string routeId, string anchorId) in new[]
-                 {
-                     (
-                         "detail/B1/connection/neutral/C1",
-                         "N"
-                     ),
-                     (
-                         "detail/B1/connection/protective-earth/C1",
-                         "PE"
-                     )
-                 })
-        {
-            PolylineSceneElement route =
-                Route(
-                    scene,
-                    routeId);
-            SceneAnchor anchor =
-                Anchor(
-                    destination,
-                    anchorId);
-            MmPoint approach =
-                route.Points[^2];
-
-            Assert.Equal(
-                anchor.Point,
-                route.Points[^1]);
-            Assert.Equal(
-                anchor.Point.X,
-                approach.X);
-            Assert.True(
-                approach.Y <
-                anchor.Point.Y);
-        }
-    }
-
-    [Fact]
-    public void SyntheticConnectionNodes_AreMarkedForSolidFill()
-    {
-        DiagramScene scene =
-            BuildScene(
-                SemanticFixtureFactory.Minimal(),
-                new EntityUid("B1"));
-
-        CircleSceneElement[] nodes =
+        PolylineSceneElement[] auxiliaryRoutes =
             scene.Elements
-                .OfType<CircleSceneElement>()
-                .Where(circle =>
-                    circle.Id.Value.Contains(
-                        "/node/",
-                        StringComparison.Ordinal) ||
-                    circle.Id.Value.Contains(
-                        "/terminal/",
-                        StringComparison.Ordinal))
+                .OfType<PolylineSceneElement>()
+                .Where(route =>
+                    route.Metadata.ContainsKey("connectionId") &&
+                    route.LineStyleId is
+                        "NEUTRAL_AUX" or
+                        "GROUND_AUX")
                 .ToArray();
 
-        Assert.NotEmpty(
-            nodes);
+        Assert.NotEmpty(auxiliaryRoutes);
 
         Assert.All(
-            nodes,
-            node =>
+            auxiliaryRoutes,
+            route =>
             {
-                Assert.True(
-                    node.Metadata.TryGetValue(
-                        "fillMode",
-                        out string? fillMode));
-                Assert.Equal(
-                    "Solid",
-                    fillMode);
+                Assert.All(
+                    route.Points,
+                    point =>
+                        Assert.True(
+                            Contains(
+                                frame.Bounds,
+                                point),
+                            $"Auxiliary route escaped board frame: {route.Id} at {point}."));
             });
+
+        Assert.Contains(
+            auxiliaryRoutes,
+            route =>
+                route.Points[^1] ==
+                Anchor(egress, "N").Point);
+        Assert.Contains(
+            auxiliaryRoutes,
+            route =>
+                route.Points[^1] ==
+                Anchor(egress, "PE").Point);
     }
 
     [Fact]
-    public void DestinationAuxiliaryAnchors_AreBackedByVisibleTerminalNodes()
+    public void MinimalBoard_OnlyPowerContinuesFromBoardToExternalDestination()
     {
         DiagramScene scene =
             BuildScene(
                 SemanticFixtureFactory.Minimal(),
                 new EntityUid("B1"));
+        GroupSceneElement frame =
+            Group(
+                scene,
+                "detail/B1");
         GroupSceneElement destination =
             Group(
                 scene,
                 "detail/B1/branch/C1/destination");
 
-        foreach (string anchorId in new[] { "N", "PE" })
-        {
-            SceneAnchor anchor =
-                Anchor(
-                    destination,
-                    anchorId);
+        Assert.True(
+            destination.Bounds.Y >=
+            frame.Bounds.Bottom);
 
-            Assert.Contains(
-                scene.Elements.OfType<CircleSceneElement>(),
-                circle =>
-                    circle.Id.Value.StartsWith(
-                        $"{destination.Id.Value}/terminal/",
-                        StringComparison.Ordinal) &&
-                    circle.Center == anchor.Point);
-        }
-    }
-
-    [Fact]
-    public void FinalLoad_AuxiliaryTerminalsSitOnVisibleLoadMarker()
-    {
-        DiagramScene scene =
-            BuildScene(
-                SemanticFixtureFactory.Minimal(),
-                new EntityUid("B1"));
-        GroupSceneElement destination =
-            Group(
+        PolylineSceneElement destinationPower =
+            Route(
                 scene,
-                "detail/B1/branch/C1/destination");
-        CircleSceneElement marker =
-            Assert.IsType<CircleSceneElement>(
-                scene.Elements.Single(element =>
-                    element.Id.Value ==
-                    "detail/B1/branch/C1/destination/part/MARKER/primitive/001"));
-
-        foreach (string anchorId in new[] { "N", "PE" })
-        {
-            SceneAnchor anchor =
-                Anchor(
-                    destination,
-                    anchorId);
-            double distance =
-                Math.Sqrt(
-                    Math.Pow(
-                        anchor.Point.X -
-                        marker.Center.X,
-                        2) +
-                    Math.Pow(
-                        anchor.Point.Y -
-                        marker.Center.Y,
-                        2));
-
-            Assert.InRange(
-                Math.Abs(
-                    distance -
-                    marker.RadiusMm),
-                0,
-                1e-9);
-            Assert.Equal(
-                AnchorDirection.Up,
-                anchor.Direction);
-        }
+                "detail/B1/connection/destination/C1");
 
         Assert.True(
-            Anchor(destination, "PE").Point.X <
-            Anchor(destination, "IN").Point.X);
-        Assert.True(
-            Anchor(destination, "N").Point.X >
-            Anchor(destination, "IN").Point.X);
-    }
+            destinationPower.Points[^1].Y >=
+            frame.Bounds.Bottom);
 
-    [Fact]
-    public void DownstreamBoard_AuxiliaryTerminalsSitOnVisibleBoardTopEdge()
-    {
-        DiagramScene scene =
-            BuildScene(
-                SemanticFixtureFactory.NestedBoards(),
-                new EntityUid("B1"));
-        GroupSceneElement destination =
-            Group(
-                scene,
-                "detail/B1/branch/C4/destination");
-        RectangleSceneElement boardBody =
-            Assert.IsType<RectangleSceneElement>(
-                scene.Elements.Single(element =>
-                    element.Id.Value ==
-                    "detail/B1/branch/C4/destination/part/BOARD/primitive/001"));
-
-        foreach (string anchorId in new[] { "N", "PE" })
-        {
-            SceneAnchor anchor =
-                Anchor(
-                    destination,
-                    anchorId);
-
-            Assert.Equal(
-                boardBody.Bounds.Y,
-                anchor.Point.Y);
-            Assert.InRange(
-                anchor.Point.X,
-                boardBody.Bounds.X,
-                boardBody.Bounds.Right);
-            Assert.Equal(
-                AnchorDirection.Up,
-                anchor.Direction);
-        }
-
-        Assert.True(
-            Anchor(destination, "PE").Point.X <
-            Anchor(destination, "IN").Point.X);
-        Assert.True(
-            Anchor(destination, "N").Point.X >
-            Anchor(destination, "IN").Point.X);
+        Assert.DoesNotContain(
+            scene.Connections,
+            connection =>
+                connection.Target.ElementId ==
+                destination.Id &&
+                connection.LineStyleId is
+                    "NEUTRAL_AUX" or
+                    "GROUND_AUX");
     }
 
     [Fact]
@@ -615,6 +525,14 @@ public sealed class Ric18BoardDetailNormalizationTests
             Anchor(branch, "IN").Point.X,
             Anchor(destination, "IN").Point.X);
     }
+
+    private static bool Contains(
+        MmRect bounds,
+        MmPoint point) =>
+        point.X >= bounds.X &&
+        point.X <= bounds.Right &&
+        point.Y >= bounds.Y &&
+        point.Y <= bounds.Bottom;
 
     private static DiagramScene BuildScene(
         SingleLineInput input,
