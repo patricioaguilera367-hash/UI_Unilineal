@@ -224,7 +224,7 @@ public sealed class Ric18BoardDetailNormalizationTests
     }
 
     [Fact]
-    public void CircuitEgress_KeepsTpLeftAndNeutralRightInsideBoard()
+    public void CircuitEgress_CoLocatesTpAndNeutralOnOutgoingPowerAxisInsideBoard()
     {
         DiagramScene scene =
             BuildScene(
@@ -248,11 +248,21 @@ public sealed class Ric18BoardDetailNormalizationTests
                 egress,
                 "N");
 
-        Assert.True(pe.Point.X < neutral.Point.X);
+        Assert.Equal(pe.Point, neutral.Point);
         Assert.Equal(AnchorDirection.Left, pe.Direction);
         Assert.Equal(AnchorDirection.Right, neutral.Direction);
         Assert.True(Contains(frame.Bounds, pe.Point));
-        Assert.True(Contains(frame.Bounds, neutral.Point));
+
+        PolylineSceneElement destinationPower =
+            Route(
+                scene,
+                "detail/B1/connection/destination/C1");
+
+        Assert.True(
+            PolylineContains(
+                destinationPower.Points,
+                pe.Point),
+            "N and TP circuit egress must lie on the outgoing power path.");
     }
 
     [Fact]
@@ -492,6 +502,15 @@ public sealed class Ric18BoardDetailNormalizationTests
             destinationPower.Points[^1].Y >=
             frame.Bounds.Bottom);
 
+        GroupSceneElement egress =
+            Group(
+                scene,
+                "detail/B1/branch/C1/destination/egress");
+        Assert.True(
+            PolylineContains(
+                destinationPower.Points,
+                Anchor(egress, "N").Point));
+
         Assert.DoesNotContain(
             scene.Connections,
             connection =>
@@ -524,6 +543,35 @@ public sealed class Ric18BoardDetailNormalizationTests
         Assert.Equal(
             Anchor(branch, "IN").Point.X,
             Anchor(destination, "IN").Point.X);
+    }
+
+    private static bool PolylineContains(
+        IReadOnlyList<MmPoint> points,
+        MmPoint point)
+    {
+        for (int index = 0; index < points.Count - 1; index++)
+        {
+            MmPoint first = points[index];
+            MmPoint second = points[index + 1];
+
+            if (first.X == second.X &&
+                point.X == first.X &&
+                point.Y >= Math.Min(first.Y, second.Y) &&
+                point.Y <= Math.Max(first.Y, second.Y))
+            {
+                return true;
+            }
+
+            if (first.Y == second.Y &&
+                point.Y == first.Y &&
+                point.X >= Math.Min(first.X, second.X) &&
+                point.X <= Math.Max(first.X, second.X))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool Contains(
