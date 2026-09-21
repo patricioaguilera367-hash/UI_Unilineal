@@ -141,18 +141,75 @@ public sealed class OrthogonalConnectionRouterTests
         AssertOrthogonal(routed.Points);
         Assert.True(routed.Points[1].Y > routed.Points[0].Y);
 
-        MmPoint approach = routed.Points[^2];
+        bool usesSemanticSideLane =
+            routed.Points
+                .Skip(1)
+                .Take(Math.Max(0, routed.Points.Count - 2))
+                .Any(point =>
+                    approachesFromRight
+                        ? point.X > target.Bounds.Right
+                        : point.X < target.Bounds.X);
 
-        if (approachesFromRight)
-        {
-            Assert.True(approach.X > target.Bounds.Right);
-            Assert.True(approach.X > routed.Points[^1].X);
-        }
-        else
-        {
-            Assert.True(approach.X < target.Bounds.X);
-            Assert.True(approach.X < routed.Points[^1].X);
-        }
+        Assert.True(usesSemanticSideLane);
+
+        MmPoint approach = routed.Points[^2];
+        MmPoint endpoint = routed.Points[^1];
+
+        Assert.Equal(endpoint.X, approach.X);
+        Assert.True(approach.Y < endpoint.Y);
+    }
+
+    [Fact]
+    public void Route_NeutralRcdApproachesRightFacingAnchorFromRight()
+    {
+        RIC18DrawingProfile profile = Profile();
+
+        GroupSceneElement source = GroupWithRole(
+            "detail/B1/bus/NEUTRAL",
+            new MmRect(80, 0, 20, 20),
+            "NeutralBus",
+            new SceneAnchor(
+                "TAP:C1",
+                AnchorRole.Neutral,
+                new MmPoint(90, 10),
+                AnchorDirection.Down));
+        GroupSceneElement target = GroupWithRole(
+            "detail/B1/branch/C1/protection/RCD1",
+            new MmRect(40, 60, 20, 20),
+            "DifferentialProtection",
+            new SceneAnchor(
+                "N_IN",
+                AnchorRole.Neutral,
+                new MmPoint(60, 65),
+                AnchorDirection.Right));
+        var connection = new SceneConnection(
+            new SceneId("detail/B1/connection/neutral-in/C1"),
+            new SceneAnchorRef(source.Id, "TAP:C1"),
+            new SceneAnchorRef(target.Id, "N_IN"),
+            "NEUTRAL_AUX",
+            SceneLayer.Power,
+            10,
+            SceneVisibility.Both,
+            null);
+        var scene = new DiagramScene(
+            new MmRect(0, 0, 140, 100),
+            [source, target],
+            Metadata(),
+            [connection]);
+
+        RoutedConnection routed =
+            new OrthogonalConnectionRouter().Route(
+                connection,
+                scene,
+                profile.Layout);
+
+        AssertOrthogonal(routed.Points);
+
+        MmPoint approach = routed.Points[^2];
+        MmPoint endpoint = routed.Points[^1];
+
+        Assert.Equal(endpoint.Y, approach.Y);
+        Assert.True(approach.X > endpoint.X);
     }
 
     [Fact]
